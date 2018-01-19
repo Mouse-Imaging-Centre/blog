@@ -1,0 +1,189 @@
+---
+title: StanCon Highlights
+author: Chris Hammill
+date: 2018-01-13
+---
+
+Hi readers,
+
+Last Friday, StanCon 2018 Ansilomar wrapped up. I have a little time
+waiting for one of my flights and I thought I'd reflect on the conference.
+Last year I was lucky enough to go to the first StanCon and it was nice
+to be able to see how the conference has grown. This year it was three
+days of tutorials, talks, and networking and I had a blast.
+
+Here are some of my personal highlights, I'll update with
+links to the slides/videos as they become available.
+
+## Tutorials:
+
+### Learning about stan under the hood
+
+Dan Lee and Charles Margossian taught back-to-back sessions about
+the c++ internals of Stan. Charles taught how to add a new function
+to the stan math library. I enjoyed this because late last year I
+was trying to hack some new functionality into the stan math library,
+and had to learn this the hard way. Charles made it look so simple.
+Dan gave a tour of some of the c++ code that runs the sampler builds
+the computational contexts for the model. This has inspired me
+and I hope to try writing some simple autodiff programs using the
+underlying autodiff library. I had been toying with writing these
+kinds of program using Haskell's AD library, but the linear algebra story
+there isn't as obvious (or at least I struggled with it).
+
+### Advanced Hierarchical Models
+
+[Slides](http://mc-stan.org/events/stancon2018/AHM/AHM3.pdf)
+
+Ben Goodrich taught a triplet of advanced hierarchical modelling
+sessions. The most advanced the sessions got was introducing
+the multivariate normal non-centered parameterization (which
+I have already been using in my models), but it was very
+useful to see into the thought processes of an expert. Some
+tips I caught through the sessions were to use Paul Burkner's
+[brms package](https://cran.r-project.org/web/packages/brms/index.html)
+to auto-generate hierarchical model code. Ben recommended starting
+with auto-generated code when writing models, and then riffing
+on top, which seems like a great idea to me. Another point he
+emphasized was to use prior prediction as a sanity check, which
+I know has been recommended elsewhere, but seems like good advice.
+
+### Model Selection
+
+Probably the most attended session of the conference was Aki Vehtari's
+model selection session. This was a perfect follow-up to his last-minute
+talk on regularized horseshoe priors from the day before. Aki introduced
+us to the expected log predictive density (ELPD), the bayesian answer to
+information criteria. He introduced us to the three approaches to dealing
+with the fact that the true future distribution is unknown:
+
+1. $\mathit{M}_{open}$ - The normal approach of using the leave-one-out
+distribution as an approximation for the future
+2. $\mathit{M}_{closed}$ - He didn't cover this one
+3. $\mathit{M}_{completed}$ - Using a trusted distribution to approximate the
+future.
+
+The applicability of $\mathit{M}_{completed}$ isn't immediately obvious,
+where would you get a distribution you trust more than your posterior.
+The answer is you that essentially do in the model selection case! If your
+full model is suitably regularized, the full model is more trustworthy
+than the sub-models. This can be used to get more precise cross-validation
+estimates for the sub-model allowing you to identify irrelevant predictors.
+
+To make this computationally feasibly Aki presented the projection predictive
+method. Fit your full model, probably regularized with horseshoe priors, then
+fit sub-models such that they minimize the KL divergence between them and
+the full model (projection). Then pick the sub-model with the lowest KL divergence!
+He has a package on github called [projpred](https://github.com/stan-dev/projpred)
+for doing this.
+
+I was already planning on writing a post about
+PSIS-LOO the importance sampling based approximate cross validation done
+in the [loo package](https://cran.r-project.org/web/packages/loo/index.html).
+I'll spend more time explaining ELPD then. Another exciting tidbit from the talk,
+the loo package is getting a 2.0 version coming soon.
+
+
+## Talks
+
+### We're leaving-one-out wrong
+
+Sophia Rabe-Hesketh gave a great first talk of the conference on leave-one-out
+cross-validation. Coming back to the ELPD, it looks like the way we're computing
+them now doesn't make sense for hierarchical models. Take for example a model
+where you have a random group: when you imagine the future distribution as your
+loo distribution, you are imagining drawing new subjects for your observed groups,
+but presumably your groups are random because in the future you'd like to sample new groups. 
+In this case you can't use the standard loo distribution to compute your ELPD, you need 
+to generate marginal likelihoods and use those as
+a mixed-predictive distribution for computing ELPD. Sophia called this LOCO
+sampling, because it is akin to leaving one cluster (group) out at a time.
+
+### Joint Models are in rstanarm
+
+Sam Brilleman gave a really cool talk on using coupled models for predicting
+time to events. For example using the trajectory of a biomarker to predict
+and adverse health event. By sharing parameters between the two models
+(proportional hazards for the event, hierarchical model for biomarkers)
+you share information between the two data types. In collaboration with
+Ben Goodrich this is now easy in rstanarm. Very cool.
+
+### Even facebook likes stan
+
+Sean Taylor and Ben Letham from facebook came to talk about their
+awesome forecasting tool [prophet](https://github.com/facebook/prophet).
+I saw the release for this a while back but hadn't given it too much attention.
+Prophet emerged as a solution to many people wanting to do quite similar forecasting
+tasks at facebook, but without necessarily having the expertise. Most of facebook's
+user data seemed to have commonality of features: day of the week trends, month
+trends, holiday effects, smooth temporal trajectories, so prophet made these models
+as simple and usable as possible. They reduce the time series to a standard regression
+after controlling for their multiple seasonalities, so they don't need to futz with
+autoregression. Great example of simple outperforming complex.
+
+### Stan Without The Blockiness
+
+Maria Gorinova had one of the best received talks (in my opinion). She introduced
+her blockless version of the stan language as an f# dsl
+([SlicStan](https://github.com/mgorinova/SlicStan-Paper)). This seems like a step
+in the right direction for turning stan into a language people will want to write.
+SlicStan does away with the blocks and uses information flow analysis to determine
+which block code belongs in. Since blocks are executed at different frequencies
+SlicStan can choose the block executed the least frequently, so it is self
+optimizing at least at the block assignment level.
+
+### Stan gets physical
+
+I'm going to lump two great talks together. Ben Bales and Talia Weiss both
+gave awesome talks on using stan for physics problems. Ben showed how
+to use ringing frequencies and stan to estimate elastic constants for
+super-alloy materials. Talia showed how she used stan to assess the
+probability of quantum weirdness in the MINOS data as violations
+of the Leggett-Garg inequality.
+
+### Causality in Stan
+
+Leah Comment gave an exciting talk about using Robins' G-formula for
+causal effect estimation in stan. Causality has been a big open
+frontier in my learning since I picked up Pearl's book last winter, and
+it's great to see some practical examples using tools I know. Very
+excited to dig in to her notebooks.
+
+### Distance
+
+Susan Holmes gave a talk @statwonk on twitter described as electric.
+I couldn't agree more. I've been thinking on and off about distances
+in statistics for a little while now, especially as I'm currently trying
+to implement a gaussian process for some of my data. Choice of kernel
+is one thing, but choice of metric is a whole other ball game. Susan
+really hammered down a lot of the key ideas and showed me there are
+lots of people thinking about this already. Can't wait to check
+out her student's package: [buds](https://github.com/nlhuong/buds) for
+bayesian unidimensional scaling. The talk was a whirlwind, but
+one of the most interesting things I learned was the "horseshoe effect"
+in which in multidimensional scaling one-dimensional gradients appear
+as horseshoe-like curves. Another great idea was to register PCA
+basis vectors *a la* image analysis to control for non-determinism in
+vector signs before doing analysis. And the quote of the conference
+"If you can find the right distance for your data, you can probably
+solve your problem". That one is going to stick with me.
+
+### Andrew's Tele-Talk
+
+Andrew Gelman gave the closing talk for the conference remotely.
+Amusingly the audience was relocated to a chapel for the last round
+of talks. Andrew gave us a reminder to be humble in our work - in
+not so gentle terms. He then went on to talk about what he wants
+from stan in the future. One central theme was scaling bayesian
+inference up to larger probles. He pointed us to one
+of his papers "Expectation Propagation as a way of life". This
+seems like it is important, and may be the bridge that will help
+us get to running bayesian models on large neuroimaging datasets. 
+I've got some homework to do.
+
+## Outro
+
+As you can see the conference was jam packed with interesting
+material. Seeing everyone doing such cool stuff with stan is
+inspiring, I'm excited to get back and see what I can incorporate
+into my work.

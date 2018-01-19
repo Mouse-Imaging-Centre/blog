@@ -1,0 +1,19 @@
+---
+title: "About"
+date: 2017-08-20T21:38:52+08:00
+lastmod: 2017-08-28T21:41:52+08:00
+---
+
+## About this blog
+
+This is the blog for the Mouse Imaging Centre. Here you'll find a collection
+of our thoughts on imaging, statistics, and biology, written by our staff,
+students, and PIs.
+
+## About the us
+
+The Mouse Imaging Centre operates out of the Hospital for Sick Children in Toronto, 
+our mission is to use high-throughput mouse imaging to answer important questions 
+about biology. For more about us please visit our [website](http://www.mouseimaging.ca/).
+
+

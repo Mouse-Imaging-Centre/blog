@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>The Mouse Imaging Centre Blog</title>
+    <link>/blog/</link>
+    <description>Recent content on The Mouse Imaging Centre Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en</language>
+    <lastBuildDate>Fri, 19 Jan 2018 00:00:00 +0000</lastBuildDate>
+    
+	<atom:link href="/blog/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>StanCon Highlights</title>
+      <link>/blog/post/2018-01-13_stancon-highlights/</link>
+      <pubDate>Fri, 19 Jan 2018 00:00:00 +0000</pubDate>
+      
+      <guid>/blog/post/2018-01-13_stancon-highlights/</guid>
+      <description>Hi readers,
+Last Friday, StanCon 2018 Ansilomar wrapped up. I have a little time waiting for one of my flights and I thought I’d reflect on the conference. Last year I was lucky enough to go to the first StanCon and it was nice to be able to see how the conference has grown. This year it was three days of tutorials, talks, and networking and I had a blast.</description>
+    </item>
+    
+    <item>
+      <title>Welcome</title>
+      <link>/blog/post/welcome/</link>
+      <pubDate>Fri, 19 Jan 2018 00:00:00 +0000</pubDate>
+      
+      <guid>/blog/post/welcome/</guid>
+      <description>Hello World!
+Welcome to the new Mouse Imaging Centre Blog.
+We created this blog as a place to share things we’ve been thinking about lately. This blog will feature a mixture of technical writing about things we do in our lab including imaging, statistics, and biology. The blog will feature contributions from our staff, students, and PIs.
+We hope you enjoy our writings.
+To learn more about us please visit our website at http://www.</description>
+    </item>
+    
+    <item>
+      <title>About</title>
+      <link>/blog/about/</link>
+      <pubDate>Sun, 20 Aug 2017 21:38:52 +0800</pubDate>
+      
+      <guid>/blog/about/</guid>
+      <description>About this blog This is the blog for the Mouse Imaging Centre. Here you’ll find a collection of our thoughts on imaging, statistics, and biology, written by our staff, students, and PIs.
+ About the us The Mouse Imaging Centre operates out of the Hospital for Sick Children in Toronto, our mission is to use high-throughput mouse imaging to answer important questions about biology. For more about us please visit our website.</description>
+    </item>
+    
+  </channel>
+</rss>

@@ -7,7 +7,7 @@ date: 2018-01-19
 
 
 <p>Hi readers,</p>
-<p>Last Friday, StanCon 2018 Ansilomar wrapped up. I have a little time waiting for one of my flights and I thought I’d reflect on the conference. Last year I was lucky enough to go to the first StanCon and it was nice to be able to see how the conference has grown. This year it was three days of tutorials, talks, and networking and I had a blast.</p>
+<p>Recently I got back from StanCon 2018 Ansilomar. I had a little time waiting for one of my flights and I thought I’d reflect on the conference. Last year I was lucky enough to go to the first StanCon and it was nice to be able to see how the conference has grown. This year it was three days of tutorials, talks, and networking. I had a blast.</p>
 <p>Here are some of my personal highlights, I’ll update with links to the slides/videos as they become available.</p>
 <div id="tutorials" class="section level2">
 <h2>Tutorials:</h2>
@@ -25,7 +25,7 @@ date: 2018-01-19
 <p>Probably the most attended session of the conference was Aki Vehtari’s model selection session. This was a perfect follow-up to his last-minute talk on regularized horseshoe priors from the day before. Aki introduced us to the expected log predictive density (ELPD), the bayesian answer to information criteria. He introduced us to the three approaches to dealing with the fact that the true future distribution is unknown:</p>
 <ol style="list-style-type: decimal">
 <li><span class="math inline">\(\mathit{M}_{open}\)</span> - The normal approach of using the leave-one-out distribution as an approximation for the future</li>
-<li><span class="math inline">\(\mathit{M}_{closed}\)</span> - He didn’t cover this one</li>
+<li><span class="math inline">\(\mathit{M}_{closed}\)</span> - This one wasn’t covered in detail.</li>
 <li><span class="math inline">\(\mathit{M}_{completed}\)</span> - Using a trusted distribution to approximate the future.</li>
 </ol>
 <p>The applicability of <span class="math inline">\(\mathit{M}_{completed}\)</span> isn’t immediately obvious, where would you get a distribution you trust more than your posterior. The answer is you that essentially do in the model selection case! If your full model is suitably regularized, the full model is more trustworthy than the sub-models. This can be used to get more precise cross-validation estimates for the sub-model allowing you to identify irrelevant predictors.</p>
@@ -41,7 +41,7 @@ date: 2018-01-19
 </div>
 <div id="joint-models-are-in-rstanarm" class="section level3">
 <h3>Joint Models are in rstanarm</h3>
-<p>Sam Brilleman gave a really cool talk on using coupled models for predicting time to events. For example using the trajectory of a biomarker to predict and adverse health event. By sharing parameters between the two models (proportional hazards for the event, hierarchical model for biomarkers) you share information between the two data types. In collaboration with Ben Goodrich this is now easy in rstanarm. Very cool.</p>
+<p>Sam Brilleman gave a really cool talk on using coupled models for predicting time to events. For example using the trajectory of a biomarker to predict an adverse health event. By sharing parameters between the two models (proportional hazards for the event, hierarchical model for biomarkers) you share information between the two data types. In collaboration with Ben Goodrich this is now easy in rstanarm. Very cool.</p>
 </div>
 <div id="even-facebook-likes-stan" class="section level3">
 <h3>Even facebook likes stan</h3>

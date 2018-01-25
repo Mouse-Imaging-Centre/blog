@@ -6,9 +6,46 @@
     <description>Recent content in Tags on The Mouse Imaging Centre Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
+    <lastBuildDate>Thu, 25 Jan 2018 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/blog/tags/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Linear Models</title>
+      <link>/blog/tags/linear-models/</link>
+      <pubDate>Thu, 25 Jan 2018 00:00:00 +0000</pubDate>
+      
+      <guid>/blog/tags/linear-models/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Lm</title>
+      <link>/blog/tags/lm/</link>
+      <pubDate>Thu, 25 Jan 2018 00:00:00 +0000</pubDate>
+      
+      <guid>/blog/tags/lm/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>R</title>
+      <link>/blog/tags/r/</link>
+      <pubDate>Thu, 25 Jan 2018 00:00:00 +0000</pubDate>
+      
+      <guid>/blog/tags/r/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Rstats</title>
+      <link>/blog/tags/rstats/</link>
+      <pubDate>Thu, 25 Jan 2018 00:00:00 +0000</pubDate>
+      
+      <guid>/blog/tags/rstats/</guid>
+      <description></description>
+    </item>
     
   </channel>
 </rss>

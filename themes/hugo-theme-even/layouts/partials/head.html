@@ -74,6 +74,9 @@
 
 <!-- Styles -->
 <link href="{{ "dist/even.min.css?v=2.7.2" | absURL }}" rel="stylesheet">
+<link rel="stylesheet"
+      href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css">
+
 {{ if .Site.Params.bootcdn -}}
   {{ if .Site.Params.fancybox }}<link href="https://cdn.bootcss.com/fancybox/3.1.20/jquery.fancybox.min.css" rel="stylesheet" crossorigin="anonymous">{{ end }}
 {{- else if .Site.Params.publicCDN.enable -}}

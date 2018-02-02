@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Bayesian on The Mouse Imaging Centre Blog</title>
+    <link>/blog/tags/bayesian/</link>
+    <description>Recent content in Bayesian on The Mouse Imaging Centre Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en</language>
+    <lastBuildDate>Wed, 31 Jan 2018 00:00:00 +0000</lastBuildDate>
+    
+	<atom:link href="/blog/tags/bayesian/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Bayesian Model Selection with PSIS-LOO</title>
+      <link>/blog/post/2018-01-31_loo-intro/</link>
+      <pubDate>Wed, 31 Jan 2018 00:00:00 +0000</pubDate>
+      
+      <guid>/blog/post/2018-01-31_loo-intro/</guid>
+      <description>Pitch In this post I’d like to provide an overview of Pareto-Smoothed Importance Sampling (PSIS-LOO) and how it can be used for bayesian model selection. Everything I discuss regarding this technique can be found in more detail in Vehtari, Gelman, and Gabry (2016). To lead up to PSIS-LOO I will introduce Akaike’s Information Criterion (AIC) to lay the foundation for model selection in general, then cover the expected log predictive density, the corner stone of bayesian model selection.</description>
+    </item>
+    
+  </channel>
+</rss>

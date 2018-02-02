@@ -1,0 +1,224 @@
+---
+title: Bayesian Model Selection with PSIS-LOO
+author: Chris Hammill
+date: 2018-01-31
+tags: ["statistics", "bayesian", "model selection"]
+---
+
+## Pitch
+
+In this post I'd like to provide an overview of
+Pareto-Smoothed Importance Sampling (PSIS-LOO) and how
+it can be used for bayesian model selection. Everything I 
+discuss regarding this technique can be
+found in more detail in 
+[Vehtari, Gelman, and Gabry (2016)](https://arxiv.org/pdf/1507.04544.pdf).
+To lead up to PSIS-LOO I will introduce Akaike's Information Criterion
+(AIC) to lay the foundation for model selection in general, then
+cover the expected log predictive density, the corner stone of
+bayesian model selection. 
+
+## Intro
+
+Early in my masters I was introduced to the idea of model selection.
+The idea stuck, and has been formative in how I think about science.
+Running against the grain of hypothesis testing, model selection seemed 
+a more  natural way to think about what we do in science. 
+
+Model selection stands apart from standard null hypothesis testing, 
+where we have a single operating (null) model and seek data such that 
+we can judge our model sufficiently unlikely. 
+
+Model selection on the other hand assumes that we have many potential
+models that could be generating our data, and provides tools to 
+help us choose which are more likely.
+
+Once we have decided to entertain the idea that there are many
+plausible models for our data, we have to decide how to compare
+our models. 
+
+In most cases the first tool for comparison you
+encounter is Akaike's An Information Criterion (AIC, also called,
+Akaike's Information Criterion). AIC balances the likelihood of
+the data given the model and the complexity of the model.
+
+## AIC
+
+The normal formulation for Akaike's Information Criterion is
+
+$$ -2\ln[{p(y | \theta)}] + 2k $$
+
+but we can pull out the distracting -2 out and get
+
+$$ \ln[{p(y | \theta)}] - k $$
+
+Where $y$ is the data we have observed, $\theta$ are our
+estimated parameters, and k is the number of parameters.
+
+We can read the second version as the log likelihood minus the 
+number of parameters. When doing AIC based model comparison
+you can choose the model that maximizes this quantity.
+
+AIC is the sum of two components
+
+1. The log-likelihood (goodness of fit)
+2. A penalty for model size.
+
+The log-likelihood is a natural choice for goodness of fit.
+if the model fits the data well, the data will be considered
+likely, and the log-likelihood will be high relatively high. 
+
+The penalty term k is equivalent to adding an independent
+observation that the model gives a probability of $1/e$
+(about 1/3), for each parameter you add. Alternatively you can
+imagine the penalty as dividing your likelihood by $e$ for 
+every parameter you add.
+
+The whole reason we need to penalize is because the future
+is uncertain, and there is a risk of overfitting our data.
+Models with fewer parameters tend to generalize better, but
+more satisfying would be to estimate how well the model
+will perform in the future and use that directly. 
+For this we need to consider how our score function
+(the likelihood) behaves under a potential model for
+the future. This leads to the specification of the
+expected log predictive density (ELPD).
+
+## ELPD
+
+The expected log predictive density is defined as:
+
+$$ \sum_i \int p_{t}(\tilde{y}_i) \ln{p(\tilde{y}_i | y)} d\tilde{y}_i $$
+
+where $p_{t}$ is the true density of future observations,
+$\tilde{y}_i$ is a future data point. Since $p_{t}$ is unknown, 
+we're going to need to double
+dip in our data to get a guess as to what future data are
+going to look like. This strategy is called $\mathit{M}_{closed}$.
+
+Fortunately we have a strategy for
+producing fake new data and computing the likelihood
+at the same time. For this we're going to reach for 
+the standard machine learning approach of cross validation. 
+
+We'll treat some
+of our data as observed, and we'll treat the rest like
+new data. Taking this to the extreme where we leave out
+one data point we get leave-one-out (loo) cross validation.
+
+## LOO
+
+So now we have a strategy for imagining $p_{t}$ which
+is to pick an observation at random from our data set.
+Then we need the likelihood our model would assign that
+datum if it hadn't been observed. The naive approach 
+would be to refit our model to the held out data, but 
+this is way too expensive computationally. Ideally we 
+wouldn't need to refit the model
+at all - if only we knew how to reweight the likelihood
+as though the datum were unobserved. But such
+powerful magic surely can't exist.
+
+But of course now I tell you that in fact it does!
+
+The trick has been known since the 1990's and it is
+called importance sampling, and it is one the most
+striking results I know of.
+
+## Importance Sampling LOO
+
+Since we're bayesian, we have samples from
+the posterior distribution of our model. 
+Each of these samples implies a likelihood for
+each of our data points. Above I promised you a way 
+to approximate the likelihood our model would given a datum
+if we hadn't observed that datum. So let's try to compute this
+for a single data point. Take point one for example.
+
+$\int p(y_1 | \theta) d\theta$
+
+Since we're working with samples we're going
+to move from an integral to an average over
+samples.
+
+$\frac{1}{S} \sum_s{ p(y_1 | \theta_s) }$
+
+And now we want to reweight these posterior samples
+as though $y_1$ hadn't been observed.
+
+$\frac{1}{\sum_s{w_s}} \sum_s{ w_s p(y_1 | \theta_s) }$
+
+So we want to give weights to each posterior draw
+such that the weighting adjusts the posterior
+to what it would have been if $y_1$ hadn't been
+observed.
+
+So what should this weighting be? Take a moment
+and try to guess.
+
+Here's a hint, if $y_1$ wasn't observed do you think
+it would be assigned as high a probability?
+
+Well, obviously not you say. So what should the weighting
+be?
+
+It's $\frac{1}{p(y_1 | \theta_s)}$ !!!
+
+The sample weight is just the inverse of the probability
+that *that* posterior draw gave to the held out point.
+
+When I first read this my brain made a little popping
+noise, probably audible to my coworkers, as it exploded.
+
+
+```{r, out.width = "500px", echo = FALSE}
+knitr::include_graphics("/img/brain-exploding-psis.png")
+```
+
+## The Pareto Part
+
+So we're not quite done: there's the pareto smoothing
+part of this. Importance sampling has a well know draw
+back, in that it is very noisy. The sampling weights we
+get are very heavy tailed, and it isn't uncommon to
+get a single posterior sample where the held
+out datum was assigned very low probability dominating the 
+IS adjusted posterior. So we need to smooth out the tails.
+
+It turns out that importance weights in good circumstances
+fit a generalized Pareto distribution quite nicely.
+So to Pareto smooth your weights, fit a generalized
+pareto distribution to, say, 80% of your importance weights
+then predict the quantiles of the remaining 20% from
+that distributions. We replace the real weights with their
+quantile counter-parts and we're done.
+
+## All Together Now
+
+Now  we have the likelihood of each datum in the counterfactual
+world where it wasn't observe. We can now average over
+all the smoother re-weighted posterior draws to get the loo ELPD
+
+$$ \sum_i \ln \left( \frac{1}{\sum_s w_s^i} \sum_s w_s^i p(y_i | \theta_s) \right)$$
+
+With the loo ELPD in hand, we can compute the
+difference between models. The model with the highest ELPD
+is the best. 
+
+And there you have it, bayesian model selection
+using the leave-one-out expected log predictive density. But of
+course, the story doesn't end there. With ELPDs computed 
+we *could* just pick the best model, but maybe we'd like
+to do inference over all the model weighted somehow by
+their score. But these are ideas for another post.
+
+Well I hoped you enjoyed learning about Pareto-Smoothed
+Importance Sampling. Code for doing this is all implemented
+in the wonderful [loo package](https://cran.r-project.org/web/packages/loo/index.html)
+for R. Happy model selecting!
+
+---
+
+I'd like to thank Dulcie Vousden and Ben Darwin for reading
+and commenting on an earlier version of this post.
+

@@ -172,7 +172,7 @@ noise, probably audible to my coworkers, as it exploded.
 
 
 ```{r, out.width = "500px", echo = FALSE}
-knitr::include_graphics("/img/brain-exploding-psis.png")
+knitr::include_graphics("/blog/img/brain-exploding-psis.png")
 ```
 
 ## The Pareto Part

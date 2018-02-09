@@ -3,6 +3,7 @@ title: "Finding and playing with peaks in RMINC"
 output: html_document
 author: Jason Lerch
 date: 2018-02-09
+tags: ["RMINC", "R", "neuroimaging", "MRI"]
 ---
 
 <script src="/blog/rmarkdown-libs/htmlwidgets/htmlwidgets.js"></script>
@@ -45,7 +46,7 @@ anatVol &lt;- mincArray(mincGetVolume(anatFile))</code></pre>
 Sys.setenv(PATH = paste(&quot;/axiom2/projects/software/arch/linux-xenial-xerus/minc-toolkit/1.9.15/bin&quot;, Sys.getenv(&quot;PATH&quot;), sep=&quot;:&quot;))
 # and the actual command
 peaks &lt;- mincFindPeaks(vs, &quot;tvalue-SexM&quot;, minDistance = 1, threshold = 4)</code></pre>
-<pre><code>## Writing column tvalue-SexM to file /tmp/RtmpCzvNqb/file3b7553b0a8ca.mnc 
+<pre><code>## Writing column tvalue-SexM to file /tmp/RtmpwOpobe/file4bf42f61df36.mnc 
 ## Range: 10.627142 -5.694668</code></pre>
 <p><code>mincFindPeaks</code> uses the <code>find_peaks</code> command from the MINC toolkit under the hood. You pass in the output of one of the RMINC modelling commands (mincLm in this case, but can be anything), along with the column from that model you want to get peaks from. You can then set the minimum distance between peaks (in mm) - i.e. how far apart do two statistical peaks have to be to be included? - as well as the threshold to be considered a peak. Optionally thresholds can be different for positive and negative peaks; as always, see <code>?mincFindPeaks</code> for more detail.</p>
 <p>This is what we have at this point:</p>

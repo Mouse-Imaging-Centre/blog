@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Mri on The Mouse Imaging Centre Blog</title>
+    <link>/blog/tags/mri/</link>
+    <description>Recent content in Mri on The Mouse Imaging Centre Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en</language>
+    <lastBuildDate>Fri, 09 Feb 2018 00:00:00 +0000</lastBuildDate>
+    
+	<atom:link href="/blog/tags/mri/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Finding and playing with peaks in RMINC</title>
+      <link>/blog/post/2018-02-08_peaks-intro/</link>
+      <pubDate>Fri, 09 Feb 2018 00:00:00 +0000</pubDate>
+      
+      <guid>/blog/post/2018-02-08_peaks-intro/</guid>
+      <description>So, peaks. When producing a statistical map, it’s good to get a report of the peaks (i.e. most significant findings). RMINC has had this support for a while now, though it has remained somewhat hidden. Here’s a bit of an intro, then.
+I will walk through the example we used from the Mouse Imaging Summer School in 2017, which is data from this paper:
+de Guzman AE, Gazdzinski LM, Alsop RJ, Stewart JM, Jaffray DA, Wong CS, Nieman BJ.</description>
+    </item>
+    
+  </channel>
+</rss>

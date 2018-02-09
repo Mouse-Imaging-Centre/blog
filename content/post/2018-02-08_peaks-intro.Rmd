@@ -42,7 +42,7 @@ mincPlotSliceSeries(anatVol, mincArray(vs, "tvalue-SexM"), anatLow=10, anatHigh=
 ```
 
 
-At this point we've run a linear model and visually assessed the results. Now we can locate the peak findings, using the mincFindPeaks command.
+At this point we've run a linear model and visually assessed the results. Now we can locate the peak findings, using the `mincFindPeaks` command.
 
 ```{r}
 # set the path; should usually be unnecessary, but my remote Rstudio setup appears to not load the correct environment variables 
@@ -51,7 +51,7 @@ Sys.setenv(PATH = paste("/axiom2/projects/software/arch/linux-xenial-xerus/minc-
 peaks <- mincFindPeaks(vs, "tvalue-SexM", minDistance = 1, threshold = 4)
 ```
 
-mincFindPeaks uses the find_peaks command from the MINC toolkit under the hood. You pass in the output of one of the RMINC modelling commands (mincLm in this case, but can be anything), along with the column from that model you want to get peaks from. You can then set the minimum distance between peaks (in mm) - i.e. how far apart do two statistical peaks have to be to be included? - as well as the threshold to be considered a peak. Optionally thresholds can be different for positive and negative peaks; as always, see ?mincFindPeaks for more detail.
+`mincFindPeaks` uses the `find_peaks` command from the MINC toolkit under the hood. You pass in the output of one of the RMINC modelling commands (mincLm in this case, but can be anything), along with the column from that model you want to get peaks from. You can then set the minimum distance between peaks (in mm) - i.e. how far apart do two statistical peaks have to be to be included? - as well as the threshold to be considered a peak. Optionally thresholds can be different for positive and negative peaks; as always, see `?mincFindPeaks` for more detail.
 
 This is what we have at this point:
 
@@ -89,7 +89,7 @@ for (i in c(1:2, nP:(nP-1))) {
 par(opar)
 ```
 
-There is an additional argument to mincPlotPeak - a function to create a plot of the peak. This is illustrated below:
+There is an additional argument to `mincPlotPeak` - a function to create a plot of the peak. This is illustrated below:
 
 ```{r}
 # load ggplot2 for plotting

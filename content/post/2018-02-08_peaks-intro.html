@@ -40,14 +40,14 @@ anatVol &lt;- mincArray(mincGetVolume(anatFile))</code></pre>
 <pre class="r"><code>mincPlotSliceSeries(anatVol, mincArray(vs, &quot;tvalue-SexM&quot;), anatLow=10, anatHigh=15, low=2, high=6, symmetric = T,
                     begin=50, end=-50)</code></pre>
 <p><img src="/blog/post/2018-02-08_peaks-intro_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
-<p>At this point we’ve run a linear model and visually assessed the results. Now we can locate the peak findings, using the mincFindPeaks command.</p>
+<p>At this point we’ve run a linear model and visually assessed the results. Now we can locate the peak findings, using the <code>mincFindPeaks</code> command.</p>
 <pre class="r"><code># set the path; should usually be unnecessary, but my remote Rstudio setup appears to not load the correct environment variables 
 Sys.setenv(PATH = paste(&quot;/axiom2/projects/software/arch/linux-xenial-xerus/minc-toolkit/1.9.15/bin&quot;, Sys.getenv(&quot;PATH&quot;), sep=&quot;:&quot;))
 # and the actual command
 peaks &lt;- mincFindPeaks(vs, &quot;tvalue-SexM&quot;, minDistance = 1, threshold = 4)</code></pre>
-<pre><code>## Writing column tvalue-SexM to file /tmp/RtmpcPWHvw/file24ced3115c3.mnc 
+<pre><code>## Writing column tvalue-SexM to file /tmp/RtmpCzvNqb/file3b7553b0a8ca.mnc 
 ## Range: 10.627142 -5.694668</code></pre>
-<p>mincFindPeaks uses the find_peaks command from the MINC toolkit under the hood. You pass in the output of one of the RMINC modelling commands (mincLm in this case, but can be anything), along with the column from that model you want to get peaks from. You can then set the minimum distance between peaks (in mm) - i.e. how far apart do two statistical peaks have to be to be included? - as well as the threshold to be considered a peak. Optionally thresholds can be different for positive and negative peaks; as always, see ?mincFindPeaks for more detail.</p>
+<p><code>mincFindPeaks</code> uses the <code>find_peaks</code> command from the MINC toolkit under the hood. You pass in the output of one of the RMINC modelling commands (mincLm in this case, but can be anything), along with the column from that model you want to get peaks from. You can then set the minimum distance between peaks (in mm) - i.e. how far apart do two statistical peaks have to be to be included? - as well as the threshold to be considered a peak. Optionally thresholds can be different for positive and negative peaks; as always, see <code>?mincFindPeaks</code> for more detail.</p>
 <p>This is what we have at this point:</p>
 <pre class="r"><code>peaks</code></pre>
 <div id="htmlwidget-1" style="width:100%;height:auto;" class="datatables html-widget"></div>
@@ -86,7 +86,7 @@ for (i in c(1:2, nP:(nP-1))) {
 }</code></pre>
 <p><img src="/blog/post/2018-02-08_peaks-intro_files/figure-html/unnamed-chunk-11-1.png" width="672" /></p>
 <pre class="r"><code>par(opar)</code></pre>
-<p>There is an additional argument to mincPlotPeak - a function to create a plot of the peak. This is illustrated below:</p>
+<p>There is an additional argument to <code>mincPlotPeak</code> - a function to create a plot of the peak. This is illustrated below:</p>
 <pre class="r"><code># load ggplot2 for plotting
 library(ggplot2)
 # the plotting function; needs to take a single argument, the peak

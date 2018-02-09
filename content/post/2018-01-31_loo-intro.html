@@ -70,7 +70,8 @@ tags: ["statistics", "bayesian", "model selection"]
 <div id="the-pareto-part" class="section level2">
 <h2>The Pareto Part</h2>
 <p>So we’re not quite done: there’s the pareto smoothing part of this. Importance sampling has a well know draw back, in that it is very noisy. The sampling weights we get are very heavy tailed, and it isn’t uncommon to get a single posterior sample where the held out datum was assigned very low probability dominating the IS adjusted posterior. So we need to smooth out the tails.</p>
-<p>It turns out that importance weights in good circumstances fit a generalized Pareto distribution quite nicely. So to Pareto smooth your weights, fit a generalized pareto distribution to, say, 80% of your importance weights then predict the quantiles of the remaining 20% from that distributions. We replace the real weights with their quantile counter-parts and we’re done.</p>
+<p>It turns out that the upper tail of the the importance weights fit a generalized Pareto distribution nicely. This lends itself to smoothing.</p>
+<p>So to Pareto smooth our weights, we can fit a generalized pareto distribution to, say, the upper 20% of our importance weights. Then we can use the quantile of each weight to predict a smoothed approximation for that weight from the fitted distribution. We can then replace the upper tail weights with their smoothed weight and we’re done.</p>
 </div>
 <div id="all-together-now" class="section level2">
 <h2>All Together Now</h2>
@@ -81,4 +82,5 @@ tags: ["statistics", "bayesian", "model selection"]
 <p>Well I hoped you enjoyed learning about Pareto-Smoothed Importance Sampling. Code for doing this is all implemented in the wonderful <a href="https://cran.r-project.org/web/packages/loo/index.html">loo package</a> for R. Happy model selecting!</p>
 <hr />
 <p>I’d like to thank Dulcie Vousden and Ben Darwin for reading and commenting on an earlier version of this post.</p>
+<p>I’d like to thank Aki Vehtari for correctimg error in an earlier version of this post. I had mistakenly claimed the generalized pareto distribution was fit to the data <em>not</em> in the upper tail of weights.</p>
 </div>

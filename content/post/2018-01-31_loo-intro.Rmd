@@ -185,13 +185,16 @@ get a single posterior sample where the held
 out datum was assigned very low probability dominating the 
 IS adjusted posterior. So we need to smooth out the tails.
 
-It turns out that importance weights in good circumstances
-fit a generalized Pareto distribution quite nicely.
-So to Pareto smooth your weights, fit a generalized
-pareto distribution to, say, 80% of your importance weights
-then predict the quantiles of the remaining 20% from
-that distributions. We replace the real weights with their
-quantile counter-parts and we're done.
+It turns out that the upper tail of the the importance weights
+fit a generalized Pareto distribution nicely. This lends itself
+to smoothing.
+
+So to Pareto smooth our weights, we can fit a generalized
+pareto distribution to, say, the upper 20% of our importance 
+weights. Then we can use the quantile of each weight to predict
+a smoothed approximation for that weight from the fitted distribution.
+We can then replace the upper tail weights with their smoothed weight 
+and we're done.
 
 ## All Together Now
 
@@ -222,3 +225,7 @@ for R. Happy model selecting!
 I'd like to thank Dulcie Vousden and Ben Darwin for reading
 and commenting on an earlier version of this post.
 
+I'd like to thank Aki Vehtari for correctimg error in
+an earlier version of this post. I had mistakenly claimed the
+generalized pareto distribution was fit to the data *not* in
+the upper tail of weights.

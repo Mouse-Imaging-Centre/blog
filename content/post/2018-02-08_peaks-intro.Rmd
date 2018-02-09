@@ -46,9 +46,6 @@ mincPlotSliceSeries(anatVol, mincArray(vs, "tvalue-SexM"), anatLow=10, anatHigh=
 At this point we've run a linear model and visually assessed the results. Now we can locate the peak findings, using the `mincFindPeaks` command.
 
 ```{r}
-# set the path; should usually be unnecessary, but my remote Rstudio setup appears to not load the correct environment variables 
-Sys.setenv(PATH = paste("/axiom2/projects/software/arch/linux-xenial-xerus/minc-toolkit/1.9.15/bin", Sys.getenv("PATH"), sep=":"))
-# and the actual command
 peaks <- mincFindPeaks(vs, "tvalue-SexM", minDistance = 1, threshold = 4)
 ```
 

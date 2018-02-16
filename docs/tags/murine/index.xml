@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Murine on The Mouse Imaging Centre Blog</title>
+    <link>/blog/tags/murine/</link>
+    <description>Recent content in Murine on The Mouse Imaging Centre Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en</language>
+    <lastBuildDate>Thu, 15 Feb 2018 00:00:00 +0000</lastBuildDate>
+    
+	<atom:link href="/blog/tags/murine/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Co-Clinical Trials</title>
+      <link>/blog/post/2018-02-15_coclinical-trials/</link>
+      <pubDate>Thu, 15 Feb 2018 00:00:00 +0000</pubDate>
+      
+      <guid>/blog/post/2018-02-15_coclinical-trials/</guid>
+      <description>Why co-clinical trials? Here at the Mouse Imaging Centre, a large portion of our research is related to neurodevelopmental disorders. Ultimately the goal of such research is to improve health outcomes for individuals with these disorders. One clear way to impact health outcomes for individuals with neurodevelopmental disorders is to develop new medicines. Part of my research has been on the animal side of a project aimed at using matched human and animal trials to expedite drug development for autism spectrum disorders.</description>
+    </item>
+    
+  </channel>
+</rss>

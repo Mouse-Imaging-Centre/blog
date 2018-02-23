@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>Preferential Spatial Gene Expression in Neuroanatomy - The Mouse Imaging Centre Blog</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="Darren Fernandes" />
+  <meta name="description" content="Intro In this post I will demonstrate how to use my package ABIgeneRMINC to download, read and analyze mouse brain gene expression data from the Allen Brain Institute.
+The Allen Brain Institute (ABI) has acquired and released genome-wide spatial gene expression maps for the mouse brain. The data is generated using in situ hybridization experiments (ISH), where nucleotide probes for specific genes bind directly to mouse brain tissue. The probe binding is then marked with a biotin label that can be used to locate regions where a gene is expressed." />
+
+  <meta name="keywords" content="Mouse, Imaging, MICe, Mouse Imaging Centre, SickKids" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.32.4" />
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-63858206-2"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-63858206-2');
+</script>
+
+
+
+<link rel="canonical" href="/blog/post/2018-02-23_gene-expression/" />
+
+<link rel="apple-touch-icon" sizes="180x180" href="/blog/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/blog/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/blog/favicon-16x16.png">
+<link rel="icon" href="/blog/favicon.ico" />
+<link rel="manifest" href="/blog/manifest.json">
+<link rel="mask-icon" href="/blog/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+
+
+
+
+<link href="/blog/dist/even.min.css" rel="stylesheet">
+<link rel="stylesheet"
+      href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css">
+<link href="/blog/lib/datatables-css-0.0.0/datatables-crosstalk.css" rel="stylesheet">
+<link href="/blog/lib/dt-core-1.10.16/css/jquery.dataTables.min.css" rel="stylesheet">
+<link href="/blog/lib/dt-core-1.10.16/css/jquery.dataTables.extra.css" rel="stylesheet">
+<link href="/blog/lib/crosstalk-1.0.0/css/crosstalk.css" rel="stylesheet">
+
+
+<link href="/blog/lib/fancybox/jquery.fancybox-3.1.20.min.css" rel="stylesheet">
+
+<meta property="og:title" content="Preferential Spatial Gene Expression in Neuroanatomy" />
+<meta property="og:description" content="Intro In this post I will demonstrate how to use my package ABIgeneRMINC to download, read and analyze mouse brain gene expression data from the Allen Brain Institute.
+The Allen Brain Institute (ABI) has acquired and released genome-wide spatial gene expression maps for the mouse brain. The data is generated using in situ hybridization experiments (ISH), where nucleotide probes for specific genes bind directly to mouse brain tissue. The probe binding is then marked with a biotin label that can be used to locate regions where a gene is expressed." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="/blog/post/2018-02-23_gene-expression/" />
+
+
+
+<meta property="article:published_time" content="2018-02-23T00:00:00&#43;00:00"/>
+
+<meta property="article:modified_time" content="2018-02-23T00:00:00&#43;00:00"/>
+
+
+
+
+
+
+
+
+
+
+
+<meta itemprop="name" content="Preferential Spatial Gene Expression in Neuroanatomy">
+<meta itemprop="description" content="Intro In this post I will demonstrate how to use my package ABIgeneRMINC to download, read and analyze mouse brain gene expression data from the Allen Brain Institute.
+The Allen Brain Institute (ABI) has acquired and released genome-wide spatial gene expression maps for the mouse brain. The data is generated using in situ hybridization experiments (ISH), where nucleotide probes for specific genes bind directly to mouse brain tissue. The probe binding is then marked with a biotin label that can be used to locate regions where a gene is expressed.">
+
+
+<meta itemprop="datePublished" content="2018-02-23T00:00:00&#43;00:00" />
+<meta itemprop="dateModified" content="2018-02-23T00:00:00&#43;00:00" />
+<meta itemprop="wordCount" content="1050">
+
+
+
+<meta itemprop="keywords" content="rstats,R,RMINC,gene expression,Allen Brain Institute,ABI," />
+<meta name="twitter:card" content="summary"/><meta name="twitter:title" content="Preferential Spatial Gene Expression in Neuroanatomy"/>
+<meta name="twitter:description" content="Intro In this post I will demonstrate how to use my package ABIgeneRMINC to download, read and analyze mouse brain gene expression data from the Allen Brain Institute.
+The Allen Brain Institute (ABI) has acquired and released genome-wide spatial gene expression maps for the mouse brain. The data is generated using in situ hybridization experiments (ISH), where nucleotide probes for specific genes bind directly to mouse brain tissue. The probe binding is then marked with a biotin label that can be used to locate regions where a gene is expressed."/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/blog/" class="logo">Mouse Imaging Blog</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <a href="/blog/">
+        <li class="mobile-menu-item">Home</li>
+      </a><a href="/blog/post/">
+        <li class="mobile-menu-item">Archives</li>
+      </a><a href="/blog/tags/">
+        <li class="mobile-menu-item">Tags</li>
+      </a><a href="/blog/about/">
+        <li class="mobile-menu-item">About</li>
+      </a>
+  </ul>
+</nav>
+  <div>
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/blog/" class="logo">Mouse Imaging Blog</a>
+</div>
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/blog/">Home</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/blog/post/">Archives</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/blog/tags/">Tags</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/blog/about/">About</a>
+      </li>
+  </ul>
+</nav>
+
+    </header>
+  <div>
+    
+  <div class="container" id="mobile-panel">
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">Preferential Spatial Gene Expression in Neuroanatomy</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2018-02-23 </span>
+        
+        
+        
+      </div>
+    </header>
+
+    
+    
+<div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">Contents</h2>
+  
+  <div class="post-toc-content always-active">
+    
+  </div>
+</div>
+
+    
+    <div class="post-content">
+      <div id="intro" class="section level2">
+<h2>Intro</h2>
+<p>In this post I will demonstrate how to use my package <code>ABIgeneRMINC</code> to download, read and analyze mouse brain gene expression data from the Allen Brain Institute.</p>
+<p>The Allen Brain Institute (ABI) has acquired and released genome-wide spatial gene expression maps for the mouse brain. The data is generated using <em>in situ</em> hybridization experiments (ISH), where nucleotide probes for specific genes bind directly to mouse brain tissue. The probe binding is then marked with a biotin label that can be used to locate regions where a gene is expressed.</p>
+<p>For the analysis you will need two R packages <code>RMINC</code> and <code>ABIgeneRMINC</code>.</p>
+<pre class="r"><code># devtools::install_github(repo=&quot;DJFernandes/ABIgeneRMINC&quot;)   # If you need to install
+library(ABIgeneRMINC)
+library(RMINC)</code></pre>
+</div>
+<div id="getting-the-data" class="section level2">
+<h2>Getting the data</h2>
+<p>With the packages load you can now look up your favourite gene. You need to know the gene acronym though, which you can find on the NCBI database. In this case, I want to look up Bdnf. The function below queries the Allen Brain API and finds all experiments conducted with Bdnf.</p>
+<pre class="r"><code>fge=find.gene.experiment(&#39;Bdnf&#39;)
+fge</code></pre>
+<pre><code>##   gene   slices ExperimentID
+## 1 Bdnf  coronal     79587720
+## 2 Bdnf sagittal     75695642
+##                                                                  URLs
+## 1 http://api.brain-map.org/grid_data/download/79587720?include=energy
+## 2 http://api.brain-map.org/grid_data/download/75695642?include=energy</code></pre>
+<p>We are in luck! There are two experiments the Allen Brain Institute ran with Bdnf, identified by ExperimentIDs 79587720 and 75695642. The former was conducted on coronal slices in the brain, and the latter on sagittal slices. We will see why this is important later on. The URLs where you can download expression data is given in the final column. You can enter them in your internet browser and file should begin to download. If you don’t want to leave the wonderful world of R just to download (I don’t blame you), we can actually download and read the data within R itself.</p>
+<pre class="r"><code>genedata1 = read.raw.gene(as.character(fge$URLs[1]),url = TRUE)</code></pre>
+<pre><code>## Loading required package: bitops</code></pre>
+<p>It is generally better to download outside R and save the file, so you don’t have to keep downloading. Obtain the path to the file, and use it as as argument to read as follows:</p>
+<pre class="r"><code>genedata1 = read.raw.gene(&#39;/projects/egerek/matthijs/2015-07-Allen-Brain/Allen_Gene_Expression/raw_data/coronal/Bdnf_sid79587720/energy.raw&#39;)</code></pre>
+</div>
+<div id="visualizing-the-gene-expression" class="section level2">
+<h2>Visualizing the gene expression</h2>
+<p>The gene expression data is a 1D vector. It can easily be converted to a 3D array using the mincArray function (which we will do later). But there is an important note to talk about before going further. The 1D vector lists values going from X=Anterior-to-Posterior, Y=Superior-to-Inferior, and Z=Left-to-Right (dimensions written from fastest changing index to slowest). This is the ABI orientation. The RMINC vectors typically are 1D vectors going from X=Left-to-Right, Y=Posterior-to-Anterior, Z=Inferior-to-Superior (dimensions written from fastest changing index to slowest). This is the MNI orientation. You can make a choice as to which orientiation you want to analyze in but I will be choosing MNI orientation in this tutorial. Just make sure you are consistent with your orientations and you won’t have problems. The function below converts ABI orientation to MNI orientation:</p>
+<pre class="r"><code>genedata1 = allenVectorTOmincVector(genedata1)
+# genedata1 = mincVectorTOallenVector(genedata1)  #This is the inverse function</code></pre>
+<p>Now, we can visualize the gene expression. Below is a sagittal slice</p>
+<pre class="r"><code>image(mincArray(genedata1)[30,,], ylab=&#39;Superior-Inferior&#39; ,xlab=&#39;Anterior-Posterior&#39;)</code></pre>
+<p><img src="/blog/post/2018-02-23_gene-expression_files/figure-html/6-1.png" width="672" /></p>
+</div>
+<div id="adding-an-anatomical-underlay" class="section level2">
+<h2>Adding an anatomical underlay</h2>
+<p>I am not a good mouse brain anatomist, and so I find it pretty difficult to tell from this expression heatmap where exactly the expression is in the brain. We will now overlay a background MRI template to tell us where the gene expression is and use RMINC to create slice series.</p>
+<pre class="r"><code>anatfile=&#39;/projects/egerek/matthijs/2015-07-Allen-Brain/allenCCFV3_to_dorr_registration/allenCCFV3/atlas_in_200um/Dorr_resampled_200um.mnc&#39;
+mincPlotSliceSeries(
+  anatomy=mincArray(mincGetVolume(anatfile)),
+  statistics=mincArray(genedata1),
+  symmetric=FALSE,
+  col=colorRampPalette(c(&quot;darkgreen&quot;,&quot;yellowgreen&quot;))(255),
+  legend=&quot;Bdnf Expression&quot;,low=2,high=6.5)</code></pre>
+<p><img src="/blog/post/2018-02-23_gene-expression_files/figure-html/7-1.png" width="672" /></p>
+<p>Much better. I can tell there is high expression in the cortex and hippocampus.</p>
+<p>Let us also look at the other Bdnf experiment (ID: 75695642).</p>
+<pre class="r"><code>genedata2 = read.raw.gene(as.character(fge$URLs[2]),url = TRUE)
+genedata2 = allenVectorTOmincVector(genedata2)
+mincPlotSliceSeries(
+  anatomy=mincArray(mincGetVolume(anatfile)),
+  statistics=mincArray(genedata2),
+  symmetric=FALSE,
+  col=colorRampPalette(c(&quot;darkgreen&quot;,&quot;yellowgreen&quot;))(255),
+  legend=&quot;Bdnf Expression&quot;,low=2,high=6.5)</code></pre>
+<p><img src="/blog/post/2018-02-23_gene-expression_files/figure-html/8-1.png" width="672" /></p>
+<p>We see that the sagittal slices only span half the brain. This was a deliberate choice by the ABI and most of the gene experiments are like this. Furthermore, slices are sampled every 200 microns for the sagittal datasets and every 100 microns for the coronal datasets. That is why we prefer using the coronal slices any chance we get, but there are still tools that help us work with sagittal data. We can reflect data across the sagittal midplane to fill in the missing hemisphere as so:</p>
+<pre class="r"><code>genedata2.reflected=midplane.reflect(genedata2,reflect.dim=3)
+mincPlotSliceSeries(
+  anatomy=mincArray(mincGetVolume(anatfile)),
+  statistics=mincArray(genedata2.reflected),
+  symmetric=FALSE,
+  col=colorRampPalette(c(&quot;darkgreen&quot;,&quot;yellowgreen&quot;))(255),
+  legend=&quot;Bdnf Expression&quot;,low=2,high=6.5)</code></pre>
+<p><img src="/blog/post/2018-02-23_gene-expression_files/figure-html/99-1.png" width="672" /></p>
+<p>We can do better. Because there sagittal sections were only sampled every 200um, there is a lot of missing data due to slice misalignment. We can fill them in using nearest neighbour marching averages.</p>
+<pre class="r"><code>labelfile=system.file(&#39;extdata/gridAnnotation.raw&#39;,package=&quot;ABIgeneRMINC&quot;)
+mask=allenVectorTOmincVector(read.raw.gene(labelfile,labels=TRUE)&gt;0)
+interp.gene=interpolate.gene(genedata2.reflected,mask)
+
+mincPlotSliceSeries(
+  anatomy=mincArray(mincGetVolume(anatfile)),
+  statistics=mincArray(interp.gene),
+  symmetric=FALSE,
+  col=colorRampPalette(c(&quot;darkgreen&quot;,&quot;yellowgreen&quot;))(255),
+  legend=&quot;Bdnf Expression&quot;,low=2,high=6.5)</code></pre>
+<p><img src="/blog/post/2018-02-23_gene-expression_files/figure-html/9-1.png" width="672" /></p>
+<p>Even with interpolation, the expression map is not that good.</p>
+</div>
+<div id="expression-statistics" class="section level2">
+<h2>Expression statistics</h2>
+<p>Moving back to the coronal maps, let’s generate summary statistics for each structure in the ABI atlas.</p>
+<pre class="r"><code>labels=read.raw.gene(labelfile,labels=TRUE)
+labels.to.sum=sort(unique(labels))
+labels.to.sum=labels.to.sum[labels.to.sum!=0]
+
+udf=unionize(grid.data=genedata1,             #vector to unionize
+           labels.to.sum=labels.to.sum,       #sum all labels
+           labels.grid=labels                 #the vector of labels
+           )
+udf=udf[order(udf$mean,decreasing=TRUE),]
+head(udf)</code></pre>
+<pre><code>##     labels        sum     mean     stdev
+## 167    287  19.641589 4.910397 12.018447
+## 474    875  48.372759 4.397524  6.287998
+## 261    483 123.968708 3.178685  3.827543
+## 171    292  34.930620 3.175511  6.002760
+## 162    279   6.248917 3.124459  3.977935
+## 22      50  12.193722 3.048430  1.094984</code></pre>
+<p>Now let us read a csv with structure names in it that correspond to the label number and add that as a column in our data frame.</p>
+<pre class="r"><code>labeldefs=read.csv(&quot;/projects/egerek/matthijs/2015-07-Allen-Brain/Allen_Gene_Expression/labels/allen_gridlabels_structures.csv&quot;) #this can be downloaded from ABI
+udf$structures=labeldefs[match(labeldefs$id,udf$labels),&#39;name&#39;]
+udf = udf[,c(&#39;structures&#39;,&#39;labels&#39;,&#39;mean&#39;,&#39;sum&#39;,&#39;stdev&#39;)]
+head(udf)</code></pre>
+<pre><code>##                                                                    structures
+## 167                                Main olfactory bulb, outer plexiform layer
+## 474 Bed nuclei of the stria terminalis, anterior division, anterolateral area
+## 261                                                   Visceral area, layer 6b
+## 171                                                Uvula (IX), granular layer
+## 162                       Retrosplenial area, lateral agranular part, layer 1
+## 22        Bed nuclei of the stria terminalis, anterior division, oval nucleus
+##     labels     mean        sum     stdev
+## 167    287 4.910397  19.641589 12.018447
+## 474    875 4.397524  48.372759  6.287998
+## 261    483 3.178685 123.968708  3.827543
+## 171    292 3.175511  34.930620  6.002760
+## 162    279 3.124459   6.248917  3.977935
+## 22      50 3.048430  12.193722  1.094984</code></pre>
+<p>Voila, we can now tell which structures have high gene expression for the gene we are interested in.</p>
+</div>
+<div id="outro" class="section level2">
+<h2>Outro</h2>
+<p>I plan to do tutorials on more fancy gene expression analyses in the future, but this is the base from which future tutorials will be built. I hope this gets you started on using gene expression to explore neuroanatomical phenotypes and gives you an understanding of some of the caveats associated with spatial gene expression analysis.</p>
+</div>
+
+    </div>
+
+    
+    
+<div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">Author</span>
+    <span class="item-content">Darren Fernandes</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">LastMod</span>
+    <span class="item-content">2018-02-23</span>
+  </p>
+  
+  <p class="copyright-item">
+    <span class="item-title">License</span>
+    <span class="item-content"><a rel="license noopener" href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank">CC BY-NC-ND 4.0</a></span>
+  </p>
+</div>
+
+    
+    
+
+    <footer class="post-footer">
+      <div class="post-tags">
+          
+          <a href="/blog/tags/rstats/">rstats</a>
+          
+          <a href="/blog/tags/r/">R</a>
+          
+          <a href="/blog/tags/rminc/">RMINC</a>
+          
+          <a href="/blog/tags/gene-expression/">gene expression</a>
+          
+          <a href="/blog/tags/allen-brain-institute/">Allen Brain Institute</a>
+          
+          <a href="/blog/tags/abi/">ABI</a>
+          
+        </div>
+
+      
+      <nav class="post-nav">
+        
+        
+          <a class="next" href="/blog/post/2018-02-15_coclinical-trials/">
+            <span class="next-text nav-default">Co-Clinical Trials</span>
+            <span class="prev-text nav-mobile">Next</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+        </div>
+        
+  
+
+  
+
+  
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:mouse.imaging.centre@gmail.com" class="iconfont icon-email" title="email"></a>
+      <a href="https://github.com/Mouse-Imaging-Centre" class="iconfont icon-github" title="github"></a>
+  <a href="/blog/index.xml" type="application/rss+xml" class="iconfont icon-rss" title="rss"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    Powered by <a class="hexo-link" href="https://gohugo.io">Hugo</a>
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    Theme - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  
+
+  <span class="copyright-year">
+    &copy; 
+    2018
+    <span class="heart">
+      |
+    </span>
+    <span class="author">cfhammill</span>
+  </span>
+</div>
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+<script src="/blog/lib/highlight/highlight.pack.js?v=20171001"></script> 
+<script src="//cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+<script src="//cdn.bootcss.com/highlight.js/9.12.0/languages/r.min.js"></script>
+<script> hljs.configure({languages: []}); hljs.initHighlightingOnLoad(); </script>
+
+<script type="text/javascript" src="/blog/lib/jquery/jquery-3.2.1.min.js"></script>
+  <script type="text/javascript" src="/blog/lib/slideout/slideout-1.0.1.min.js"></script>
+  <script type="text/javascript" src="/blog/lib/fancybox/jquery.fancybox-3.1.20.min.js"></script>
+<script type="text/javascript" src="/blog/dist/even.min.js?v=2.7.2"></script>
+  <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]},
+      showProcessingMessages: false,
+      messageStyle: 'none'
+    });
+  </script>
+  <script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+
+
+
+
+
+<script src="/blog/lib/htmlwidgets-1.0/htmlwidgets.js"></script>
+<script src="/blog/lib/jquery-1.12.4/jquery.min.js"></script>
+<script src="/blog/lib/datatables-binding-0.4/datatables.js"></script>
+<script src="/blog/lib/dt-core-1.10.16/js/jquery.dataTables.min.js"></script> 
+<script src="/blog/lib/crosstalk-1.0.0/js/crosstalk.min.js"></script> 
+
+</body>
+</html>

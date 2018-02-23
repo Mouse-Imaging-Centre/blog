@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Rstats on The Mouse Imaging Centre Blog</title>
-    <link>/blog/tags/rstats/</link>
-    <description>Recent content in Rstats on The Mouse Imaging Centre Blog</description>
+    <title>Allen Brain Institute on The Mouse Imaging Centre Blog</title>
+    <link>/blog/tags/allen-brain-institute/</link>
+    <description>Recent content in Allen Brain Institute on The Mouse Imaging Centre Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
     <lastBuildDate>Fri, 23 Feb 2018 00:00:00 +0000</lastBuildDate>
     
-	<atom:link href="/blog/tags/rstats/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="/blog/tags/allen-brain-institute/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
@@ -19,19 +19,6 @@
       <guid>/blog/post/2018-02-23_gene-expression/</guid>
       <description>Intro In this post I will demonstrate how to use my package ABIgeneRMINC to download, read and analyze mouse brain gene expression data from the Allen Brain Institute.
 The Allen Brain Institute (ABI) has acquired and released genome-wide spatial gene expression maps for the mouse brain. The data is generated using in situ hybridization experiments (ISH), where nucleotide probes for specific genes bind directly to mouse brain tissue. The probe binding is then marked with a biotin label that can be used to locate regions where a gene is expressed.</description>
-    </item>
-    
-    <item>
-      <title>Linear Models</title>
-      <link>/blog/post/linearmodels/</link>
-      <pubDate>Thu, 25 Jan 2018 00:00:00 +0000</pubDate>
-      
-      <guid>/blog/post/linearmodels/</guid>
-      <description>Preamble The purpose of this post is to elucidate some of the concepts associated with statistical linear models.
-Let’s start by loading some libraries.
-library(ggplot2) library(datasets)  Background Theory The basic idea is as follows:
-Given two variables, \(x\) and \(y\), for which we’ve measured a set of data points \(\{x_i, y_i\}\) with \(i = 1, ..., n\), we want to estimate a function, \(f(x)\), such that
-\[y_i = f(x_i) + \epsilon_i\]</description>
     </item>
     
   </channel>

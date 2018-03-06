@@ -3,6 +3,13 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>/blog/post/2018-03-05_why-volumes/</loc>
+    <lastmod>2018-03-06T00:00:00+00:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
     <loc>/blog/post/2018-02-23_gene-expression/</loc>
     <lastmod>2018-02-23T00:00:00+00:00</lastmod>
     <changefreq>weekly</changefreq>
@@ -129,7 +136,7 @@
   
   <url>
     <loc>/blog/tags/mri/</loc>
-    <lastmod>2018-02-09T00:00:00+00:00</lastmod>
+    <lastmod>2018-03-06T00:00:00+00:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0</priority>
   </url>
@@ -137,6 +144,13 @@
   <url>
     <loc>/blog/tags/murine/</loc>
     <lastmod>2018-02-15T00:00:00+00:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>/blog/tags/neuroanatomy/</loc>
+    <lastmod>2018-03-06T00:00:00+00:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0</priority>
   </url>
@@ -150,7 +164,7 @@
   
   <url>
     <loc>/blog/post/</loc>
-    <lastmod>2018-02-23T00:00:00+00:00</lastmod>
+    <lastmod>2018-03-06T00:00:00+00:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0</priority>
   </url>
@@ -192,7 +206,14 @@
   
   <url>
     <loc>/blog/</loc>
-    <lastmod>2018-02-23T00:00:00+00:00</lastmod>
+    <lastmod>2018-03-06T00:00:00+00:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>/blog/tags/volumes/</loc>
+    <lastmod>2018-03-06T00:00:00+00:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0</priority>
   </url>

@@ -1,0 +1,231 @@
+---
+title: "Why Relative Volumes Matter"
+author: "Darren Fernandes"
+date: "2018-03-06"
+output: html_document
+fig_caption: yes
+tags: ["volumes", "mri", "neuroanatomy"]
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Intro
+
+Figuring out how one group’s brain is different from another’s is a big part of neuroscience. MRI-neuroanatomy -- the study of the sizes of brain regions -- is a wonderful tool for this job and makes up a sizeable chunk of what we study. MRI operates in a lovely middle ground in the scales of neuroscience. It is strongly related to macroscale features of the organism, including sex, behaviour, etc; but can also inform us about the effects of microscale factors -- such as gene expression. 
+
+While neuroanatomy is tremendously advantageous in the study of *what* makes one group’s brain is different from another’s, it is ill-suited to the question of *why* they are different. It is ultimately the question of mechanism -- the *why* -- that drives science forward. However, the fact that neuroanatomy can’t identify mechanism doesn’t make it useless. This blog will detail one way that neuroscience benefits from the neuroanatomy. 
+
+> The pursuit of *why* begins with the question of *what*.
+
+## Brain Volumes
+
+There are two types of sizes when one typically talks about brain volumes. The first is absolute size (or absolute volume) which is typically measured in cubic millimeters. This is the true volume of a brain region. The second is relative size (or relative volume), which is the absolute volume divided by whole-brain volume. Both measures have their advantages and disadvantages, however the advantage of relative volume may not be readily apparent. Absolute volumes are built from local microscale properties such as neurons, glia, the dendritic tree, etc. It is the sum of these microscale properties that determines the absolute volume of a region and ultimately contributes to the size of the brain. Relative volumes, on the other hand, normalise to whole brain size and, therefore, don’t have any trivial local influences. This issue of locality naturally leads to a criticism that relative volumes are meaningless compared to absolutes as they can’t help us infer localized changes. This cirticism may appear true at face value, but a closer inspection of real data reveals subtle nuances that strengthen the case for relative volumes. 
+
+## The Data
+
+The data we will be examining -- graciously provided by Lily Qiu -- is neuroanatomy data comparing male and female mice over a comprehensive period of neurodevelopment spanning nine timepoints ranging from p3 (i.e 3-day-old mouse, which corresponds to a human fetus) to p65 (i.e 65-day-old mice, which corresponding a human adult). In order to evaluate whether absolute volumes or relative volumes are more useful to study sex differences in the brain, we employed techniques from machine learning to develop a classifier that predicts sex from neuroanatomical structure volumes at a particular age. First, we excluded one mouse’s neuroanatomy data and fit a [LASSO logistic regression](https://web.stanford.edu/~hastie/glmnet/glmnet_beta.html) to simulataneously perform feature selection and predict sex from neuroanatomy. Once trained, the model was then provided the excluded mouse’s data to test whether it could successfully predict the excluded mouse’s sex. We repeated this process for every mouse and every age, training a unique classifier each time. Importantly, each classifier was always assessed for accuracy on data it had not seen during training. We trained one set of classifiers to predict sex from absolute volumes and another set to predict sex from relative volumes. Figure 1 shows the accuracy of the classifier and we see that for most ages, classifiers trained using relative volumes predicted sex better than those trained with absolute volumes. More importantly, relative-based classifiers vastly out-performed their absolute-based counterparts at the early ages between 3-17 (p17 corresponds to a human child). While absolute volumes may have a favorable interpretation, an unbiased machine learning procedure favors studying sex differences in terms of relative volumes. Absolute volumes may actually be biased against sex differences at the early ages between p3-17. 
+
+```{r 1, echo=F,fig.cap = "**Figure 1:** *Relative volumes predict sex better than absolute volumes, especially p3-p17.*"}
+suppressMessages(library(ggplot2))
+suppressMessages(library(tidyr))
+suppressMessages(library(dplyr))
+load('/hpf/largeprojects/MICe/dfernandes/lqiu_long_redone/atlas/struct_analysis_Dec2017/pred_brain/sex_classification/classification_accuracy.RData')
+ggplot(
+   class_res %>% 
+      gather(Volumes,accuracy,abs_class,rel_class) %>% 
+      mutate(Volumes = recode(Volumes,abs_class='Absolute',rel_class='Relative')) %>%
+      mutate(aoi=factor(as.character(aoi),levels=sort(unique(aoi)))) , 
+   aes(aoi,accuracy,group=Volumes)) + 
+   geom_point(aes(shape=Volumes)) + geom_line(aes(linetype=Volumes)) +
+   theme_bw() + xlab('Age') + ylab('Accuracy') + 
+   scale_y_continuous(labels = scales::percent)
+
+```
+
+To understand why the classifier performs better with relative volumes over absolute volumes, it is instructive to look at Figure 2, which plots the Coefficient of Variation (CV) over time for the Bed Nucleus of the Stria Terminalis (BNST) measured using absolute and relative volumes. CV is the standard deviation divided by the mean and is therefore unitless. In the BNST, as well as other brain regions, we see a clear pattern where the young brain has high CV in their absolute volumes but remarkably stable CV in relative volumes, therefore explaining why classifiers based on relative volumes outperformed their absolute counterparts at young ages. This consistent low CV is what makes relative volumes so useful in studying sexual dimorphisms. The young brain has quite a lot of variability in growth between subjects that relative volumes effectively correct for. Once corrected, the subtle neuroanatomy that distinguishes males and females becomes clearer to the LASSO-based classifiers. The correction also makes statistical modelling easier as well, as illustrated by Figure 3. The greater variability in the young brain masks statistics relating to when absolute volume sexual dimorphisms emerge, thereby providing a delayed estimate as to when male BNST becomes larger than females (around p10-p17). Relative volumes, however, have sexual dimorphisms emerge much earlier (p5), which is close to and supported by extensive histological evidence. Finally, relative volumes also scale away the overall growth of the brain and can therefore be approximated using linear models. Abolute volumes, on the other hand, need to be fitted with non-linear function, especially when considering their growth throughout a comprehensive period of neurodevelopment. While, in this case, non-linear fitting is not really an issue for statistical significance, the additional degrees-of-freedom needed to properly fit non-linear curves might be too costly in studies with less subjects.
+
+```{r 2, echo=F, fig.cap = "**Figure 2:** *Relative volumes have low coefficient of variation over the neurodevelopment time period.*"}
+csvfile="/hpf/largeprojects/MICe/dfernandes/lqiu_long_redone/stats/files.csv"
+df=read.csv(csvfile,stringsAsFactors=FALSE)
+atlas = '/hpf/largeprojects/MICe/dfernandes/lqiu_long_redone/atlas/MAGeT_2017/p65/p65_processed/p65/voted.mnc'
+dsurdefs = '/hpf/largeprojects/MICe/tools/atlases/Dorr_2008_Steadman_2013_Ullmann_2013_Richards_2011_Qiu_2016_Egan_2015_40micron/mappings/DSURQE_40micron_R_mapping.csv'
+dothis=FALSE
+if (dothis) {
+      allvols_rel = anatCombineStructures(
+                anatGetAll(df$rel0blur,atlas,dsurdefs,'jacobians','both',parallel=NULL,TRUE),
+                'jacobians',dsurdefs)
+      allvols_abs = anatCombineStructures(
+                anatGetAll(df$abs0blur,atlas,dsurdefs,'jacobians','both',parallel=NULL,TRUE),
+                'jacobians',dsurdefs)
+}
+load('/hpf/largeprojects/MICe/dfernandes/lqiu_long_redone/atlas/struct_analysis_Dec2017/pred_brain/allvols.RData')
+
+df$brainvol_abs = allvols_abs[,"bed nucleus of stria terminalis"]
+df$brainvol_rel = allvols_rel[,"bed nucleus of stria terminalis"]
+
+pldf = df %>% group_by(age) %>% summarise(abs = sd(brainvol_abs)/mean(brainvol_abs) , rel = sd(brainvol_rel)/mean(brainvol_rel)) %>% gather(Volumes,CV,abs,rel) %>% mutate(Volumes=recode(Volumes, abs='Absolute',rel='Relative')) %>% mutate(age=factor(age))
+
+ggplot(pldf,aes(age,CV,group=Volumes)) + geom_point(aes(shape=Volumes))+geom_line(aes(linetype=Volumes)) + xlab('Age') + ylab('Coefficient of Variation') + theme_bw() +theme(plot.title=element_text(hjust=0.5)) + ggtitle('Bed Nucleus of Stria Terminalis')
+```
+
+```{r 3, echo=F, fig.cap = "**Figure 3:** *Volume of the BNST over time. We see with absolue volumes that sexual dimorphisms emerge between p10 and p17. Relative volumes on the other hand have dimorphisms emerging around p5. Extensive histological evidence in literature supports the timing of relative volume sexual dimorphisms. Shaded regions represent standard error estimated from linear mixed-effect models.*"}
+
+suppressMessages(library(lmerTest))
+suppressMessages(library(splines))
+suppressMessages(library(RMINC))
+
+### Make Structure plots
+csvfile="/hpf/largeprojects/MICe/dfernandes/lqiu_long_redone/stats/files.csv"
+df=read.csv(csvfile,stringsAsFactors=FALSE)
+
+dsurdefs='/hpf/largeprojects/MICe/tools/atlases/Dorr_2008_Steadman_2013_Ullmann_2013_Richards_2011_Qiu_2016_Egan_2015_40micron/mappings/DSURQE_40micron_R_mapping.csv'
+atlas="/hpf/largeprojects/MICe/dfernandes/lqiu_long_redone/atlas/MAGeT_2017/p65/p65_processed/p65/voted.mnc"
+numvxls=sum(mincGetVolume(atlas)>0.5)
+
+load('/hpf/largeprojects/MICe/dfernandes/lqiu_long_redone/paper/figures/cannonical_structures_Jan18review/allvols.RData')
+
+allvols_rel = allvols_rel/(numvxls*((0.09)^3))
+
+calcsigest = function(struct) {
+   lmdf = data.frame(df %>% 
+                        select(ID,sex,age) %>% 
+                        mutate(sex=factor(sex,levels=c('M','F'))),
+                     structabs=allvols_abs[,struct],
+                     structrel=allvols_rel[,struct]) %>% 
+             mutate(fage=factor(as.character(age),levels=sort(unique(df$age))))
+   
+   sigvals_abs = (
+    anova(
+        lmer(structabs ~ fage*sex+(1|ID) , lmdf,REML=FALSE),
+        lmer(structabs ~ fage+(1|ID) , lmdf,REML=FALSE)
+         ) %>% 
+    as.matrix)[2,][c('Chisq','Chi Df','Pr(>Chisq)')] %>% 
+    as.vector %>% `names<-`(c('Chisq','Df','Pval'))
+   
+   sigvals_rel = (
+    anova(
+        lmer(structrel ~ fage*sex+(1|ID) , lmdf,REML=FALSE),
+        lmer(structrel ~ fage+(1|ID) , lmdf,REML=FALSE)
+         ) %>% 
+    as.matrix)[2,][c('Chisq','Chi Df','Pr(>Chisq)')] %>% 
+    as.vector %>% `names<-`(c('Chisq','Df','Pval'))
+   
+   anvsigdf = data.frame(
+      Structure=struct,
+      Jacobian=c('Absolute','Relative'),
+      rbind(sigvals_abs,sigvals_rel) %>% 
+         `rownames<-`(NULL) )
+   
+   count1=0     ; count2=0
+   estdf=list() ; tsigdf=list()
+   for (uage in as.character(sort(unique(df$age)))) {
+   for (sx in c('M','F')) {
+   for (jac in c('Relative','Absolute')) {
+      if (count1 %% 6 == 0) {cat(paste(struct,count1,'of 36\n'))}
+      if (jac=='Relative') {
+         form=structrel ~ fage*sex+(1|ID)
+      } else {
+         form=structabs ~ fage*sex+(1|ID)
+      }
+      mod1=lmer(
+              form , 
+              lmdf %>% 
+                 mutate(sex=relevel(sex,ref=sx)) %>%
+                 mutate(fage=relevel(fage,ref=uage))
+               )
+      count1=count1+1
+      estdf[[count1]] = data.frame(age=uage,sex=sx,Jacobian=jac,Structure=struct,
+         t(coef(summary(mod1))['(Intercept)',c('Estimate','Std. Error')]) %>%
+            `rownames<-`(NULL)) %>% 
+         `colnames<-`(c('age','sex','Jacobian','Structure','estimate','sterr'))
+      if (sx=='M') {
+         count2=count2+1
+         tsigdf[[count2]] = data.frame(age=uage,Jacobian=jac,Structure=struct,
+            t(coef(summary(mod1))['sexF',c('t value','df','Pr(>|t|)')]) %>%
+               `rownames<-`(NULL)) %>% 
+            `colnames<-`(c('age','Jacobian','Structure','Tval','Df','Pval'))
+      }
+   }}}
+   
+   estdf = do.call('rbind',estdf) ; tsigdf = do.call('rbind',tsigdf)
+   return(list(estdf,tsigdf,anvsigdf))
+}
+
+load('/micehome/dfernandes/Documents/blogs/smothbnst.RData')
+
+#make all plots
+gg_color_hue <- function(n) {
+  hues = seq(15, 375, length = n + 1)
+#  hcl(h = hues, l = 65, c = 100)[1:n]
+  hcl(h = hues, l = 50, c = 100)[1:n]
+}
+
+
+make_struct_plot=function(struct,ggttl) {
+  facetlabs = c(
+                  expression(atop(bold("Absolute Volume"),(mm^3))),
+                  expression(atop(bold("Relative Volume"), paste("(% Brain Volume)"))))
+
+  lmdf = data.frame(df %>% 
+                          select(ID,sex,age) %>% 
+                          mutate(sex=factor(sex,levels=c('M','F'))),
+                       Absolute=allvols_abs[,struct],
+                       Relative=allvols_rel[,struct]*100) %>%
+             gather(Jacobian,Volume,Absolute,Relative) %>%
+             filter(ID!='F12') %>% #only one timepoint for this mouse
+             mutate(Jacobian=factor(Jacobian,levels=c("Absolute","Relative")))
+   levels(lmdf$Jacobian)=facetlabs
+
+  smoothlmdf = smooth.estdf %>% filter(Structure==struct) %>%
+                  mutate(Jacobian=factor(as.character(Jacobian),levels=c("Absolute","Relative")))
+  smoothlmdf[smoothlmdf$Jacobian=='Relative',c('estimate','lb','ub')] = 
+       smoothlmdf[smoothlmdf$Jacobian=='Relative',c('estimate','lb','ub')] * 100
+  levels(smoothlmdf$Jacobian)=facetlabs
+
+
+  fnt=17
+  pl=ggplot() + ggtitle(ggttl) +
+       facet_grid(Jacobian ~ . ,scales = "free_y", labeller = 'label_parsed',switch='y') +
+       geom_point(data=lmdf,aes(x=age,y=Volume,group=ID,colour=sex),alpha=0.2)+
+       geom_line(data=lmdf,aes(x=age,y=Volume,group=ID,colour=sex),alpha=0.2)+
+       geom_ribbon(data=smoothlmdf,aes(x=age,ymin=lb, ymax=ub,group=sex), alpha=0.5,fill = "grey50") +
+       geom_line(data=smoothlmdf,aes(x=age,y=estimate,colour=sex),size=1) + 
+       theme_bw()+
+       xlab('Age') +  
+       scale_colour_manual(name="Sex",values=gg_color_hue(2)) + 
+       scale_y_continuous(position = "right") +
+       scale_x_continuous(minor_breaks = 3:65) +
+               theme(
+                   axis.text.x = element_text(size=fnt-1),
+                   axis.text.y = element_text(size=fnt-1),
+                   axis.title.x = element_text(size=fnt-1),
+                   strip.text = element_text(hjust = 0,size=fnt),
+                   axis.title.y = element_blank(),
+                   plot.title = element_text(size=fnt+2,hjust=0.5),
+                   legend.title=element_text(size=fnt+2), 
+                   legend.text=element_text(size=fnt+1),
+                   legend.justification=c(1,0), legend.position=c(0.99,0.55)
+               )
+   return(pl)
+}
+
+
+make_struct_plot('bed nucleus of stria terminalis','Bed Nucleus of The Stria Terminalis')
+
+```
+
+
+What about the issue of locality I mentioned earlier? Absolute volumes are guaranteed to have local causes, but relative volumes do not. While it is certainly true that relative volumes may have nonlocal causes, we find that nonlocal effects are either exceedingly small in a mouse or rare in a proper image registration procedure. To illustrate relative volumes, please consider Figures 4 and 5. We showed the relative and absolute determinants for a registration of the p3 average mouse brain and the p5 average mouse brain. In both relative and absolute determinants, there is a great deal of agreement as to which structures have a high degree of change from p5 to p3 (cerebellum, cortex, olfactory bulb). Therefore, local causes that affect absolute determinants would affect relative volumes as well. 
+In summary, both relative and absolute volumes are important for volume analysis depending on the situation. Relative volumes are useful when there is a high degree of variation in brain sizes obscuring potentially interesting effects and are generally easier to model. Absolute volumes on the other hand provide information in cannonical units that may be more intuitive to other researchers. Even with just these two measures, we can already get a glimpse into what is happening in the young mouse brain. There is a high degree of variability in the young mouse brain that becomes less noticable with time. *Why* does this variability exist? The answer is unclear but it could be related to the uterine position and  horn size (McLaurin, et al. 2015). *What* can this young variability tell us about the adult mouse? This question can be explored with neuroanatomy. 
+
+![**Figure 4:** *Registration of a source image (p03 average) to a target (p05 average). The native
+images (after rigid alignment) are on the top row and their overlay is in the middle column. Poor alignment can be found in structures like the cerebellum where there is rapid neonatal growth. Affine registration scales and shears the source image to better align with target image. The affine transformation (generated from the affine registration) is applied to the source image and is shown in the second row. The overlay shows a good match between the affine-transformed source and the target images. However, zooming into the cerebellum of the affine-transformed source and target image (third row), shows that affine registration does not produce proper alignment of the cerebellum. This is illustrated by applying a red contour to the cerebellum of the target image and overlaying this contour to the source image. The non-affine registration corrects this discrepancy (fourth row) and produces the best alignment between source and target images (fifth row).*](/img/why_vols_figs/supp_registration.png)
+
+![**Figure 4:** *Visualizing deformations caused by transformation of target image using grids and determinants. Illustrated in the left figure, upon transformation of the target image to the source image (this transformation is the inverse of the transformation in Figure 3), gridlines in the target image become warped. In the top row, the gridlines warp from transformation to the source image; and in the bottom row, the gridlines warp from transformation to the affine-transformed source. Volumetric changes caused by the transformation can be qualitatively assessed by observing how the volume of a square region (region defined by the open space between gridlines) changes after transformation. Absolute determinants capture volumetric changes upon transformation between the Target and Native Source images. Relative determinants capture volumetric changes upon transformation between the Target image and Source image after affine transformation.*](/img/why_vols_figs/supp_determinant.png)
+
+A major criticism of neuroanatomy analysis is that mouse models are useful for the study of cellular mechanisms; and strictly studying brain volumes does take advantage of what makes mouse research so useful. This criticism ignores the myriad number of informative analysis that mouse models make possible and I will be describing one such analysis in the remainder of this blog. In vivo longitudinal imaging throughout mouse neurodevelopment (provided by Lily Qiu’s data), in conjunction with the control of genetic and environmental factors afforded by mouse studies, renders it possible to explore exciting analysis in brain prediction.  Neuroanatomy of the young mouse brain predicts neuroanatomy of the adolescent and adult mouse brain (I will show our work in more detail in a future blogpost).  By developing a computational model to predict mouse brain neuroanatomy, we found that only the first 10-17 days of neuroanatomical data are enough to make sensitive and specific predictions of individualised neuroanatomy at p36 and p65. As expected, if we provide the model with only p03 data and ask it to predict p36 or p65, the model will fail to make specific predictions because young brains’ variability is not very informative. However, the more data we provide from later in development, the better the model is at identifying features of variability unique to a mouse and predicting mature individualised neuroanatomy. It is through a combination of many timepoints and more recent timepoints that individual differences in young neuroanatomy emerge, which the model can use to make predictions about mature neuroanatomy. Our prediction accuracies were not influenced by the sex of the predicted subject (i.e. males and females are equally well predicted), however, we found that male neuroanatomy individualised (became easier to predict) significantly earlier in development than female neuroanatomy. 
+
+Neuroanatomical phenotyping tends to be used to study how groups of organisms are similar. However, it is also important to study what makes organisms unique from the rest of the members of its group. The control of genetic and environmental factors limits the variability in mice making it easier for machine-learning tools to make individualised predictions. “Easier” in this context means using simple models and few subjects. While humans have far more variability compared to mice, with the advent of ever-bigger datasets collected on human neurodevelopment, it will be possible in the near future to use more advanced machine-learning tools to predict some individuality in these data sets. It might even be possible to predict the development of neuroanatomical pathologies associated with neurological disorders prior to disorder onset. Neuroanatomy research in mouse models can spur research in this exciting direction. Neuroanatomy can be a marker for individaulity: *what* makes mice different from other mice and humans different from other human. I can hardly wait for future science to determine *why*.
+

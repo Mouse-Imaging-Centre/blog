@@ -32,9 +32,18 @@
     <item>
       <title>Bayesian</title>
       <link>/blog/tags/bayesian/</link>
-      <pubDate>Wed, 31 Jan 2018 00:00:00 +0000</pubDate>
+      <pubDate>Wed, 30 May 2018 00:00:00 +0000</pubDate>
       
       <guid>/blog/tags/bayesian/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Causality</title>
+      <link>/blog/tags/causality/</link>
+      <pubDate>Wed, 30 May 2018 00:00:00 +0000</pubDate>
+      
+      <guid>/blog/tags/causality/</guid>
       <description></description>
     </item>
     
@@ -75,6 +84,15 @@
     </item>
     
     <item>
+      <title>Machine Learning</title>
+      <link>/blog/tags/machine-learning/</link>
+      <pubDate>Wed, 30 May 2018 00:00:00 +0000</pubDate>
+      
+      <guid>/blog/tags/machine-learning/</guid>
+      <description></description>
+    </item>
+    
+    <item>
       <title>Medicine</title>
       <link>/blog/tags/medicine/</link>
       <pubDate>Thu, 15 Feb 2018 00:00:00 +0000</pubDate>
@@ -107,6 +125,15 @@
       <pubDate>Thu, 15 Feb 2018 00:00:00 +0000</pubDate>
       
       <guid>/blog/tags/murine/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Neural Networks</title>
+      <link>/blog/tags/neural-networks/</link>
+      <pubDate>Wed, 30 May 2018 00:00:00 +0000</pubDate>
+      
+      <guid>/blog/tags/neural-networks/</guid>
       <description></description>
     </item>
     
@@ -158,7 +185,7 @@
     <item>
       <title>Statistics</title>
       <link>/blog/tags/statistics/</link>
-      <pubDate>Wed, 31 Jan 2018 00:00:00 +0000</pubDate>
+      <pubDate>Wed, 30 May 2018 00:00:00 +0000</pubDate>
       
       <guid>/blog/tags/statistics/</guid>
       <description></description>

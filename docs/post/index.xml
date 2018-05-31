@@ -6,10 +6,20 @@
     <description>Recent content in Posts on The Mouse Imaging Centre Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Tue, 06 Mar 2018 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Wed, 30 May 2018 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/blog/post/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>An overfit representation of ICLR 2018</title>
+      <link>/blog/post/2018-05-30_iclr_redux/</link>
+      <pubDate>Wed, 30 May 2018 00:00:00 +0000</pubDate>
+      
+      <guid>/blog/post/2018-05-30_iclr_redux/</guid>
+      <description>I was recently extremely fortunate to attend ICLR 2018, albeit as something of an interloper. Accordingly, what follows is surely a rather atypical highlight reel. All pedantry and any inaccuracy is, of course, due to my own limited understanding of these elegant topics and the breadth of their application.
+Causal reasoning and graphical models There is a well-developed modern theory of causal inference and reasoning based on graphical models developed by Judea Pearl and others.</description>
+    </item>
     
     <item>
       <title>Why Relative Volumes Matter</title>

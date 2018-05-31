@@ -3,6 +3,13 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>/blog/post/2018-05-30_iclr_redux/</loc>
+    <lastmod>2018-05-30T00:00:00+00:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
     <loc>/blog/post/2018-03-05_why-volumes/</loc>
     <lastmod>2018-03-06T00:00:00+00:00</lastmod>
     <changefreq>weekly</changefreq>
@@ -81,13 +88,20 @@
   
   <url>
     <loc>/blog/tags/bayesian/</loc>
-    <lastmod>2018-01-31T00:00:00+00:00</lastmod>
+    <lastmod>2018-05-30T00:00:00+00:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0</priority>
   </url>
   
   <url>
     <loc>/blog/categories/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>/blog/tags/causality/</loc>
+    <lastmod>2018-05-30T00:00:00+00:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0</priority>
   </url>
@@ -121,6 +135,13 @@
   </url>
   
   <url>
+    <loc>/blog/tags/machine-learning/</loc>
+    <lastmod>2018-05-30T00:00:00+00:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0</priority>
+  </url>
+  
+  <url>
     <loc>/blog/tags/medicine/</loc>
     <lastmod>2018-02-15T00:00:00+00:00</lastmod>
     <changefreq>weekly</changefreq>
@@ -149,6 +170,13 @@
   </url>
   
   <url>
+    <loc>/blog/tags/neural-networks/</loc>
+    <lastmod>2018-05-30T00:00:00+00:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0</priority>
+  </url>
+  
+  <url>
     <loc>/blog/tags/neuroanatomy/</loc>
     <lastmod>2018-03-06T00:00:00+00:00</lastmod>
     <changefreq>weekly</changefreq>
@@ -164,7 +192,7 @@
   
   <url>
     <loc>/blog/post/</loc>
-    <lastmod>2018-03-06T00:00:00+00:00</lastmod>
+    <lastmod>2018-05-30T00:00:00+00:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0</priority>
   </url>
@@ -192,7 +220,7 @@
   
   <url>
     <loc>/blog/tags/statistics/</loc>
-    <lastmod>2018-01-31T00:00:00+00:00</lastmod>
+    <lastmod>2018-05-30T00:00:00+00:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0</priority>
   </url>
@@ -206,7 +234,7 @@
   
   <url>
     <loc>/blog/</loc>
-    <lastmod>2018-03-06T00:00:00+00:00</lastmod>
+    <lastmod>2018-05-30T00:00:00+00:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0</priority>
   </url>

@@ -1,0 +1,210 @@
+---
+title:  "An overfit representation of ICLR 2018"
+author: "Ben Darwin"
+date:   "2018-05-30"
+output: html_document
+tags:   ["statistics", "bayesian", "machine learning", "causality", "neural networks"]
+---
+
+
+I was recently extremely fortunate to attend ICLR 2018, albeit as something of an interloper.
+Accordingly, what follows is surely a rather atypical highlight reel.  All pedantry and
+any inaccuracy is, of course, due to my own limited understanding of these elegant topics
+and the breadth of their application.
+
+
+## Causal reasoning and graphical models
+
+There is a well-developed modern theory of causal inference and reasoning based on graphical models
+developed by Judea Pearl and others.  Oft misunderstood and mostly ignored by most statisticians and
+practitioners, it featured prominently in both contributed papers and invited talks this year.
+
+Bernhard Schölkopf, the inventor of Support Vector Machines and largely of kernel methods
+in machine learning, [discussed](https://www.youtube.com/watch?v=4qc28RA7HLQ) advances in learning
+causal models, many of which he worked on,
+such as in the two-variable case via assumptions on the noise distributions,
+as well as applications of causal modelling to traditional predictive models, such
+as semi-supervised learning and covariate shift.  I've since been reading
+[his (open-access) book](https://mitpress.mit.edu/books/elements-causal-inference).
+
+A [talk by Suchi Saria](https://www.youtube.com/watch?v=-maBKmsORwQ) focussed on large datasets
+in healthcare.  She discussed a study involving predicting mortality given test
+data acquired from patients admitted to hospitals.  In this setting, where the illness and
+subsequent treatment of the patient, as well as other variables regarding the patient and
+hospital, are occluded, even high-capacity predictive models based on associational data fall
+flat.  At the same time, designing reasonable interventions in this scenario is not obviously
+even possible, so Saria and collaborators employed the Neyman-Rubin counterfactual 
+framework, a more popular relative of Pearl's, to predict outcomes in their absence.
+
+Daphne Koller - of probabilistic graphical modelling fame - held a
+['fireside chat'](https://www.youtube.com/watch?v=N4mdV1CIpvI)
+with (also distinguished!) moderator Yoshua Bengio.
+In addition to discussing issues of discrimination and harrassment in the machine learning
+and tech business communities, she devoted much of her talk to a form of career advice:
+advocating that ML experts work on diverse socially important problems in addition to 
+'mental gymnastics' and ends-agnostic performance improvements.  This may call to mind
+her education work as co-founder of Coursera, but more recently she's been working in health care -
+mentioning a just-announced new startup during her talk - in areas like drug discovery,
+and urged more people to consider this area.  Notably, she sees a need for researchers at the
+intersection of both disciplines rather than pure stats/ML experts expecting to blindly achieve
+state-of-the-art results on biology datasets or pure biologists with limited understanding
+of the strengths and limitations of ML.  Like Saria, she considers pure DNNs merely one technique
+out of many and sees this area as needing diverse approaches such as (unsurprisingly...)
+PGM/causal techniques.
+
+[Tran and Blei](https://iclr.cc/Conferences/2018/Schedule?showEvent=274),
+the creators of the Edward probabilistic programming language (now part of
+Tensorflow!), had a paper on applying causal models to GWAS studies.
+On the causal side of the problem, the authors consider structural models where
+the causal relations are modelled via neural networks,
+and note that Cybenko's universal approximation theorem extends to this situation.
+On the inference side, evaluating the posterior is intractable,
+so the authors applied their
+recently-developed _likelihood-free variational inference_, which involves estimating the
+ratio between two intractable distributions (the posterior and the variational approximation)
+appearing in the ELBO.  I don't yet understand the details but it's already available in Edward.
+Ground truth data, however, is not, so the authors conducted simulations and compared their methods to
+PCA plus regression, linear mixed models,
+and logistic factor analysis and showed their implicit causal model to have
+superior performance even when few causal relationships were present.  Sadly, Tran's opinion is
+that inferring the causal graph itself at such a scale is likely intractable, but even so it's
+clear that such models - and the authors' work in variational approximations -
+ could be quite valuable in neuroinformatics as well as genomics.
+
+I was impressed by the attention the subject received - which seems to have coincided with
+(and maybe caused)
+an explosion of tutorials and popularizations in the popular press - and hope that
+continuing interest will help to elucidate the strengths and weaknesses of causal models
+as well as lead to further research connecting these to other approaches (particularly,
+under what circumstances can purely statistical approaches recover the conclusions of such models?)
+as well as more classical areas like logic and reasoning.
+
+
+## Bayesian reasoning and computation
+
+Connections between Bayesian reasoning and neural networks are wide-ranging and fruitful,
+and several new results were presented.
+
+One might want to use the learning abilities of NNs to improve Bayesian computation.  In this vein,
+enter [Levy et al.](https://iclr.cc/Conferences/2018/Schedule?showEvent=284) on "L2HMC":
+using a neural net to learn a useful volume-nonpreserving but
+detailed-balance-preserving transformation on phase space.
+(If this sounds familiar, it's probably because this paper appeared courtesy of Chris
+at a recent MICe journal club.)
+It's an elegant idea which can greatly improve the performance of sampling from
+previously challenging distributions.  I wonder what the transformations look like globally
+and whether they're nice/useful across (relevant) phase space or if (hard-to-discover)
+insufficient model capacity or training schedule - the usual bugbears - might
+mean that some high-dimensional distributions see no improvement (or even degradation)
+in some regions.
+
+[Matthews et al.](https://iclr.cc/Conferences/2018/Schedule?showEvent=161) prove the convergence
+in distribution of the output of Bayesian DNNs with rectified-linear neurons
+to a Gaussian process with a certain kernel, extending work by Neal on shallow networks.
+As an interesting application, they show how one might attempt to avoid Gaussian process behaviour
+(which, they note, suggest a lack of hierarchical representation)
+in situations where it might be undesirable.
+
+There were many papers on GANs (Generative Adversarial Networks), which can be thought of as
+networks for approximating probability distributions - perhaps in situations where
+HMC might be computationally infeasible.  It would be quite interesting
+if anyone has been able to relate the architecture/regularizers of any GANs to priors on the
+distribution to be learned.  Ignorant question: are there any cases where we might be say enough
+about the ability of a GAN to learn a distribution that we would be able to use one for
+inference about parameters as one is often interested in science?
+
+Combining some of the above ideas, [CausalGAN](https://iclr.cc/Conferences/2018/Schedule?showEvent=159), given a causal model, allows sampling from both observational and interventional distributions.
+
+The elegant and potentially useful [AmbientGAN](https://openreview.net/forum?id=Hy7fDog0b) paper
+considered this problem:
+you want to create a generative model but all your samples are corrupted by noise.  Luckily,
+you understand the noise distribution.  The authors' solution: you
+create a generative model in which simulated
+noise is applied to the generated samples before they're passed to the discriminator, which
+as usual attempts to distinguish the real from fake data.
+The authors prove it's possible to recover the underlying data distribution in certain noise models;
+their empirical results suggest both that learning is feasible in the presence of other classes of
+noise and that their method is robust to a certain degree of noise misspecification.
+
+
+## Neuro <=> ML
+
+Blake Richards (UTSC) gave a more biologically-centred
+[invited talk](https://www.youtube.com/watch?v=C_2Q7uKtgNs) on
+creating accurate neural models of learning in the brain
+reflecting the lack of anatomical and physiological evidence for backpropagation - the so-called
+'credit assignment' problem.
+(Question: what are the implications, if any, of these models for
+ understanding the brain via morphometry?)
+On the machine learning side, these - very heuristically -
+suggest using microarchitectures more sophisticated
+than layers of 'bare' neurons, e.g., Hinton's capsule networks or variations thereof.
+
+
+## Pipeline compilation
+
+In the modern era of NN frameworks providing GPU execution and automatic differentiation,
+the first popular frameworks - among them Theano and Tensorflow - allow one to construct
+the computation graph as a data structure which can then be optimized in some way by the framework.
+However, this means - roughly - that the architecture must be known independently of the data,
+which poses problems for interesting networks like RNNs and GNNs.  Recent frameworks like
+Chainer and Pytorch avoid this limitation by constructing the pipeline graph on-the-fly
+or 'dynamically', but this limits possibilities for optimizing the network.
+
+The [DLVM](https://iclr.cc/Conferences/2018/Schedule?showEvent=520) project
+(more on this in an upcoming blog post) introduces a DSL embedded in Apple's Swift
+programming language and based on ideas present in the Lightweight Modular Staging (LMS) library for
+Scala, an intermediate representation with support for linear algebra and derivative information,
+and compilation steps to perform automatic differentiation as a source transformation, hosted on
+a (modified?) LLVM backend.  DLVM is currently not actively developed, but happily that's
+because one of the original authors is now working on the similar Swift for Tensorflow project
+at Google.  At the DLVM poster, I learned from another delegate that Facebook has
+just released [Glow](https://facebook.ai/developers/tools/glow)
+at their own developer conference.  Backing from these two ML
+giants supports the authors' guess that such technologies will become ubiquitous in the next
+few years.
+
+Fei Wang and Tiark Rompf also workshopped a
+[paper](https://iclr.cc/Conferences/2018/Schedule?showEvent=429)
+on using LMS in Scala to provide a more expressive
+DSL for constructing static graphs.  Notably, they used _delimited continuations_, a powerful
+mechanism for controlling control flow, to obviate the need for an explicit tape for reverse-mode
+autodiff, essentially using the underlying language's stack instead.  They claim that their DSL
+removes the need for compiler passes or other source-to-source transformations as in the DLVM model
+(although I assume DLVM implements a larger set of optimizations).
+
+I intend to understand the relationships between these elegant techniques, and in particular
+their relation to staged metaprogramming and the rest of the compilation pipeline,
+in much more detail in the not-too-distant future.
+
+
+## Other topics
+
+Numerous very large and active subject areas like reinforcement learning,
+applications to audio and language processing and synthesis, and resistance to adversarial
+examples are entirely slighted here.  Of particular interest given the prevalence of graph-
+theoretic methods in neuroscience, recursive and graph NNs continue to see rapid advances.
+A large body of work applies such networks to programming problems such as program synthesis
+and debugging, which will certainly benefit many scientists.
+
+Perhaps due to the relative youth of the field, even the 'core' methods
+continue to improve.  For instance,
+[Kidambi et al.](https://iclr.cc/Conferences/2018/Schedule?showEvent=372)
+showed theoretically that several popular modifications
+to SGD have in general no asymptotic benefit, although they've developed one known method,
+Accelerated SGD, which provides superior convergence guarantees.
+I haven't even discussed my main interest - deep CNNs - much,
+but there were obviously many, many papers on these,
+both on specific architectures/problem domains (mostly 2D images, sadly)
+and on more fundamental issues such as
+[the topology of skip connections](https://openreview.net/forum?id=HkwBEMWCZ)
+and [efficient architecture search](https://iclr.cc/Conferences/2018/Schedule?showEvent=510).
+
+Overall, as someone new to DNNs, I found this conference extremely useful both for discovering
+a number of novel technologies as well as understanding current thought in the field.
+
+
+## Acknowlegments
+
+Chris Hammill read the draft of this text.
+Thanks especially to my supervisor, Jason Lerch, for letting me attend.

@@ -25,7 +25,7 @@
 
 
 
-<meta name="generator" content="Hugo 0.41" />
+<meta name="generator" content="Hugo 0.32.4" />
 
 
 <script async src="https://www.googletagmanager.com/gtag/js?id=UA-63858206-2"></script>
@@ -74,7 +74,7 @@
 
 
 
-<meta property="og:updated_time" content="2018-05-30T00:00:00&#43;00:00"/>
+<meta property="og:updated_time" content="2018-07-06T00:00:00&#43;00:00"/>
 
 
 
@@ -88,8 +88,7 @@
 <meta itemprop="name" content="The Mouse Imaging Centre Blog">
 <meta itemprop="description" content="The mouse imaging centre blog.">
 
-<meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="The Mouse Imaging Centre Blog"/>
+<meta name="twitter:card" content="summary"/><meta name="twitter:title" content="The Mouse Imaging Centre Blog"/>
 <meta name="twitter:description" content="The mouse imaging centre blog."/>
 
 <!--[if lte IE 9]>
@@ -160,6 +159,31 @@
     
       <article class="post">
   <header class="post-header">
+    <h1 class="post-title"><a class="post-link" href="/blog/post/2018-07-06_linearmodelserrors/">Linear Models: Understanding the Error Estimates for Binary Variables</a></h1>
+    <div class="post-meta">
+      <span class="post-author">Antoine Beauchamp<br></span>
+      <span class="post-time"> 2018-07-06 </span>
+      
+      
+    </div>
+  </header>
+  
+  <div class="post-content">
+    <div class="post-summary">
+      Introduction library(tidyverse) library(matlib) library(knitr) library(RColorBrewer) The purpose of this document is to understand the parameter and residuals error estimates in a basic linear regression model when working with binary categorical variables. Recall the general model definition:
+\[ \mathbf{y} = \mathbf{X}\mathbf{\beta} + \mathbf{e}\]
+where \(\mathbf{X}\) is the design matrix and \(\mathbf{\beta}\) is a \((p+1)\)-vector of coefficients/parameters, including the intercept parameter. The errors are normally distributed around 0 with variance \(\sigma^2\):
+\[e \sim N(0,\sigma^2) \quad .
+    </div>
+    <div class="read-more">
+      <a href="/blog/post/2018-07-06_linearmodelserrors/" class="read-more-link">Read more..</a>
+    </div>
+  </div>
+</article>
+
+    
+      <article class="post">
+  <header class="post-header">
     <h1 class="post-title"><a class="post-link" href="/blog/post/2018-05-30_iclr_redux/">An overfit representation of ICLR 2018</a></h1>
     <div class="post-meta">
       <span class="post-author">Ben Darwin<br></span>
@@ -183,10 +207,10 @@ Causal reasoning and graphical models There is a well-developed modern theory of
     
       <article class="post">
   <header class="post-header">
-    <h1 class="post-title"><a class="post-link" href="/blog/post/2018-03-05_why-volumes/">Why Relative Volumes Matter</a></h1>
+    <h1 class="post-title"><a class="post-link" href="/blog/post/2018-04-03_paper-in-rmarkdown/">Writing a paper in R, part the first</a></h1>
     <div class="post-meta">
-      <span class="post-author">Darren Fernandes<br></span>
-      <span class="post-time"> 2018-03-06 </span>
+      <span class="post-author">Jason Lerch<br></span>
+      <span class="post-time"> 2018-03-15 </span>
       
       
     </div>
@@ -194,33 +218,12 @@ Causal reasoning and graphical models There is a well-developed modern theory of
   
   <div class="post-content">
     <div class="post-summary">
-      Intro Figuring out how one group’s brain is different from another’s is a big part of neuroscience. MRI-neuroanatomy – the study of the sizes of brain regions – is a wonderful tool for this job and makes up a sizeable chunk of what we study. MRI operates in a lovely middle ground in the scales of neuroscience. It is strongly related to macroscale features of the organism, including sex, behaviour, etc; but can also inform us about the effects of microscale factors – such as gene expression.
+      So, a series of posts coming up on a topic I’ve been obsessing over: how to write an academic paper entirely in R. Why would I want to do that? Glad you asked. Let me tell you.
+Motivation Writing a paper can conceptually be broken down into the following steps:
+A research question leads to experimental design. The experiment is conducted and data is acquired. The resulting data is processed. Data analysis.
     </div>
     <div class="read-more">
-      <a href="/blog/post/2018-03-05_why-volumes/" class="read-more-link">Read more..</a>
-    </div>
-  </div>
-</article>
-
-    
-      <article class="post">
-  <header class="post-header">
-    <h1 class="post-title"><a class="post-link" href="/blog/post/2018-02-23_gene-expression/">Preferential Spatial Gene Expression in Neuroanatomy</a></h1>
-    <div class="post-meta">
-      <span class="post-author">Darren Fernandes<br></span>
-      <span class="post-time"> 2018-02-23 </span>
-      
-      
-    </div>
-  </header>
-  
-  <div class="post-content">
-    <div class="post-summary">
-      Intro In this post I will demonstrate how to use my package ABIgeneRMINC to download, read and analyze mouse brain gene expression data from the Allen Brain Institute.
-The Allen Brain Institute (ABI) has acquired and released genome-wide spatial gene expression maps for the mouse brain. The data is generated using in situ hybridization experiments (ISH), where nucleotide probes for specific genes bind directly to mouse brain tissue. The probe binding is then marked with a biotin label that can be used to locate regions where a gene is expressed.
-    </div>
-    <div class="read-more">
-      <a href="/blog/post/2018-02-23_gene-expression/" class="read-more-link">Read more..</a>
+      <a href="/blog/post/2018-04-03_paper-in-rmarkdown/" class="read-more-link">Read more..</a>
     </div>
   </div>
 </article>

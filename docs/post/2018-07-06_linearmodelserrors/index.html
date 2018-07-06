@@ -1,0 +1,1027 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>Linear Models: Understanding the Error Estimates for Binary Variables - The Mouse Imaging Centre Blog</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="Antoine Beauchamp" />
+  <meta name="description" content="Introduction library(tidyverse) library(matlib) library(knitr) library(RColorBrewer) The purpose of this document is to understand the parameter and residuals error estimates in a basic linear regression model when working with binary categorical variables. Recall the general model definition:
+\[ \mathbf{y} = \mathbf{X}\mathbf{\beta} &#43; \mathbf{e}\]
+where \(\mathbf{X}\) is the design matrix and \(\mathbf{\beta}\) is a \((p&#43;1)\)-vector of coefficients/parameters, including the intercept parameter. The errors are normally distributed around 0 with variance \(\sigma^2\):
+\[e \sim N(0,\sigma^2) \quad ." />
+
+  <meta name="keywords" content="Mouse, Imaging, MICe, Mouse Imaging Centre, SickKids" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.32.4" />
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-63858206-2"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-63858206-2');
+</script>
+
+
+
+<link rel="canonical" href="/blog/post/2018-07-06_linearmodelserrors/" />
+
+<link rel="apple-touch-icon" sizes="180x180" href="/blog/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/blog/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/blog/favicon-16x16.png">
+<link rel="icon" href="/blog/favicon.ico" />
+<link rel="manifest" href="/blog/manifest.json">
+<link rel="mask-icon" href="/blog/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+
+
+
+
+<link href="/blog/dist/even.min.css" rel="stylesheet">
+<link rel="stylesheet"
+      href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css">
+<link href="/blog/lib/datatables-css-0.0.0/datatables-crosstalk.css" rel="stylesheet">
+<link href="/blog/lib/dt-core-1.10.16/css/jquery.dataTables.min.css" rel="stylesheet">
+<link href="/blog/lib/dt-core-1.10.16/css/jquery.dataTables.extra.css" rel="stylesheet">
+<link href="/blog/lib/crosstalk-1.0.0/css/crosstalk.css" rel="stylesheet">
+
+
+<link href="/blog/lib/fancybox/jquery.fancybox-3.1.20.min.css" rel="stylesheet">
+
+<meta property="og:title" content="Linear Models: Understanding the Error Estimates for Binary Variables" />
+<meta property="og:description" content="Introduction library(tidyverse) library(matlib) library(knitr) library(RColorBrewer) The purpose of this document is to understand the parameter and residuals error estimates in a basic linear regression model when working with binary categorical variables. Recall the general model definition:
+\[ \mathbf{y} = \mathbf{X}\mathbf{\beta} &#43; \mathbf{e}\]
+where \(\mathbf{X}\) is the design matrix and \(\mathbf{\beta}\) is a \((p&#43;1)\)-vector of coefficients/parameters, including the intercept parameter. The errors are normally distributed around 0 with variance \(\sigma^2\):
+\[e \sim N(0,\sigma^2) \quad ." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="/blog/post/2018-07-06_linearmodelserrors/" />
+
+
+
+<meta property="article:published_time" content="2018-07-06T00:00:00&#43;00:00"/>
+
+<meta property="article:modified_time" content="2018-07-06T00:00:00&#43;00:00"/>
+
+
+
+
+
+
+
+
+
+
+
+<meta itemprop="name" content="Linear Models: Understanding the Error Estimates for Binary Variables">
+<meta itemprop="description" content="Introduction library(tidyverse) library(matlib) library(knitr) library(RColorBrewer) The purpose of this document is to understand the parameter and residuals error estimates in a basic linear regression model when working with binary categorical variables. Recall the general model definition:
+\[ \mathbf{y} = \mathbf{X}\mathbf{\beta} &#43; \mathbf{e}\]
+where \(\mathbf{X}\) is the design matrix and \(\mathbf{\beta}\) is a \((p&#43;1)\)-vector of coefficients/parameters, including the intercept parameter. The errors are normally distributed around 0 with variance \(\sigma^2\):
+\[e \sim N(0,\sigma^2) \quad .">
+
+
+<meta itemprop="datePublished" content="2018-07-06T00:00:00&#43;00:00" />
+<meta itemprop="dateModified" content="2018-07-06T00:00:00&#43;00:00" />
+<meta itemprop="wordCount" content="5533">
+
+
+
+<meta itemprop="keywords" content="linear models,statistics," />
+<meta name="twitter:card" content="summary"/><meta name="twitter:title" content="Linear Models: Understanding the Error Estimates for Binary Variables"/>
+<meta name="twitter:description" content="Introduction library(tidyverse) library(matlib) library(knitr) library(RColorBrewer) The purpose of this document is to understand the parameter and residuals error estimates in a basic linear regression model when working with binary categorical variables. Recall the general model definition:
+\[ \mathbf{y} = \mathbf{X}\mathbf{\beta} &#43; \mathbf{e}\]
+where \(\mathbf{X}\) is the design matrix and \(\mathbf{\beta}\) is a \((p&#43;1)\)-vector of coefficients/parameters, including the intercept parameter. The errors are normally distributed around 0 with variance \(\sigma^2\):
+\[e \sim N(0,\sigma^2) \quad ."/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/blog/" class="logo">Mouse Imaging Blog</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <a href="/blog/">
+        <li class="mobile-menu-item">Home</li>
+      </a><a href="/blog/post/">
+        <li class="mobile-menu-item">Archives</li>
+      </a><a href="/blog/tags/">
+        <li class="mobile-menu-item">Tags</li>
+      </a><a href="/blog/about/">
+        <li class="mobile-menu-item">About</li>
+      </a>
+  </ul>
+</nav>
+  <div>
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/blog/" class="logo">Mouse Imaging Blog</a>
+</div>
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/blog/">Home</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/blog/post/">Archives</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/blog/tags/">Tags</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/blog/about/">About</a>
+      </li>
+  </ul>
+</nav>
+
+    </header>
+  <div>
+    
+  <div class="container" id="mobile-panel">
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">Linear Models: Understanding the Error Estimates for Binary Variables</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2018-07-06 </span>
+        
+        
+        
+      </div>
+    </header>
+
+    
+    
+<div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">Contents</h2>
+  
+  <div class="post-toc-content always-active">
+    
+  </div>
+</div>
+
+    
+    <div class="post-content">
+      <div id="introduction" class="section level1">
+<h1>Introduction</h1>
+<pre class="r"><code>library(tidyverse)
+library(matlib)
+library(knitr)
+library(RColorBrewer)</code></pre>
+<p>The purpose of this document is to understand the parameter and residuals error estimates in a basic linear regression model when working with <strong>binary categorical variables</strong>. Recall the general model definition:</p>
+<p><span class="math display">\[ \mathbf{y} = \mathbf{X}\mathbf{\beta} + \mathbf{e}\]</span></p>
+<p>where <span class="math inline">\(\mathbf{X}\)</span> is the <strong>design matrix</strong> and <span class="math inline">\(\mathbf{\beta}\)</span> is a <span class="math inline">\((p+1)\)</span>-vector of coefficients/parameters, including the intercept parameter. The errors are normally distributed around 0 with variance <span class="math inline">\(\sigma^2\)</span>:</p>
+<p><span class="math display">\[e \sim N(0,\sigma^2) \quad .\]</span></p>
+<p>Upon fitting the model to data, we obtain estimates for the coefficients, <span class="math inline">\(\hat{\beta}\)</span>. These estimates have an associated covariance matrix <span class="math inline">\(\sigma^2_\beta\)</span>, which is used for statistical inference. The covariance matrix of the parameters is calculated from the estimate for the residual standard error in the following way:</p>
+<p><span class="math display">\[\mathbf{\sigma}^2_\beta = (\mathbf{X}&#39;\mathbf{X})^{-1}\hat{\sigma}^2 \quad .\]</span></p>
+<p>The focus of this document will be on understanding the details of this covariance matrix, specifically of the parameter standard errors and the residual standard error, <span class="math inline">\(\hat{\sigma}\)</span>. The squared parameter standard errors (i.e. parameter variances) are the diagonal terms in the covariance matrix, and so the two measures of variability are related to one another in the following way:</p>
+<p><span class="math display">\[\text{diag}[\mathbf{\sigma}^2_\beta] = \text{diag}[(\mathbf{X}&#39;\mathbf{X})^{-1}]\hat{\sigma}^2 \quad .\]</span></p>
+<p>The standard errors can then be obtained by taking the square root of the variances. This transformation between the residual standard error and the parameter standard errors is not trivial and depends on the number of parameters and type of variables. Recall that the estimate for <span class="math inline">\(\sigma\)</span> is given by</p>
+<p><span class="math display">\[\hat{\sigma}^2 = \frac{1}{n-p-1} \sum_{i = 1}^n e^2_i \quad .\]</span></p>
+<p>If the data includes observations of categorical variables such that it can be pooled into <strong>balanced groups</strong> with potentially different group sample standard deviations of <span class="math inline">\(\sigma_g\)</span>, it can be shown straightforwardly that if <span class="math inline">\(n \gg p\)</span>, i.e. in the regime of low-dimensional data,</p>
+<p><span class="math display">\[\hat{\sigma}^2 = \text{Ave}[\sigma^2_g] \quad .\]</span></p>
+<p>If the sample standard deviations of the groups are identical, then <span class="math inline">\(\hat{\sigma} = \sigma_g\)</span>. What this tells us is that the residual standard error is an estimate on the standard deviation of the groups defined by the model.</p>
+<p>We will get a sense of how these estimates vary by generating some simulated data and playing with different linear models of the data. In particular, we will simulate a <strong>balanced experimental design</strong> consisting of independent binary categorical variables and a continuous response. We will consider three binary variables: <code>Genotype</code>, <code>Anxiety</code>, and <code>Treatment</code>. The use of binary variables in linear models has the effect of pooling the data across different groups. Since there are 3 binary variables, there will be 8 separate groups, i.e. <span class="math inline">\(2^3\)</span>. To operate well within the low-dimensitonality regime, we will use a large sample size. The data will be simulated by first generating a scaffold data frame containing the observations for the different categorical variables. The scaffold data frame will then be used to generate the response variable stochastically. We will start by generating the scaffold data frame.</p>
+<pre class="r"><code>#Define variables related to the experimental design. 
+# Sample size
+nSample &lt;- 100
+# Number of binary variables
+nBinVar &lt;- 3
+# Number of distinct groups
+nGroups &lt;- 2^nBinVar
+#Total number of observations
+nObs &lt;- nSample*nGroups
+
+#Generate data frame (handy trick uisng expand.grid() and map_df())
+dfGrid &lt;- expand.grid(Genotype = c(&quot;WT&quot;,&quot;MUT&quot;), 
+                      Anxiety = c(&quot;No&quot;,&quot;Yes&quot;), 
+                      Treatment = c(&quot;Placebo&quot;, &quot;Drug&quot;))
+dfSimple &lt;- map_df(seq_len(nSample), ~dfGrid) %&gt;% 
+  mutate(Genotype = factor(Genotype, levels = c(&quot;WT&quot;,&quot;MUT&quot;)),
+         Anxiety = factor(Anxiety, levels = c(&quot;No&quot;,&quot;Yes&quot;)),
+         Treatment = factor(Treatment, levels = c(&quot;Placebo&quot;,&quot;Drug&quot;)))
+
+#Verify that this worked
+dfSimple %&gt;% 
+  group_by(Genotype, Anxiety, Treatment) %&gt;% 
+  count</code></pre>
+<pre><code>## # A tibble: 8 x 4
+## # Groups:   Genotype, Anxiety, Treatment [8]
+##   Genotype Anxiety Treatment     n
+##   &lt;fct&gt;    &lt;fct&gt;   &lt;fct&gt;     &lt;int&gt;
+## 1 WT       No      Placebo     100
+## 2 WT       No      Drug        100
+## 3 WT       Yes     Placebo     100
+## 4 WT       Yes     Drug        100
+## 5 MUT      No      Placebo     100
+## 6 MUT      No      Drug        100
+## 7 MUT      Yes     Placebo     100
+## 8 MUT      Yes     Drug        100</code></pre>
+<p>Now we create the distribution of the response based on the independent variables. We will generate data in which <strong>there are no interactions between any of the predictor variables</strong>. The response will be generated using standardized units so that it can stand in for any physical variable. The main effects of the predictors on the response are taken to be <span class="math inline">\(2\sigma\)</span>, where <span class="math inline">\(\sigma\)</span> is the standard deviation of the normal distribution used to generate observations of the response.</p>
+<pre class="r"><code>#Simulation parameters
+meanRef &lt;- 0
+sigma &lt;- 1
+effectGenotype &lt;- 2*sigma
+effectAnxiety &lt;- 2*sigma
+effectTreatment &lt;- 2*sigma
+
+#Generate data based on experimental design. 
+#In this case, no interaction between variables.
+dfSimple$Response &lt;- meanRef +
+  effectGenotype*(as.numeric(dfSimple$Genotype)-1) +
+  effectAnxiety*(as.numeric(dfSimple$Anxiety)-1) +
+  effectTreatment*(as.numeric(dfSimple$Treatment)-1) +
+  rnorm(nrow(dfSimple), 0, sigma)
+
+ggplot(dfSimple, aes(x = Genotype, y = Response, col = Anxiety)) + 
+  geom_jitter(width = 0.2) + 
+  facet_grid(.~Treatment) + 
+  scale_color_brewer(palette = &quot;Set1&quot;)</code></pre>
+<p><img src="/blog/post/2018-07-06_LinearModelsErrors_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
+<p>With the data generated we can start considering different linear models to understand the error/variance estimates. In the following Sections we will consider models with and without interactions to examine how the error estimates change. The general process will be to run a given model on the simulated data and examine the details of the transformation from <span class="math inline">\(\sigma\)</span> to <span class="math inline">\(\sigma_\beta\)</span> for that model. In doing so we will see that a number of patterns emerge.</p>
+</div>
+<div id="non-interactive-models" class="section level1">
+<h1>Non-interactive Models</h1>
+<div id="model-1-intercept-term-only" class="section level2">
+<h2>Model 1: Intercept Term Only</h2>
+<p>The first model is one where the only parameter is the intercept. The <span class="math inline">\(\beta\)</span> estimate returned will be the mean of the data pooled across all groups. The distribution of the pooled response observations is as follows:</p>
+<pre class="r"><code>ggplot(dfSimple, aes(x = Response)) + 
+  geom_histogram(binwidth = 1,
+                 alpha = 0.7,
+                 col = &quot;black&quot;,
+                 fill = brewer.pal(3,&quot;Set1&quot;)[2])</code></pre>
+<p><img src="/blog/post/2018-07-06_LinearModelsErrors_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
+<p>The model is written as</p>
+<pre class="r"><code>linMod1 &lt;- lm(Response ~ 1, data = dfSimple)
+summary(linMod1)</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = Response ~ 1, data = dfSimple)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -5.1667 -1.4140  0.0039  1.3655  5.5253 
+## 
+## Coefficients:
+##             Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)  2.99865    0.07092   42.28   &lt;2e-16 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 2.006 on 799 degrees of freedom</code></pre>
+<p>In this simple case, the residual standard error is simply the standard deviation of the full data:</p>
+<pre class="r"><code>dfSimple %&gt;% 
+  summarise(sd(Response))</code></pre>
+<pre><code>##   sd(Response)
+## 1     2.006061</code></pre>
+<p>What about the standard error of the intercept?</p>
+<p>Since there is only one parameter for the intercept, the design matrix will just be a vector of ones. The transformation <span class="math inline">\(\mathbf{X}&#39;\mathbf{X}\)</span> is then just the squared norm of the vector and will be equal to the number of observations in the data set, i.e. <span class="math inline">\(\sum_{i=1}^n 1 = n\)</span>. The inverse operation is just that for a scalar value and we get <span class="math inline">\(\sigma_\beta = \frac{\sigma}{\sqrt{n}}\)</span>. Multiplying the standard error estimate by <span class="math inline">\(\sqrt{n}\)</span> should return the value of the residual standard error:</p>
+<pre class="r"><code>summary(linMod1)$coefficients[[&quot;(Intercept)&quot;,&quot;Std. Error&quot;]]*sqrt(nObs)</code></pre>
+<pre><code>## [1] 2.006061</code></pre>
+</div>
+<div id="model-2-one-binary-predictor" class="section level2">
+<h2>Model 2: One Binary Predictor</h2>
+<p>Next we add one of the binary variables as a predictor in the model. This will have the effect of pooling the data according to the different levels of that predictor.</p>
+<pre class="r"><code>ggplot(dfSimple, aes(x = Genotype, y = Response)) +
+  geom_jitter(width = 0.2,
+              col = brewer.pal(3,&quot;Set1&quot;)[2])</code></pre>
+<p><img src="/blog/post/2018-07-06_LinearModelsErrors_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
+<p>In this case the intercept estimate will indicate the pooled mean of the wildtype group (or whatever the reference level is for the chosen predictor) and the slope estimate will indicate the difference between the wildtype mean and the pooled mean of the mutant group.</p>
+<pre class="r"><code>linMod2 &lt;- lm(Response ~ Genotype, data = dfSimple)
+summary(linMod2)</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = Response ~ Genotype, data = dfSimple)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -4.7239 -1.1826  0.0098  1.2532  4.5008 
+## 
+## Coefficients:
+##             Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)  1.97414    0.08627   22.88   &lt;2e-16 ***
+## GenotypeMUT  2.04902    0.12201   16.79   &lt;2e-16 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 1.725 on 798 degrees of freedom
+## Multiple R-squared:  0.2611, Adjusted R-squared:  0.2602 
+## F-statistic: 282.1 on 1 and 798 DF,  p-value: &lt; 2.2e-16</code></pre>
+<p>What do the variance estimates represent? Remember that the residual standard error is an estimate of the variability across all of the data. As mentioned in the introduction, the residual standard error will be the square root of the average of the sample variances of the two groups. The group variances and the resulting standard error estimate are:</p>
+<pre class="r"><code>dfSimple %&gt;% 
+  group_by(Genotype) %&gt;% 
+  summarise(varPerGroup = var(Response)) %&gt;% 
+  ungroup() %&gt;% 
+  mutate(sigma = sqrt(mean(varPerGroup)))</code></pre>
+<pre><code>## # A tibble: 2 x 3
+##   Genotype varPerGroup sigma
+##   &lt;fct&gt;          &lt;dbl&gt; &lt;dbl&gt;
+## 1 WT              2.78  1.73
+## 2 MUT             3.17  1.73</code></pre>
+<p>Which is equal to the estimate for the residuals standard error.</p>
+<p>How do the standard errors of the parameters relate to the residual standard error for this model? Let’s compute the transformation explicitly using the design matrix. First we compute <span class="math inline">\(\mathbf{X&#39;X}\)</span>:</p>
+<pre class="r"><code>xMat &lt;- model.matrix(linMod2)
+t(xMat)%*%xMat</code></pre>
+<pre><code>##             (Intercept) GenotypeMUT
+## (Intercept)         800         400
+## GenotypeMUT         400         400</code></pre>
+<p>Indicating the number of observations explicitly, we can see that this matrix is of the form:</p>
+<p><span class="math display">\[\mathbf{X}&#39;\mathbf{X} = n \cdot \begin{bmatrix} 1 &amp; \frac{1}{2} \\ \frac{1}{2} &amp; \frac{1}{2} \end{bmatrix}\]</span></p>
+<p>Taking the inverse (which is a straightforward process for a 2x2 matrix such as this) and multiplying by <span class="math inline">\(\sigma\)</span>, we find that the covariance matrix is</p>
+<p><span class="math display">\[\sigma^2_\beta = \frac{\sigma^2}{n} \cdot \begin{bmatrix} 2 &amp; -2 \\ -2 &amp; 4 \end{bmatrix}\]</span></p>
+<p>Specifically, the standard errors of the estimates are given by the square roots of the diagonal terms in this matrix (note that this isn’t a proper matrix operation but think of this as extracting the diagonal elements and then taking the square root of each of them):</p>
+<p><span class="math display">\[\sigma_\beta = \frac{\sigma}{\sqrt{n}}\begin{bmatrix} \sqrt{2} &amp; \sqrt{4} \end{bmatrix}\]</span></p>
+<p>A point of interest here is that the parameter errors are related to this quantity <span class="math inline">\(\frac{\sigma}{\sqrt{n}}\)</span> but are scaled by some multiplicative factor. Notably, the slope parameter is more uncertain than the intercept. Multiplying the parameter standard errors by the appropriate multiplicative factors, we should recover the residual standard error:</p>
+<pre class="r"><code>vec &lt;- c(sqrt(nObs/2), sqrt(nObs/4))
+summary(linMod2)$coefficients[,&quot;Std. Error&quot;]*vec</code></pre>
+<pre><code>## (Intercept) GenotypeMUT 
+##     1.72542     1.72542</code></pre>
+</div>
+<div id="model-3-two-binary-predictors" class="section level2">
+<h2>Model 3: Two Binary Predictors</h2>
+<p>In our third model, we consider the effects of two binary predictors without an interaction. This will pool the data into the <span class="math inline">\(2^2=4\)</span> groups defined by these predictors:</p>
+<pre class="r"><code>ggplot(dfSimple, aes(x = Genotype, y = Response, col = Anxiety)) +
+  geom_jitter(width = 0.2) + 
+  scale_color_brewer(palette = &quot;Set1&quot;)</code></pre>
+<p><img src="/blog/post/2018-07-06_LinearModelsErrors_files/figure-html/unnamed-chunk-12-1.png" width="672" /></p>
+<p>The model is as followed:</p>
+<pre class="r"><code>linMod3 &lt;- lm(Response ~ Genotype + Anxiety, data = dfSimple)
+summary(linMod3)</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = Response ~ Genotype + Anxiety, data = dfSimple)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -3.7018 -1.0455 -0.0082  1.0402  4.1122 
+## 
+## Coefficients:
+##             Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)  0.95205    0.08512   11.19   &lt;2e-16 ***
+## GenotypeMUT  2.04902    0.09829   20.85   &lt;2e-16 ***
+## AnxietyYes   2.04417    0.09829   20.80   &lt;2e-16 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 1.39 on 797 degrees of freedom
+## Multiple R-squared:  0.5211, Adjusted R-squared:  0.5199 
+## F-statistic: 433.5 on 2 and 797 DF,  p-value: &lt; 2.2e-16</code></pre>
+<p>We expect that the residual standard error should be approximately equal to the average of the group standard deviations. Note that with the addition of new predictors, we will move slowly out of the regime where <span class="math inline">\(n \gg p\)</span> holds.</p>
+<pre class="r"><code>dfSimple %&gt;% 
+  group_by(Genotype, Anxiety) %&gt;%
+  summarise(varPerGroup = var(Response)) %&gt;%
+  ungroup() %&gt;%
+  mutate(sigma = sqrt(mean(varPerGroup)))</code></pre>
+<pre><code>## # A tibble: 4 x 4
+##   Genotype Anxiety varPerGroup sigma
+##   &lt;fct&gt;    &lt;fct&gt;         &lt;dbl&gt; &lt;dbl&gt;
+## 1 WT       No             1.95  1.39
+## 2 WT       Yes            1.44  1.39
+## 3 MUT      No             2.23  1.39
+## 4 MUT      Yes            2.12  1.39</code></pre>
+<p>How do the errors of the parameter estimates relate back to this?</p>
+<pre class="r"><code>xMat &lt;- model.matrix(linMod3)
+t(xMat) %*% xMat</code></pre>
+<pre><code>##             (Intercept) GenotypeMUT AnxietyYes
+## (Intercept)         800         400        400
+## GenotypeMUT         400         400        200
+## AnxietyYes          400         200        400</code></pre>
+<p>Explicitly indicating the number of observations, we have:</p>
+<p><span class="math display">\[ \mathbf{X&#39;X} = n \cdot \begin{bmatrix} 1 &amp; \frac{1}{2} &amp; \frac{1}{2} \\ \frac{1}{2} &amp; \frac{1}{2} &amp; \frac{1}{4} \\ \frac{1}{2} &amp; \frac{1}{4} &amp; \frac{1}{2} \end{bmatrix}\]</span></p>
+<p>Taking the inverse (which is a tedious process for any matrix of dimension greater than 2), the covariance matrix is</p>
+<p><span class="math display">\[\sigma^2_\beta = \frac{\sigma^2}{n}\cdot\begin{bmatrix} 3 &amp; -2 &amp; -2 \\ -2 &amp; 4 &amp; 0 \\ -2 &amp; 0 &amp; 4 \end{bmatrix}\]</span></p>
+<p>And the standard errors are given by:</p>
+<p><span class="math display">\[\sigma_\beta = \frac{\sigma}{\sqrt{n}}\begin{bmatrix} \sqrt{3} &amp; \sqrt{4} &amp; \sqrt{4} \end{bmatrix}\]</span></p>
+<p>Notice that this is similar to the mapping from the previous model, except that the intercept error is now estimated using <span class="math inline">\(\sqrt{3}\)</span> rather than <span class="math inline">\(\sqrt{2}\)</span>. Interestingly including an additional predictor does not change the conversion factors for the slope parameters. Applying the appropriate multiplicative factors to the error estimates, we should recover the residual standard error:</p>
+<pre class="r"><code>vec &lt;- c(sqrt(nObs/3), sqrt(nObs/4), sqrt(nObs/4))
+summary(linMod3)$coefficients[,&quot;Std. Error&quot;]*vec</code></pre>
+<pre><code>## (Intercept) GenotypeMUT  AnxietyYes 
+##    1.390042    1.390042    1.390042</code></pre>
+</div>
+<div id="model-4-three-binary-predictors" class="section level2">
+<h2>Model 4: Three Binary Predictors</h2>
+<p>In order to get a clearer sense of the trend in the error estimates with regards to binary predictors, we will add the third main effect into the model. In this case the model will utilize the full 8 groups in the data.</p>
+<pre class="r"><code>ggplot(dfSimple, aes(x = Genotype, y = Response, col = Anxiety)) +
+  geom_jitter(width = 0.2) + 
+  facet_grid(.~Treatment) +
+  scale_color_brewer(palette = &quot;Set1&quot;)</code></pre>
+<p><img src="/blog/post/2018-07-06_LinearModelsErrors_files/figure-html/unnamed-chunk-17-1.png" width="672" /></p>
+<p>Here is the model:</p>
+<pre class="r"><code>linMod4 &lt;- lm(Response ~ Genotype + Anxiety + Treatment, data = dfSimple)
+summary(linMod4)</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = Response ~ Genotype + Anxiety + Treatment, data = dfSimple)
+## 
+## Residuals:
+##      Min       1Q   Median       3Q      Max 
+## -3.05274 -0.64003 -0.00343  0.63785  3.12745 
+## 
+## Coefficients:
+##               Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)   -0.03268    0.06928  -0.472    0.637    
+## GenotypeMUT    2.04902    0.06928  29.574   &lt;2e-16 ***
+## AnxietyYes     2.04417    0.06928  29.504   &lt;2e-16 ***
+## TreatmentDrug  1.96946    0.06928  28.425   &lt;2e-16 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 0.9798 on 796 degrees of freedom
+## Multiple R-squared:  0.7623, Adjusted R-squared:  0.7614 
+## F-statistic:   851 on 3 and 796 DF,  p-value: &lt; 2.2e-16</code></pre>
+<p>Note that this is the proper model to describe the data based on how we’ve simulated it. In this case the intercept should describe the mean of the reference group, i.e. untreated wildtypes with no anxiety, while the slope parameters should estimate the inputs that we put into the model. The residuals standard error should describe the standard deviation of the response within the 8 different groups, which in this case amounts to the value of <span class="math inline">\(\sigma\)</span> that we specified when simulating the data. The group standard deviations and their average are:</p>
+<pre class="r"><code>dfSimple %&gt;% 
+  group_by(Genotype, Anxiety, Treatment) %&gt;% 
+  summarise(varPerGroup = var(Response)) %&gt;%
+  ungroup %&gt;%
+  mutate(sigma = sqrt(mean(varPerGroup)))</code></pre>
+<pre><code>## # A tibble: 8 x 5
+##   Genotype Anxiety Treatment varPerGroup sigma
+##   &lt;fct&gt;    &lt;fct&gt;   &lt;fct&gt;           &lt;dbl&gt; &lt;dbl&gt;
+## 1 WT       No      Placebo         0.870 0.978
+## 2 WT       No      Drug            1.14  0.978
+## 3 WT       Yes     Placebo         0.673 0.978
+## 4 WT       Yes     Drug            0.742 0.978
+## 5 MUT      No      Placebo         1.12  0.978
+## 6 MUT      No      Drug            1.02  0.978
+## 7 MUT      Yes     Placebo         1.02  0.978
+## 8 MUT      Yes     Drug            1.08  0.978</code></pre>
+<p>As expected the residual standard error is approximately the average of the group standard deviations.</p>
+<p>What about the parameter errors?</p>
+<pre class="r"><code>xMat &lt;- model.matrix(linMod4)
+t(xMat) %*% xMat</code></pre>
+<pre><code>##               (Intercept) GenotypeMUT AnxietyYes TreatmentDrug
+## (Intercept)           800         400        400           400
+## GenotypeMUT           400         400        200           200
+## AnxietyYes            400         200        400           200
+## TreatmentDrug         400         200        200           400</code></pre>
+<p>Which gives</p>
+<p><span class="math display">\[\mathbf{X&#39;X} = n \cdot \begin{bmatrix} 1 &amp; \frac{1}{2} &amp; \frac{1}{2} &amp; \frac{1}{2} \\ \frac{1}{2} &amp; \frac{1}{2} &amp; \frac{1}{4} &amp; \frac{1}{4} \\ \frac{1}{2} &amp; \frac{1}{4} &amp; \frac{1}{2} &amp; \frac{1}{4} \\ \frac{1}{2} &amp; \frac{1}{4} &amp; \frac{1}{4} &amp; \frac{1}{2}  \end{bmatrix}\]</span></p>
+<p>The full covariance matrix is then:</p>
+<p><span class="math display">\[\sigma^2_\beta = \frac{\sigma^2}{n}\cdot\begin{bmatrix} 4 &amp; -2 &amp; -2 &amp; -2 \\ -2 &amp; 4 &amp; 0 &amp; 0 \\ -2 &amp; 0 &amp; 4 &amp; 0 \\ -2 &amp; 0 &amp; 0 &amp; 4 \end{bmatrix}\]</span></p>
+<p>And the standard errors are:</p>
+<p><span class="math display">\[\sigma_\beta = \frac{\sigma}{\sqrt{n}}\begin{bmatrix} \sqrt{4} &amp; \sqrt{4} &amp; \sqrt{4} &amp; \sqrt{4} \end{bmatrix}\]</span></p>
+<p>As we can see, the trend from the previous Section continues. The conversion factor for the intercept term is related to the number of parameters in the model, while the values related to the slope parameters are still simply <span class="math inline">\(\sqrt{4}\)</span>. We can expect that, as we continue to add binary predictors, the intercept term will be related to the number of parameters, while the slope parameters will have a conversion of <span class="math inline">\(\sqrt{4}\)</span>. As in the previous Sections, we can recover the residual standard error by multiplying by the appropriate factors:</p>
+<pre class="r"><code>vec &lt;- c(sqrt(nObs/4), sqrt(nObs/4), sqrt(nObs/4), sqrt(nObs/4))
+summary(linMod4)$coefficients[,&quot;Std. Error&quot;]*vec</code></pre>
+<pre><code>##   (Intercept)   GenotypeMUT    AnxietyYes TreatmentDrug 
+##     0.9798371     0.9798371     0.9798371     0.9798371</code></pre>
+</div>
+<div id="recap" class="section level2">
+<h2>Recap</h2>
+<p>At this stage let’s compare the conversion factors from <span class="math inline">\(\sigma\)</span> to <span class="math inline">\(\sigma_\beta\)</span> for all non-interactive models.</p>
+<pre class="r"><code>data.frame(Beta0 = c(1/sqrt(nObs), sqrt(2/nObs), sqrt(3/nObs), sqrt(nObs/4)),
+           Beta1 = c(NA, sqrt(4/nObs), sqrt(4/nObs), sqrt(4/nObs)),
+           Beta2 = c(NA, NA, sqrt(4/nObs), sqrt(4/nObs)),
+           Beta3 = c(NA, NA, NA, sqrt(4/nObs)),
+           row.names = c(&quot;Model 1&quot;, &quot;Model 2&quot;, &quot;Model 3&quot;, &quot;Model 4&quot;)) %&gt;% kable()</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="right">Beta0</th>
+<th align="right">Beta1</th>
+<th align="right">Beta2</th>
+<th align="right">Beta3</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Model 1</td>
+<td align="right">0.0353553</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+</tr>
+<tr class="even">
+<td align="left">Model 2</td>
+<td align="right">0.0500000</td>
+<td align="right">0.0707107</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+</tr>
+<tr class="odd">
+<td align="left">Model 3</td>
+<td align="right">0.0612372</td>
+<td align="right">0.0707107</td>
+<td align="right">0.0707107</td>
+<td align="right">NA</td>
+</tr>
+<tr class="even">
+<td align="left">Model 4</td>
+<td align="right">14.1421356</td>
+<td align="right">0.0707107</td>
+<td align="right">0.0707107</td>
+<td align="right">0.0707107</td>
+</tr>
+</tbody>
+</table>
+<p>As one might expect, we do see some pattern. Specifically, using the total number of observations, we can express this table as:</p>
+<table>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="left">Beta0</th>
+<th align="left">Beta1</th>
+<th align="left">Beta2</th>
+<th align="left">Beta3</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Model 1</td>
+<td align="left"><span class="math inline">\(\sqrt{\frac{1}{n}}\)</span></td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+</tr>
+<tr class="even">
+<td align="left">Model 2</td>
+<td align="left"><span class="math inline">\(\sqrt{\frac{2}{n}}\)</span></td>
+<td align="left"><span class="math inline">\(\sqrt{\frac{4}{n}}\)</span></td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+</tr>
+<tr class="odd">
+<td align="left">Model 3</td>
+<td align="left"><span class="math inline">\(\sqrt{\frac{3}{n}}\)</span></td>
+<td align="left"><span class="math inline">\(\sqrt{\frac{4}{n}}\)</span></td>
+<td align="left"><span class="math inline">\(\sqrt{\frac{4}{n}}\)</span></td>
+<td align="left">NA</td>
+</tr>
+<tr class="even">
+<td align="left">Model 4</td>
+<td align="left"><span class="math inline">\(\sqrt{\frac{4}{n}}\)</span></td>
+<td align="left"><span class="math inline">\(\sqrt{\frac{4}{n}}\)</span></td>
+<td align="left"><span class="math inline">\(\sqrt{\frac{4}{n}}\)</span></td>
+<td align="left"><span class="math inline">\(\sqrt{\frac{4}{n}}\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>As mentioned previously, the multiplicative factor for the intercept error involves the square root of the number of coefficients in the model. Moreover, for the rest of the models, the multiplicative factor is only ever <span class="math inline">\(\sqrt{\frac{4}{n}}\)</span>, i.e. the mappings don’t change as we add more binary variables. This makes sense given that all of the variables are independent in these models. Note that there is no pattern when expressing these conversion factors in terms of the number of data points per group, whic we will denote <span class="math inline">\(N\)</span>:</p>
+<p><span class="math display">\[\begin{bmatrix} \sqrt{\frac{1}{N}} &amp; &amp; &amp; \\ \sqrt{\frac{1}{N}}&amp; \sqrt{\frac{2}{N}} &amp; &amp; \\ \sqrt{\frac{3}{4N}} &amp; \sqrt{\frac{1}{N}} &amp; \sqrt{\frac{1}{N}} &amp; \\ \sqrt{\frac{1}{2N}} &amp; \sqrt{\frac{1}{2N}} &amp; \sqrt{\frac{1}{2N}} &amp; \sqrt{\frac{1}{2N}} \end{bmatrix}\]</span></p>
+<p>Recall that <span class="math inline">\(N\)</span> here is different for each row, since the different models pool the data in different ways, and takes on values <span class="math inline">\(\{n, \frac{n}{2}, \frac{n}{4}, \frac{n}{8}\}\)</span>.</p>
+</div>
+</div>
+<div id="interactive-models" class="section level1">
+<h1>Interactive Models</h1>
+<p>In this Section we explore the influence of interactions on the parameter error estimates and the mapping from the residual standard error.</p>
+<div id="two-binary-predictors-with-interaction" class="section level2">
+<h2>Two Binary Predictors with Interaction</h2>
+<p>In this case we consider the interaction between two of the variables, <code>Genotype</code> and <code>Anxiety</code>.</p>
+<pre class="r"><code>linModInt &lt;- lm(Response ~ Genotype*Anxiety, data = dfSimple)
+summary(linModInt)</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = Response ~ Genotype * Anxiety, data = dfSimple)
+## 
+## Residuals:
+##    Min     1Q Median     3Q    Max 
+## -3.723 -1.048 -0.014  1.044  4.091 
+## 
+## Coefficients:
+##                        Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)             0.93091    0.09834   9.466   &lt;2e-16 ***
+## GenotypeMUT             2.09130    0.13908  15.037   &lt;2e-16 ***
+## AnxietyYes              2.08645    0.13908  15.002   &lt;2e-16 ***
+## GenotypeMUT:AnxietyYes -0.08456    0.19668  -0.430    0.667    
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 1.391 on 796 degrees of freedom
+## Multiple R-squared:  0.5212, Adjusted R-squared:  0.5194 
+## F-statistic: 288.8 on 3 and 796 DF,  p-value: &lt; 2.2e-16</code></pre>
+<p>Note that though we have added a new predictor, there are still only 4 groups, as in Model 3. The difference is that the mean values of these groups may be more accurately estimated. In the present case we don’t expect this model to out-perform the model without an interaction, since there is no real interaction in the data, making the interaction parameter superfluous. This means that the estimate for the residual standard error should be similar to that from the non-interactive model. If the situation were reversed however and the data truly contained an interaction, then this model would more appropriately recapitulate the group means and lead to a more accurate estimation of <span class="math inline">\(\sigma\)</span>.</p>
+<p>The design matrix will be different either way however due to the additional interaction predictor.</p>
+<pre class="r"><code>xMat &lt;- model.matrix(linModInt)
+t(xMat) %*% xMat</code></pre>
+<pre><code>##                        (Intercept) GenotypeMUT AnxietyYes
+## (Intercept)                    800         400        400
+## GenotypeMUT                    400         400        200
+## AnxietyYes                     400         200        400
+## GenotypeMUT:AnxietyYes         200         200        200
+##                        GenotypeMUT:AnxietyYes
+## (Intercept)                               200
+## GenotypeMUT                               200
+## AnxietyYes                                200
+## GenotypeMUT:AnxietyYes                    200</code></pre>
+<p>Explicitly using the observation number, we have:</p>
+<p><span class="math display">\[n \cdot \begin{bmatrix} 1 &amp; \frac{1}{2} &amp; \frac{1}{2} &amp; \frac{1}{4} \\ \frac{1}{2} &amp; \frac{1}{2} &amp; \frac{1}{4} &amp; \frac{1}{4} \\ \frac{1}{2} &amp; \frac{1}{4} &amp; \frac{1}{2} &amp; \frac{1}{4} \\ \frac{1}{4} &amp; \frac{1}{4} &amp; \frac{1}{4} &amp; \frac{1}{4}  \end{bmatrix}\]</span></p>
+<p>The covariance matrix is:</p>
+<p><span class="math display">\[\sigma^2_\beta = \frac{\sigma^2}{n}\cdot\begin{bmatrix} 4 &amp; -4 &amp; -4 &amp; 4 \\ -4 &amp; 8 &amp; 4 &amp; -8 \\ -4 &amp; 4 &amp; 8 &amp; -8 \\ 4 &amp; -8 &amp; -8 &amp; 16 \end{bmatrix}\]</span></p>
+<p>with parameter standard errors of</p>
+<p><span class="math display">\[\sigma_\beta = \frac{\sigma}{\sqrt{n}}\begin{bmatrix} \sqrt{4} &amp; \sqrt{8} &amp; \sqrt{8} &amp; \sqrt{16} \end{bmatrix}\]</span></p>
+<p>Here we see a pattern change from the models without an interaction. The intercept mapping still involves a scaling factor that uses the number of parameters in the model, but the standard errors for the main effects parameters are now larger by a factor of <span class="math inline">\(\sqrt{2}\)</span> compared to the model without an interaction. The parameter error for the interaction is also larger than that for the main effects. These considerations will have a slight impact on the inferential side of linear modelling. Specifically, an interaction effect will always be less powerful than a main effect, and a main effect in a model with an interaction will always be less powerful than a main effect in a model without an interaction. The reason for this is that the <span class="math inline">\(t\)</span>-statistic is computed as <span class="math inline">\(t = \hat{\beta}/\sigma_\beta\)</span>. Of course this depends on what model accurately describes the data. The aforementioned power of a non-interactive model will be thrown off on data with an interaction, since the estimate for <span class="math inline">\(\sigma\)</span> will be larger due to the interaction in the data. These are things to keep in mind when considering which model to use.</p>
+<p>Applying the mappings to the parameter standard errors, we recover the residual standard error:</p>
+<pre class="r"><code>vec &lt;- c(sqrt(nObs/4), sqrt(nObs/8), sqrt(nObs/8), sqrt(nObs/16))
+summary(linModInt)$coefficients[,&quot;Std. Error&quot;]*vec</code></pre>
+<pre><code>##            (Intercept)            GenotypeMUT             AnxietyYes 
+##               1.390754               1.390754               1.390754 
+## GenotypeMUT:AnxietyYes 
+##               1.390754</code></pre>
+</div>
+<div id="interaction-without-main-effect" class="section level2">
+<h2>Interaction without Main Effect</h2>
+<p>In this final Section I examine the interesting case of a model with a second order interaction but without the main effect for one of the predictors. What this model does is that it describes data in which the reference group for one of the binary variables (e.g. Wildtypes) is not influenced by observations of another variable (e.g. Anxiety). In order to get the <code>lm()</code> function to do this properly, we have to create an explicit dummy encoding of the variable with a main effect.</p>
+<pre class="r"><code>dfSimple &lt;- dfSimple %&gt;% 
+  mutate(GenotypeDummy = case_when(Genotype == &quot;WT&quot; ~ 0,
+                                                          Genotype == &quot;MUT&quot; ~ 1))
+linModInt2 &lt;- lm(Response ~ GenotypeDummy + GenotypeDummy:Anxiety, data = dfSimple)
+summary(linModInt2)</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = Response ~ GenotypeDummy + GenotypeDummy:Anxiety, 
+##     data = dfSimple)
+## 
+## Residuals:
+##    Min     1Q Median     3Q    Max 
+## -4.142 -1.130  0.026  1.166  4.091 
+## 
+## Coefficients:
+##                          Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)               1.97414    0.07871  25.082  &lt; 2e-16 ***
+## GenotypeDummy             1.04807    0.13633   7.688  4.4e-14 ***
+## GenotypeDummy:AnxietyYes  2.00189    0.15742  12.717  &lt; 2e-16 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 1.574 on 797 degrees of freedom
+## Multiple R-squared:  0.3858, Adjusted R-squared:  0.3842 
+## F-statistic: 250.3 on 2 and 797 DF,  p-value: &lt; 2.2e-16</code></pre>
+<p>Note that, in comparison to the fully interactive model presented in the previous Section, the residual standard error estimate is different. This is because the model has pooled the anxiety “yes” and “no” groups for the wildtypes. Since the data we generated included a main effect of anxiety, the variance of this wildtype group will be larger than that of the other two groups (mutant-no-anxiety and mutant-yes-anxiety). Additionally, the residual standard error is no longer just the average of the group standard deviations. This is due mainly to the fact that the wildtype group in this model is twice as large as the other two groups. To demonstrate this, let’s compute the naive average of group standard deviations:</p>
+<pre class="r"><code>(dfTemp &lt;- dfSimple %&gt;% 
+  mutate(NewGroups = case_when(Genotype == &quot;WT&quot; ~ &quot;WT&quot;,
+                               Genotype == &quot;MUT&quot; &amp; Anxiety == &quot;No&quot; ~ &quot;NoMUT&quot;,
+                               Genotype == &quot;MUT&quot; &amp; Anxiety == &quot;Yes&quot; ~ &quot;YesMUT&quot;)) %&gt;% 
+  group_by(NewGroups) %&gt;%
+  summarise(varPerGroup = var(Response)) %&gt;% 
+  ungroup %&gt;% 
+  mutate(sigma = sqrt(mean(varPerGroup))))</code></pre>
+<pre><code>## # A tibble: 3 x 3
+##   NewGroups varPerGroup sigma
+##   &lt;chr&gt;           &lt;dbl&gt; &lt;dbl&gt;
+## 1 NoMUT            2.23  1.54
+## 2 WT               2.78  1.54
+## 3 YesMUT           2.12  1.54</code></pre>
+<p>Observe that the wildtype standard deviation is larger than that for the other groups. The average is not equal to the residual standard error. It can be shown mathematically that in this case the residual standard error can be estimated approximately as</p>
+<pre class="r"><code>sqrt((1/4)*(dfTemp$varPerGroup[1] + dfTemp$varPerGroup[3] + 2*dfTemp$varPerGroup[2]))</code></pre>
+<pre><code>## [1] 1.574038</code></pre>
+<p>An important point is that for the present data, this model is not homoscedastic, which is one of the assumptions underlying inferential statistics using linear models. To move forward we will generate a new data set in which there is no main anxiety effect, only an interaction. This makes it so that the group standard deviations will be approximately the same and put us back in the regime of homoscedasticity. Thus even though the wildtype group will have double the number of observations, the residual standard error will be approximately the average of the group standard deviations. We will ignore the presence of <code>Treatment</code>.</p>
+<pre class="r"><code>meanRef &lt;- 0
+sigma &lt;- 1
+effectGenotype &lt;- 2
+effectAnxiety &lt;- 2
+
+dfSimple &lt;- dfSimple %&gt;%
+  mutate(Response = case_when(Genotype == &quot;WT&quot; ~ rnorm(nrow(.),meanRef,sigma),
+                              Genotype == &quot;MUT&quot; &amp; Anxiety == &quot;No&quot; ~ rnorm(nrow(.),meanRef + effectGenotype, sigma),
+                              Genotype == &quot;MUT&quot; &amp; Anxiety == &quot;Yes&quot; ~ rnorm(nrow(.), meanRef + effectGenotype + effectAnxiety, sigma)))
+
+
+ggplot(dfSimple, aes(x = Genotype, y = Response, col = Anxiety)) + 
+  geom_jitter(width = 0.2) +
+  scale_color_brewer(palette = &quot;Set1&quot;)</code></pre>
+<p><img src="/blog/post/2018-07-06_LinearModelsErrors_files/figure-html/unnamed-chunk-30-1.png" width="672" /></p>
+<p>Re-running the model on this new data, we find:</p>
+<pre class="r"><code>dfSimple &lt;- dfSimple %&gt;% mutate(GenotypeDummy = case_when(Genotype == &quot;WT&quot; ~ 0,
+                                                          Genotype == &quot;MUT&quot; ~ 1))
+linModInt2 &lt;- lm(Response ~ GenotypeDummy + GenotypeDummy:Anxiety, data = dfSimple)
+summary(linModInt2)</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = Response ~ GenotypeDummy + GenotypeDummy:Anxiety, 
+##     data = dfSimple)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -3.5477 -0.7041  0.0052  0.6270  3.2098 
+## 
+## Coefficients:
+##                          Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)               0.04718    0.04902   0.962    0.336    
+## GenotypeDummy             1.97039    0.08491  23.206   &lt;2e-16 ***
+## GenotypeDummy:AnxietyYes  1.99567    0.09804  20.355   &lt;2e-16 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 0.9804 on 797 degrees of freedom
+## Multiple R-squared:  0.7382, Adjusted R-squared:  0.7376 
+## F-statistic:  1124 on 2 and 797 DF,  p-value: &lt; 2.2e-16</code></pre>
+<p>Note that the parameter estimates recapitulate what we put into the model. Moreover the residual standard error is now approximately equal to the input value of <span class="math inline">\(\sigma\)</span>. We can compute the group standard deviations to see how this relates to the residual standard error:</p>
+<pre class="r"><code>dfSimple %&gt;% 
+  mutate(NewGroups = case_when(Genotype == &quot;WT&quot; ~ &quot;WT&quot;,
+                               Genotype == &quot;MUT&quot; &amp; Anxiety == &quot;No&quot; ~ &quot;NoMUT&quot;,
+                               Genotype == &quot;MUT&quot; &amp; Anxiety == &quot;Yes&quot; ~ &quot;YesMUT&quot;)) %&gt;% 
+  group_by(NewGroups) %&gt;%
+  summarise(varPerGroup = var(Response)) %&gt;% 
+  ungroup %&gt;% 
+  mutate(sigma = sqrt(mean(varPerGroup)))</code></pre>
+<pre><code>## # A tibble: 3 x 3
+##   NewGroups varPerGroup sigma
+##   &lt;chr&gt;           &lt;dbl&gt; &lt;dbl&gt;
+## 1 NoMUT           0.982 0.995
+## 2 WT              0.878 0.995
+## 3 YesMUT          1.11  0.995</code></pre>
+<p>In this case the average is closer to the residual standard error estimate.</p>
+<p>Next we examine the mapping from <span class="math inline">\(\sigma\)</span> to <span class="math inline">\(\sigma_\beta\)</span> to see how it compares to the model with a main anxiety effect.</p>
+<pre class="r"><code>xMat &lt;- model.matrix(linModInt2)
+t(xMat) %*% xMat</code></pre>
+<pre><code>##                          (Intercept) GenotypeDummy
+## (Intercept)                      800           400
+## GenotypeDummy                    400           400
+## GenotypeDummy:AnxietyYes         200           200
+##                          GenotypeDummy:AnxietyYes
+## (Intercept)                                   200
+## GenotypeDummy                                 200
+## GenotypeDummy:AnxietyYes                      200</code></pre>
+<p><span class="math display">\[ n \cdot \begin{bmatrix} 1 &amp; \frac{1}{2} &amp; \frac{1}{4} \\ \frac{1}{2} &amp; \frac{1}{2} &amp; \frac{1}{4} \\ \frac{1}{4} &amp; \frac{1}{4} &amp; \frac{1}{4} \end{bmatrix}\]</span></p>
+<p>The covariance matrix is</p>
+<p><span class="math display">\[\frac{\sigma^2}{n}\cdot\begin{bmatrix} 2 &amp; -2 &amp; 0 \\ -2 &amp; 6 &amp; -4 \\ 0 &amp; -4 &amp; 8 \end{bmatrix}\]</span></p>
+<p>which leads to standard errors of</p>
+<p><span class="math display">\[\sigma_\beta = \frac{\sigma}{\sqrt{n}}\begin{bmatrix} \sqrt{2} &amp; \sqrt{6} &amp; \sqrt{8} \end{bmatrix}\]</span></p>
+<p>Now, comparing this model to the previous model with both main effects:</p>
+<pre class="r"><code>data.frame(Intercept = c(sqrt(4/nObs),sqrt(2/nObs)),
+           Genotype = c(sqrt(8/nObs), sqrt(6/nObs)),
+           Anxiety = c(sqrt(8/nObs), NA),
+           GenotypeAnxiety = c(sqrt(16/nObs), sqrt(8/nObs)), 
+           row.names = c(&quot;With Main Effect&quot;, &quot;Without Main Effect&quot;))</code></pre>
+<pre><code>##                      Intercept   Genotype Anxiety GenotypeAnxiety
+## With Main Effect    0.07071068 0.10000000     0.1       0.1414214
+## Without Main Effect 0.05000000 0.08660254      NA       0.1000000</code></pre>
+<p>Using the number of observations <span class="math inline">\(n\)</span> we find:</p>
+<table>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="left">Intercept</th>
+<th align="left">Genotype</th>
+<th align="left">Anxiety</th>
+<th align="left">GenotypeAnxiety</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">With Main Effect</td>
+<td align="left"><span class="math inline">\(\sqrt{\frac{4}{n}}\)</span></td>
+<td align="left"><span class="math inline">\(\sqrt{\frac{8}{n}}\)</span></td>
+<td align="left"><span class="math inline">\(\sqrt{\frac{8}{n}}\)</span></td>
+<td align="left"><span class="math inline">\(\sqrt{\frac{16}{n}}\)</span></td>
+</tr>
+<tr class="even">
+<td align="left">Without Main Effect</td>
+<td align="left"><span class="math inline">\(\sqrt{\frac{2}{n}}\)</span></td>
+<td align="left"><span class="math inline">\(\sqrt{\frac{6}{n}}\)</span></td>
+<td align="left"></td>
+<td align="left"><span class="math inline">\(\sqrt{\frac{8}{n}}\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>The patterns from the previous Sections break down in this case. Notably the conversion factor for the intercept term is no longer related to the number of parameters in the model. The standard errors for both the main effect and interaction term are also smaller in this model compared to the model with both main effects, assuming a fixed value of <span class="math inline">\(\sigma\)</span>. This does require caution however, as we saw that the residual standard error may be larger for this model if there is a actually a main effect in the data.</p>
+</div>
+</div>
+<div id="conclusion" class="section level1">
+<h1>Conclusion</h1>
+<p>In conclusion, we recapitulate the <span class="math inline">\(\sigma\)</span>-to-<span class="math inline">\(\sigma_\beta\)</span> mappings for the different models that we considered:</p>
+<table>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="left">Intercept</th>
+<th align="left">Genotype</th>
+<th align="left">Anxiety</th>
+<th align="left">Treatment</th>
+<th align="left">GenotypeAnxiety</th>
+<th align="right">NumGroups</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Intercept Only</td>
+<td align="left"><span class="math inline">\(\sqrt{\frac{1}{n}}\)</span></td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="right">1</td>
+</tr>
+<tr class="even">
+<td align="left">One Binary Variable</td>
+<td align="left"><span class="math inline">\(\sqrt{\frac{2}{n}}\)</span></td>
+<td align="left"><span class="math inline">\(\sqrt{\frac{4}{n}}\)</span></td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="right">2</td>
+</tr>
+<tr class="odd">
+<td align="left">Two Binary Variables</td>
+<td align="left"><span class="math inline">\(\sqrt{\frac{3}{n}}\)</span></td>
+<td align="left"><span class="math inline">\(\sqrt{\frac{4}{n}}\)</span></td>
+<td align="left"><span class="math inline">\(\sqrt{\frac{4}{n}}\)</span></td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="right">4</td>
+</tr>
+<tr class="even">
+<td align="left">Three Binary Variables</td>
+<td align="left"><span class="math inline">\(\sqrt{\frac{4}{n}}\)</span></td>
+<td align="left"><span class="math inline">\(\sqrt{\frac{4}{n}}\)</span></td>
+<td align="left"><span class="math inline">\(\sqrt{\frac{4}{n}}\)</span></td>
+<td align="left"><span class="math inline">\(\sqrt{\frac{4}{n}}\)</span></td>
+<td align="left">NA</td>
+<td align="right">8</td>
+</tr>
+<tr class="odd">
+<td align="left">Interaction With Main Effect</td>
+<td align="left"><span class="math inline">\(\sqrt{\frac{4}{n}}\)</span></td>
+<td align="left"><span class="math inline">\(\sqrt{\frac{8}{n}}\)</span></td>
+<td align="left"><span class="math inline">\(\sqrt{\frac{8}{n}}\)</span></td>
+<td align="left">NA</td>
+<td align="left"><span class="math inline">\(\sqrt{\frac{16}{n}}\)</span></td>
+<td align="right">4</td>
+</tr>
+<tr class="even">
+<td align="left">Interaction Without Main Effect</td>
+<td align="left"><span class="math inline">\(\sqrt{\frac{2}{n}}\)</span></td>
+<td align="left"><span class="math inline">\(\sqrt{\frac{6}{n}}\)</span></td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="left"><span class="math inline">\(\sqrt{\frac{8}{n}}\)</span></td>
+<td align="right">3</td>
+</tr>
+</tbody>
+</table>
+<p>There are a few things to keep in mind. First, <strong>the standard deviation of the different groups is captured in the residual standard error estimate</strong>. Specifically if <span class="math inline">\(n \gg p\)</span>, this estimate is approximately equal to the average of the group sample standard deviations.</p>
+<p>There is no obvious direct relationship between the standard errors of the parameters and the group standard deviations. For instance, the parameter error for the intercept is not equal to the standard error of the reference group, nor is the parameter error for the slope equal to the standard error of the non-reference group. The parameter errors depend on the non-trivial mapping <span class="math inline">\((\mathbf{X&#39;X})^{-1}\)</span>.</p>
+<p>There are however some patterns in the relationship for certain models. Specifically, for balanced binary variable models without interaction, the slope parameter standard errors are always related to the residual standard error by <span class="math inline">\(\sqrt{4/n}\)</span>, regardless of the number of binary variables in the model. The parameter error for the intercept does change however, and <strong>scales with the square root of the number of parameters in the model</strong>.</p>
+<p>The patterns change when we add an interaction to the model. Comparing a two-variable model with an interaction to the corresponding model without an interaction, the parameters have larger errors in the interactive model. The interaction parameter is also the most uncertain parameter in the model. However the intercept parameter error still has a conversion factor related to the number of parameters in the model. If we remove one of the main effects from the model but maintain the interaction, all conversion factors shrink relative to the interactive model with the main effect. However this model should be used with caution as it will likely lead to grouping with uneven variances. On the other hand it can be a useful way to model data if one of the variables is not defined for one of the levels in the main effect, e.g. wildtypes without anxiety scores.</p>
+<p>More complex interactive models were not explored in depth in this document, but for completion I will include the <span class="math inline">\(\sigma\)</span>-to-<span class="math inline">\(\sigma_\beta\)</span> mappings for two models. The two-variable interaction model described previously can be augmented to include a third variable. The complete interactive model at second order is as follows:</p>
+<p><span class="math display">\[\text{Response} \sim \text{Genotype} + \text{Anxiety} + \text{Treatment} + \text{Genotype:Anxiety} + \text{Genotype:Treatment} + \text{Treatment:Anxiety}\]</span></p>
+<p>The mapping for this model is:</p>
+<p><span class="math display">\[\sigma_\beta = \frac{\sigma}{\sqrt{n}}\begin{bmatrix} \sqrt{7} &amp; \sqrt{12} &amp; \sqrt{12} &amp; \sqrt{12}&amp; \sqrt{16} &amp; \sqrt{16} &amp; \sqrt{16} \end{bmatrix}\]</span></p>
+<p>The interactive model at the third order is:</p>
+<p><span class="math display">\[\text{Response} \sim \text{Genotype} + \text{Anxiety} + \text{Treatment} + \text{Genotype:Anxiety} + \text{Genotype:Treatment} + \text{Treatment:Anxiety} + \text{Genotype:Anxiety:Treatment}\]</span></p>
+<p>The mapping for this model is:</p>
+<p><span class="math display">\[\sigma_\beta = \frac{\sigma}{\sqrt{n}}\begin{bmatrix} \sqrt{8} &amp; \sqrt{16} &amp; \sqrt{16} &amp; \sqrt{16}&amp; \sqrt{32} &amp; \sqrt{32} &amp; \sqrt{32} &amp; \sqrt{64} \end{bmatrix}\]</span></p>
+<p>The one thing I will mention about these mappings is that the conversion factors for the intercept standard errors continue to be related to the number of parameters in the model. There are likely other interesting patterns in these more complex interactive models, but these will not be explored here.</p>
+<p>Ultimately these specific cases should serve to provide some intuition about how the parameter errors are estimated for a linear model. Keep in mind however that these mappings were computed for a balanced binary experimental design. Group imbalances will skew these values, though the size of these differences will depend on the degree of imbalance. Moreover the mappings will be different in the case of multi-level categorical variables and continuous numerical variables.</p>
+</div>
+
+    </div>
+
+    
+    
+<div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">Author</span>
+    <span class="item-content">Antoine Beauchamp</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">LastMod</span>
+    <span class="item-content">2018-07-06</span>
+  </p>
+  
+  <p class="copyright-item">
+    <span class="item-title">License</span>
+    <span class="item-content"><a rel="license noopener" href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank">CC BY-NC-ND 4.0</a></span>
+  </p>
+</div>
+
+    
+    
+
+    <footer class="post-footer">
+      <div class="post-tags">
+          
+          <a href="/blog/tags/linear-models/">linear models</a>
+          
+          <a href="/blog/tags/statistics/">statistics</a>
+          
+        </div>
+
+      
+      <nav class="post-nav">
+        
+        
+          <a class="next" href="/blog/post/2018-05-30_iclr_redux/">
+            <span class="next-text nav-default">An overfit representation of ICLR 2018</span>
+            <span class="prev-text nav-mobile">Next</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+        </div>
+        
+  
+
+  
+
+  
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:mouse.imaging.centre@gmail.com" class="iconfont icon-email" title="email"></a>
+      <a href="https://github.com/Mouse-Imaging-Centre" class="iconfont icon-github" title="github"></a>
+  <a href="/blog/index.xml" type="application/rss+xml" class="iconfont icon-rss" title="rss"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    Powered by <a class="hexo-link" href="https://gohugo.io">Hugo</a>
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    Theme - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  
+
+  <span class="copyright-year">
+    &copy; 
+    2018
+    <span class="heart">
+      |
+    </span>
+    <span class="author">cfhammill</span>
+  </span>
+</div>
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+<script src="/blog/lib/highlight/highlight.pack.js?v=20171001"></script> 
+<script src="//cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+<script src="//cdn.bootcss.com/highlight.js/9.12.0/languages/r.min.js"></script>
+<script> hljs.configure({languages: []}); hljs.initHighlightingOnLoad(); </script>
+
+<script type="text/javascript" src="/blog/lib/jquery/jquery-3.2.1.min.js"></script>
+  <script type="text/javascript" src="/blog/lib/slideout/slideout-1.0.1.min.js"></script>
+  <script type="text/javascript" src="/blog/lib/fancybox/jquery.fancybox-3.1.20.min.js"></script>
+<script type="text/javascript" src="/blog/dist/even.min.js?v=2.7.2"></script>
+  <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]},
+      showProcessingMessages: false,
+      messageStyle: 'none'
+    });
+  </script>
+  <script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+
+
+
+
+
+<script src="/blog/lib/htmlwidgets-1.0/htmlwidgets.js"></script>
+<script src="/blog/lib/jquery-1.12.4/jquery.min.js"></script>
+<script src="/blog/lib/datatables-binding-0.4/datatables.js"></script>
+<script src="/blog/lib/dt-core-1.10.16/js/jquery.dataTables.min.js"></script> 
+<script src="/blog/lib/crosstalk-1.0.0/js/crosstalk.min.js"></script> 
+
+</body>
+</html>

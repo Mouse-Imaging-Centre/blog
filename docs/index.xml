@@ -6,10 +6,22 @@
     <description>Recent content on The Mouse Imaging Centre Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Wed, 30 May 2018 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Fri, 06 Jul 2018 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/blog/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Linear Models: Understanding the Error Estimates for Binary Variables</title>
+      <link>/blog/post/2018-07-06_linearmodelserrors/</link>
+      <pubDate>Fri, 06 Jul 2018 00:00:00 +0000</pubDate>
+      
+      <guid>/blog/post/2018-07-06_linearmodelserrors/</guid>
+      <description>Introduction library(tidyverse) library(matlib) library(knitr) library(RColorBrewer) The purpose of this document is to understand the parameter and residuals error estimates in a basic linear regression model when working with binary categorical variables. Recall the general model definition:
+\[ \mathbf{y} = \mathbf{X}\mathbf{\beta} + \mathbf{e}\]
+where \(\mathbf{X}\) is the design matrix and \(\mathbf{\beta}\) is a \((p+1)\)-vector of coefficients/parameters, including the intercept parameter. The errors are normally distributed around 0 with variance \(\sigma^2\):
+\[e \sim N(0,\sigma^2) \quad .</description>
+    </item>
     
     <item>
       <title>An overfit representation of ICLR 2018</title>
@@ -19,6 +31,17 @@
       <guid>/blog/post/2018-05-30_iclr_redux/</guid>
       <description>I was recently extremely fortunate to attend ICLR 2018, albeit as something of an interloper. Accordingly, what follows is surely a rather atypical highlight reel. All pedantry and any inaccuracy is, of course, due to my own limited understanding of these elegant topics and the breadth of their application.
 Causal reasoning and graphical models There is a well-developed modern theory of causal inference and reasoning based on graphical models developed by Judea Pearl and others.</description>
+    </item>
+    
+    <item>
+      <title>Writing a paper in R, part the first</title>
+      <link>/blog/post/2018-04-03_paper-in-rmarkdown/</link>
+      <pubDate>Thu, 15 Mar 2018 00:00:00 +0000</pubDate>
+      
+      <guid>/blog/post/2018-04-03_paper-in-rmarkdown/</guid>
+      <description>So, a series of posts coming up on a topic I’ve been obsessing over: how to write an academic paper entirely in R. Why would I want to do that? Glad you asked. Let me tell you.
+Motivation Writing a paper can conceptually be broken down into the following steps:
+A research question leads to experimental design. The experiment is conducted and data is acquired. The resulting data is processed. Data analysis.</description>
     </item>
     
     <item>

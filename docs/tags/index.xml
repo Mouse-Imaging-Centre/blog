@@ -30,6 +30,15 @@
     </item>
     
     <item>
+      <title>Animal Models</title>
+      <link>/blog/tags/animal-models/</link>
+      <pubDate>Fri, 10 Aug 2018 00:00:00 +0000</pubDate>
+      
+      <guid>/blog/tags/animal-models/</guid>
+      <description></description>
+    </item>
+    
+    <item>
       <title>Bayesian</title>
       <link>/blog/tags/bayesian/</link>
       <pubDate>Wed, 30 May 2018 00:00:00 +0000</pubDate>
@@ -57,11 +66,29 @@
     </item>
     
     <item>
+      <title>Diffusion Spectroscopy</title>
+      <link>/blog/tags/diffusion-spectroscopy/</link>
+      <pubDate>Fri, 10 Aug 2018 00:00:00 +0000</pubDate>
+      
+      <guid>/blog/tags/diffusion-spectroscopy/</guid>
+      <description></description>
+    </item>
+    
+    <item>
       <title>Gene Expression</title>
       <link>/blog/tags/gene-expression/</link>
       <pubDate>Fri, 23 Feb 2018 00:00:00 +0000</pubDate>
       
       <guid>/blog/tags/gene-expression/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Ismrm</title>
+      <link>/blog/tags/ismrm/</link>
+      <pubDate>Fri, 10 Aug 2018 00:00:00 +0000</pubDate>
+      
+      <guid>/blog/tags/ismrm/</guid>
       <description></description>
     </item>
     
@@ -113,7 +140,7 @@
     <item>
       <title>Mri</title>
       <link>/blog/tags/mri/</link>
-      <pubDate>Tue, 06 Mar 2018 00:00:00 +0000</pubDate>
+      <pubDate>Fri, 10 Aug 2018 00:00:00 +0000</pubDate>
       
       <guid>/blog/tags/mri/</guid>
       <description></description>

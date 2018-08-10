@@ -1,0 +1,189 @@
+---
+title:  "Highlights From APPNING and ISMRM 2018"
+author: "Jacob Ellegood, Leigh Spencer Noakes, Stephania Assimopoulos, and Luke Chung"
+date:   "2018-08-10"
+output: html_document
+tags:   ["MRI", "animal models", "diffusion spectroscopy", "ISMRM"]
+---
+
+# Jacob's Highlights
+
+I recently attended the Workshop on Animal Population Imaging (APPNING 2018) held after the ISMRM conference in Paris. It was a well run workshop highlighting the benefits and troubles with large scale animal population imaging ([*https://appning2018.sciencesconf.org/*](https://appning2018.sciencesconf.org/)).
+
+Several Highlights from the workshop:
+
+## Quantitative Connectomic Histology 
+
+Presented by GA Johnson from Duke University
+
+-   Used Diffusion Tensor Imaging to assess how the brain was connected in the mouse. Attempt to determine the structural connectivity of mouse brain and compare with the tracer studies performed at the Allen Brain Institute
+    -   Tractograms currently have more invalid than valid bundles, and therefore they are attempting to be as accurate as possible
+    -   Goal was to push the technology as hard as possible to get the best resolution and images possible
+-   First scan that pushed the boundaries was a 120 direction DTI scan with b-values up to 4000 s/mm2. Full details of this sequence can be found in Calabrese et al. Cerebral Cortex 2015 25(11): 4628-37
+    -   Total scan time for that sequence was 235 hours!
+    -   Ten day scan protocol was not practical long term so they decided to work on ways to speed it up.
+        1. Less angular resolution from 120 directions to 46
+        2. Use Compressed Sensing
+-  Final protocol using compressed sensing got their scan time down to 11 hours and 45um resolution, which was quite impressive.
+    -   The images look gorgeous and the study was well done, but scanning one mouse at a time for 11 hours is not practical for our projects. Additionally the practicality of using tractography as a ground truth for connectivity studies seems questionable.
+
+## Tech demonstrations
+
+Several of the talks highlighted the individuals “toys” or techniques that they have created to help speed up their own research and they were sharing them with all of us.
+
+-   SBA Composer - Web based software for 3D imaging
+-   An Electronic Collection of Vertebrate Brains - [*https://braincatalogue.org*](https://braincatalogue.org)
+-   Sammba- MRI - Imaging toolbox for small animal imaging ([*http://sammba-mri.github.io*](http://sammba-mri.github.io))
+-   Dicomifier - A generic Bruker-DICOM-NIfTI convertor ([*https://github.com/lamyj/dicomifier*](https://github.com/lamyj/dicomifier))
+
+## Diffusion Spectroscopy
+
+One of the Posters discussed DW-MRS in a mouse model:
+
+Glial and axonal changes in the cuprizone mouse model investigated with diffusion magnetic resonance spectroscopy.
+
+-   This was particularly interesting to me as I did my PhD on DW-MRS.
+-   This technique allows you to probe the underlying tissue microstructure, by allowing you to assess specific markers of axonal, myelin, and glial cell damage
+-   The mouse model they used was a cuprizone mouse, which has been shown to reproduce pathological features of MS
+-   The aim of the study was to compare the concentrations and ADC values of the different metabolites in the brain to see if they can determine any biomarkers of axonal, myelin, and glial cells injuries
+-   They conclude that markers like a decrease in NAA/Cr ratio with no variation in NAA ADC could reflect myelination damage, and intact axons. Additionally, they conclude that an increase of Cho and Inositol ADCs could be caused by glial cell activation and swelling
+-   While it is true that the conclusions reached in the DW-MRS study are feasible, they are a long way from providing a true biomarker and are just speculating at this point.
+
+---
+
+# Leigh's Highlights
+
+I was happy to attend ISMRM 2018 in Paris. Below are a few of my favourite sessions.
+
+##  Diffusion MRS
+
+There were a few talks on this, and it played a prominent role in the educational sessions (*https://www.ismrm.org/18/program\_files/WE18AB.htm*).
+
+-  The goal is to measure typical diffusion parameters for individual metabolites, rather than water, which is the the more common approach. 
+- Parameters include: 
+     - apparent diffusion coefficient (ADC)
+     - fractional anisotropy (FA)
+     - axial diffusivity (AD)
+     - and radial diffusivity (RD)
+-  While water is present in all cell types, metabolites can be cell-type specific, allowing us to gain diffusion information about individual cell types. For example, neurons contain NAA, while glia contain tCho.
+-  One method of measuring diffusion MRS is to modify the PRESS sequence to include diffusion pulses.
+-  **Francesca Branzoli** - An example presented at ISMRM was the use of diffusion MRS to study multiple sclerosis patients, where the NAA axial diffusivity in the corpus callosum is different from that of water.
+
+##  Normal Pediatric Brain Development
+
+This session was mainly about studying markers of brain development in young children under different developmental circumstances (*https://www.ismrm.org/18/program\_files/O02.htm*).
+
+- **Joseph Yang** - One speaker found that signal obtained from the the ratio of T1W to T2W scans was correlated with myelin content. As myelination progresses the signal from this ratio increases, but the trend is non-linear with age.
+-  **Douglas Dean** - Gestational cortisol levels affect myelination in the brain of unborn children. Poor cortisol regulation in mothers is associated with dispersed white matter fibers and altered white matter development in children. The authors used NODDI MRI to study white matter integrity in children, and measured cortisol levels in the mother population. Interestingly, they found that there is a large distribution of cortisol in the mother population.
+-  **Sean Deoni** - Breastfeeding and brain development. In one study, the authors aimed to compare the white matter development in children that were either breastfed or formula-fed for three months. The authors tested three commercial formula brands against a breastfed control group. They found that myelin development in babies was impaired in two of the three formula-fed groups, as compared to the breast-fed group. However, the speaker would not say which brand gave similar results to the breastfed group.
+
+##  Lectures and Posters
+
+- Plenary Lecture: Point-of-Care Diagnostics: MR’s Friend or Foe **Steven J. Schiff**, Sustainable Low-Field MRI for Point of Care Diagnostics (*https://www.ismrm.org/18/program\_files/P03.htm*)
+
+    - This talk, in part, focused on portable healthcare for developing countries - an example was a van that drove around in African nations delivering TB vaccines.
+   - As researchers in MRI, we tend to move towards high-field, high-resolution systems that push the limits, but are expensive.
+   - He pointed out that many diseases can be diagnosed with lower-resolution images, which do not require expensive, state-of-the-art, equipment. There is a significant need in developing countries for affordable diagnostic tools. Low field, inexpensive magnets might be able to provide a solution for this.
+    - It would benefit many people if researchers began to think about ways to make more affordable magnets, which deliver images with lower resolution that would help in diagnosing common diseases in developing nations.
+
+-  E-Poster presented by **Junyu Guo**, a student of Gene Reddick from St.Jude Children’s Hospital
+    (*https://www.ismrm.org/18/program\_files/EP21.htm\#sub5*)
+      - Myelination occurs asymmetrically across the brain during development, left/right and front/back. This asymmetry is detectible with DTI metrics.
+      - Junyo was studying the development of the asymmetry in myelination in children after treatment with high-dose methotrexate for acute lymphoblastic leukemia.
+      - After treatment, patients have LESS asymmetry than controls of the same age.
+      - Damage to myelin slows development of natural asymmetry.
+      - Asymmetry measurements detected differences between patients and controls before traditional T2-weighted scans, usually used to detect leucoencephalopathy in this patient population.
+      - Children treated at younger ages were more severely impacted, having more significant impairment, and less asymmetry than controls.
+
+---
+
+# Stephania's Highlights
+
+Recently, I was fortunate to attend the ISMRM 2018 Annual Meeting. It was the first time I attended this meeting, so it was a rather eye-opening experience. The main topics of interest seemed to be MR Spectroscopy (MRS), Diffusion, and Machine learning applications to most fields of MRI. Most of the information presented was novel to me. So, any inaccuracies are, of course, due to my elementary knowledge of these advanced topics.
+
+## Diffusion Validation 
+
+*[*https://www.ismrm.org/18/program\_files/O72.htm*](https://www.ismrm.org/18/program_files/O72.htm)*) *
+
+I chose to highlight this session because it is an important aspect of method development that is often overlooked. From all abstracts presented I have selected 3 which I found the most intriguing.
+
+1.  Phantoms are extensively used for testing and validation purposes. In Diffusion MRI, a lot of weight has been put primarily on anisotropic phantoms. **Papaioannou et al.** from *NYU*, introduced a permeable phantom with tunable microstructural characteristics (pore size, pore density and permeability).
+    - Model molecular transport in the presence of permeable membranes.
+    - Time-dependent diffusion experiments were performed by varying the pore size.
+    - Experiments performed on 3 different MRI and NMR systems.
+    - Results nicely agree with theoretical expectations, for all three systems:
+        - diffusivity time dependence in z but not in the x and y directions.
+        - kurtosis (non-monotonic) time dependence in z but not in the x and y directions.
+        - power-law scaling of diffusivity with respect to time in z.
+
+    Such a phantom, that allows a controlled modification of its microstructural properties, opens the door to studying molecular diffusion in the presence of permeable membranes, which is rather ubiquitous in living tissues. Thus, a different aspect of phantom studies in diffusion can be explored.
+
+1.  A classic method for validating Diffusion MR (dMR) data is comparing the results to Histology results. **Howard et al.** from *The University of Oxford*, proposed a different method for using Histology in dMR data validation. It involves joint modelling of diffusion MRI and Histology data.
+
+    - When modelling dMR data the signal intensity is approximated to equal the convolution of the single-fibre response function (FRF) and the within-voxel fibre orientation distribution function (ODF).
+
+        - Constrained spherical deconvolution (CSD) is commonly used to characterize the distribution of fibre orientation.
+        - Main assumption of CSD is that there is a “brain-wide” FRF that is approximated.
+        - However, this assumption is challenged by the fact that the white matter (WM) diffusion profile is dependent on many microstructural parameters (axonal density, axonal packing, myelination).
+        - Joint model (JM) allows for joint estimation of the FRF and ODF where FRF estimation is constrained by the 2D histological information on the ODF.
+        - Results obtained from the corpus callosum and the corticospinal tract:
+            - the FRF depends on local anatomy
+            - current method of empirically estimating the FRF can bias the ODF shape.
+
+    JM method allows for more accurate FRF and ODF estimation. It can be further enhanced by additionally using 3D information obtained by polarized light imaging for better characterization and more constrained estimation of the FRF and ODF.
+
+1.  Influenced by the advancements in computational neuroscience, **Palombo et al.** from *University College London*, developed a numerical simulation of molecular diffusion within realistic digitized brain cells (neurons, glia):
+    -  Numerical simulations are used in various fields for model development and assessment as well as for experimental design, mainly because they can overcome various experimental limitations.
+    -  Explore the relationship between the macroscopic diffusion weighted NMR (DW-NMR) signal and the underlying tissue microstructure. Has proven complex to describe.
+    -  Pipeline:
+        i.  In-house software that generates a 3D mesh of the skeletonized structure (brain cell network).
+        ii. Step (i) output passed through commercially available packages, CAMINO and the TREES toolbox, for Diffusion NMR simulation and cell morphology analysis respectively.
+
+    The work presented focused on reducing computational burden and ensuring correct connectivity between distinct compartments comprising the system. Further work will be done to support even more realistic conditions (dense packing of numerous 3D cell structures, varying cell surface permeability). Overall, computational validation enables testing the limits of biophysical models and even development of new models, eliminating many of the common experimental limitations.
+
+## Myelin and Microstructural Imaging
+
+A lot of work presented involved Magnetization Transfer Imaging (MTI) and comparison of various commonly used techniques. There are two talks I found most relevant for the work done in our lab:
+
+1.  ([*https://www.ismrm.org/18/program\_files/O54.htm*](https://www.ismrm.org/18/program_files/O54.htm)) **Lam et al.** *from UBC*, explored how white and grey matter intensities vary by technique.
+    - They compared:
+        -  MTI
+        -  inhomogeneous MTI (ihMTI)
+        -  Myelin Water Imaging (MWI).
+
+    - Using samples from post-mortem healthy and multiple sclerosis (MS) human brain tissues.
+    - They showed:
+        -  for MTI and ihMTI the contrast obtained is based on different tissue properties than for MWI.
+        -  Expected since MTI and ihMTI are more sensitive to dipolar couplings whereas MWI is more affected by water exchange.
+        -  Histological validation of their results is necessary.
+
+    This work comes to show that, in the realm of MT and MWI, there is still some variation in techniques and the choice of which one to use depends on what molecules we wish to target.
+
+1.  *(*[*https://www.ismrm.org/18/program\_files/O13.htm*](https://www.ismrm.org/18/program_files/O13.htm)*)* **Soustelle et al.** from *Université de Strasbourg,* compared *quantitative MT*, *diffusion tensor imaging (DTI)* and *ultrashort-echo time* measurements in a mouse model of demyelination.
+    - A sketch of the experiment:
+        -  Cuprizone was the drug used to cause global demyelination of white and grey matter.
+        -  All of the techniques used are sensitive to myelin content, but each is affected by other factors as well.
+        -  Data was collected from ROIs in the corpus callosum, external capsules and cortex.
+
+     - They showed:
+        -  ultrashort-echo time measurements are more informative than the DTI diffusivity
+        -  ultrashort-echo time measurements are less informative than the MTI bound-pool fraction metric.
+
+     So, there is a stratification of the various myelin sensitive techniques, with MTI providing more information, despite its limitations.
+  
+---
+
+# Luke's Highlights
+
+ISMRM 2018 was a very enlightening experience for me. This was my first time attending an international science conference, and I would like to share some of my highlights from this conference:
+
+1.  **Imaging Metabolism in the Developing Brain (**[***https://www.ismrm.org/18/program\_files/Tu02.htm***](https://www.ismrm.org/18/program_files/Tu02.htm)**)**
+    -   This session was categorized as an educational session and I greatly appreciated how it differed from the scientific sessions by starting with a thorough introduction to the topic.
+    -   Based on some brief survey questions asked by one of the speakers, it became clear to me that magnetic resonance spectroscopy (MRS), although very useful in the context of studying brain metabolism, does not get used much in the clinic.
+    -   This session promoted the use of MRS for diagnosis and disease monitoring of neurometabolic diseases - Moyoko Tomiyasu (Kanagawa Children’s Medical Center) explained how subtle spectral abnormalities, such as elevated/reduced peaks, can reflect deficiencies in various molecular transporters and enzymes.
+    -   Stefan Bluml (USC) gave an interesting talk on neuroimaging techniques used to study brain metabolism in pediatric populations. He explained that accumulation of a 13C label on glutamate can represent glucose uptake/metabolism in the brain, which were measured in adults and premature newborns. The presented data showed that premature infants displayed prolonged uptake while the adults have a plateau and subsequent decline in their glucose uptake.
+
+1.  **Traumatic Brain Injury (**[***https://www.ismrm.org/18/program\_files/O09.htm***](https://www.ismrm.org/18/program_files/O09.htm)**)**
+    -   One of the talks that stood out during this session was presented by Chia-Feng Lu et al (Taipei Medical University) and this talk introduced an association between concussion-induced dizziness and damage of thalamo-cortical connectivity after mild traumatic brain injury. The thalamo    -cortical tracts involved were primarily connections to the primary and associated somatosensory cortices. These tracts displayed decreased functional connectivity which was often accompanied by elevated scores of Dizziness Handicap Inventory (i.e. increased dizziness).
+
+Overall, I would highly recommend this conference to any first-timers. Despite my constant need for caffeine throughout the week (the lecture rooms were very dark!), it was very exciting to see all the different applications of MR. You can also expect a warm welcome at the special “newbie” reception that they typically host.

@@ -1809,5 +1809,37 @@ print(mpg_hp$coefficients)&lt;/code&gt;&lt;/pre&gt;
 </description>
     </item>
     
+    <item>
+      <title></title>
+      <link>/blogroll/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/blogroll/</guid>
+      <description>&lt;div id=&#34;some-other-blogs-we-like&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;Some other blogs we like&lt;/h1&gt;
+&lt;div id=&#34;r-bloggers&#34; class=&#34;section level3&#34;&gt;
+&lt;h3&gt;&lt;a href=&#34;https://www.r-bloggers.com/&#34;&gt;R-Bloggers&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;R news and tutorials contributed by other R bloggers&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;r-weekly&#34; class=&#34;section level3&#34;&gt;
+&lt;h3&gt;&lt;a href=&#34;https://rweekly.org/&#34;&gt;R Weekly&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;Updates about the R community&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;yihuis-blog&#34; class=&#34;section level3&#34;&gt;
+&lt;h3&gt;&lt;a href=&#34;https://yihui.name/en/&#34;&gt;Yihui’s blog&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;Blog of the author of popular packages such as &lt;code&gt;knitr&lt;/code&gt; and &lt;code&gt;blogdown&lt;/code&gt;.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;coolbutuseless&#34; class=&#34;section level3&#34;&gt;
+&lt;h3&gt;&lt;a href=&#34;https://coolbutuseless.github.io/&#34;&gt;Coolbutuseless&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;Blog about awesome R wizardry&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;datamancy&#34; class=&#34;section level3&#34;&gt;
+&lt;h3&gt;&lt;a href=&#34;https://cfhammill.github.io/&#34;&gt;Datamancy&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;Chris’s Blog&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+</description>
+    </item>
+    
   </channel>
 </rss>

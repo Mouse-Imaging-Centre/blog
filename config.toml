@@ -40,6 +40,11 @@ copyright = ""            # default: author.name ↓        # 默认为下面配
   weight = 40
   identifier = "about"
   url = "/about/"
+[[menu.main]]
+  name = "Blogroll"
+  weight = 40
+  identifier = "blogroll"
+  url = "/blogroll/"
 
 [params]
   debug = false             # If true, load `eruda.min.js`. See https://github.com/liriliri/eruda

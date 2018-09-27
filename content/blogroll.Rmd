@@ -1,0 +1,20 @@
+---
+output: html_document
+---
+
+# Some other blogs we like
+
+### [R-Bloggers](https://www.r-bloggers.com/)
+R news and tutorials contributed by other R bloggers
+
+### [R Weekly](https://rweekly.org/)
+Updates about the R community
+
+### [Yihui's blog](https://yihui.name/en/)
+Blog of the author of popular packages such as `knitr` and `blogdown`.
+
+### [Coolbutuseless](https://coolbutuseless.github.io/)
+Blog about awesome R wizardry
+
+### [Datamancy](https://cfhammill.github.io/)
+Chris's Blog

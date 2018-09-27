@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">  
   <channel>
     <title>Bayesian on The Mouse Imaging Centre Blog</title>
     <link>/blog/tags/bayesian/</link>
     <description>Recent content in Bayesian on The Mouse Imaging Centre Blog</description>
     <generator>Hugo -- gohugo.io</generator>
-    <language>en</language>
     <lastBuildDate>Wed, 30 May 2018 00:00:00 +0000</lastBuildDate>
     
         <atom:link href="/blog/tags/bayesian/index.xml" rel="self" type="application/rss+xml" />
@@ -124,7 +123,7 @@
 &lt;p&gt;It’s &lt;span class=&#34;math inline&#34;&gt;\(\frac{1}{p(y_1 | \theta_s)}\)&lt;/span&gt; !!!&lt;/p&gt;
 &lt;p&gt;The sample weight is just the inverse of the probability that &lt;em&gt;that&lt;/em&gt; posterior draw gave to the held out point.&lt;/p&gt;
 &lt;p&gt;When I first read this my brain made a little popping noise, probably audible to my coworkers, as it exploded.&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;/blog/blog/img/brain-exploding-psis.png&#34; width=&#34;500px&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;/blog/img/brain-exploding-psis.png&#34; width=&#34;500px&#34; /&gt;&lt;/p&gt;
 &lt;/div&gt;
 &lt;div id=&#34;the-pareto-part&#34; class=&#34;section level2&#34;&gt;
 &lt;h2&gt;The Pareto Part&lt;/h2&gt;

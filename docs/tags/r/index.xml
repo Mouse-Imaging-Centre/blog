@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">  
   <channel>
     <title>R on The Mouse Imaging Centre Blog</title>
     <link>/blog/tags/r/</link>
     <description>Recent content in R on The Mouse Imaging Centre Blog</description>
     <generator>Hugo -- gohugo.io</generator>
-    <language>en</language>
     <lastBuildDate>Fri, 23 Feb 2018 00:00:00 +0000</lastBuildDate>
     
         <atom:link href="/blog/tags/r/index.xml" rel="self" type="application/rss+xml" />
@@ -50,7 +49,7 @@ fge&lt;/code&gt;&lt;/pre&gt;
 # genedata1 = mincVectorTOallenVector(genedata1)  #This is the inverse function&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;Now, we can visualize the gene expression. Below is a sagittal slice&lt;/p&gt;
 &lt;pre class=&#34;r&#34;&gt;&lt;code&gt;image(mincArray(genedata1)[30,,], ylab=&amp;#39;Superior-Inferior&amp;#39; ,xlab=&amp;#39;Anterior-Posterior&amp;#39;)&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;/blog/blog/post/2018-02-23_gene-expression_files/figure-html/6-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;/blog/post/2018-02-23_gene-expression_files/figure-html/6-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
 &lt;/div&gt;
 &lt;div id=&#34;adding-an-anatomical-underlay&#34; class=&#34;section level2&#34;&gt;
 &lt;h2&gt;Adding an anatomical underlay&lt;/h2&gt;
@@ -62,7 +61,7 @@ mincPlotSliceSeries(
   symmetric=FALSE,
   col=colorRampPalette(c(&amp;quot;darkgreen&amp;quot;,&amp;quot;yellowgreen&amp;quot;))(255),
   legend=&amp;quot;Bdnf Expression&amp;quot;,low=2,high=6.5)&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;/blog/blog/post/2018-02-23_gene-expression_files/figure-html/7-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;/blog/post/2018-02-23_gene-expression_files/figure-html/7-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
 &lt;p&gt;Much better. I can tell there is high expression in the cortex and hippocampus.&lt;/p&gt;
 &lt;p&gt;Let us also look at the other Bdnf experiment (ID: 75695642).&lt;/p&gt;
 &lt;pre class=&#34;r&#34;&gt;&lt;code&gt;genedata2 = read.raw.gene(as.character(fge$URLs[2]),url = TRUE)
@@ -73,7 +72,7 @@ mincPlotSliceSeries(
   symmetric=FALSE,
   col=colorRampPalette(c(&amp;quot;darkgreen&amp;quot;,&amp;quot;yellowgreen&amp;quot;))(255),
   legend=&amp;quot;Bdnf Expression&amp;quot;,low=2,high=6.5)&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;/blog/blog/post/2018-02-23_gene-expression_files/figure-html/8-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;/blog/post/2018-02-23_gene-expression_files/figure-html/8-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
 &lt;p&gt;We see that the sagittal slices only span half the brain. This was a deliberate choice by the ABI and most of the gene experiments are like this. Furthermore, slices are sampled every 200 microns for the sagittal datasets and every 100 microns for the coronal datasets. That is why we prefer using the coronal slices any chance we get, but there are still tools that help us work with sagittal data. We can reflect data across the sagittal midplane to fill in the missing hemisphere as so:&lt;/p&gt;
 &lt;pre class=&#34;r&#34;&gt;&lt;code&gt;genedata2.reflected=midplane.reflect(genedata2,reflect.dim=3)
 mincPlotSliceSeries(
@@ -82,7 +81,7 @@ mincPlotSliceSeries(
   symmetric=FALSE,
   col=colorRampPalette(c(&amp;quot;darkgreen&amp;quot;,&amp;quot;yellowgreen&amp;quot;))(255),
   legend=&amp;quot;Bdnf Expression&amp;quot;,low=2,high=6.5)&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;/blog/blog/post/2018-02-23_gene-expression_files/figure-html/99-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;/blog/post/2018-02-23_gene-expression_files/figure-html/99-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
 &lt;p&gt;We can do better. Because there sagittal sections were only sampled every 200um, there is a lot of missing data due to slice misalignment. We can fill them in using nearest neighbour marching averages.&lt;/p&gt;
 &lt;pre class=&#34;r&#34;&gt;&lt;code&gt;labelfile=system.file(&amp;#39;extdata/gridAnnotation.raw&amp;#39;,package=&amp;quot;ABIgeneRMINC&amp;quot;)
 mask=allenVectorTOmincVector(read.raw.gene(labelfile,labels=TRUE)&amp;gt;0)
@@ -94,7 +93,7 @@ mincPlotSliceSeries(
   symmetric=FALSE,
   col=colorRampPalette(c(&amp;quot;darkgreen&amp;quot;,&amp;quot;yellowgreen&amp;quot;))(255),
   legend=&amp;quot;Bdnf Expression&amp;quot;,low=2,high=6.5)&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;/blog/blog/post/2018-02-23_gene-expression_files/figure-html/9-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;/blog/post/2018-02-23_gene-expression_files/figure-html/9-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
 &lt;p&gt;Even with interpolation, the expression map is not that good.&lt;/p&gt;
 &lt;/div&gt;
 &lt;div id=&#34;expression-statistics&#34; class=&#34;section level2&#34;&gt;
@@ -151,15 +150,15 @@ head(udf)&lt;/code&gt;&lt;/pre&gt;
       <pubDate>Fri, 09 Feb 2018 00:00:00 +0000</pubDate>
       
       <guid>/blog/post/2018-02-08_peaks-intro/</guid>
-      <description>&lt;script src=&#34;/blog/blog/rmarkdown-libs/htmlwidgets/htmlwidgets.js&#34;&gt;&lt;/script&gt;
-&lt;script src=&#34;/blog/blog/rmarkdown-libs/jquery/jquery.min.js&#34;&gt;&lt;/script&gt;
-&lt;link href=&#34;/blog/blog/rmarkdown-libs/datatables-css/datatables-crosstalk.css&#34; rel=&#34;stylesheet&#34; /&gt;
-&lt;script src=&#34;/blog/blog/rmarkdown-libs/datatables-binding/datatables.js&#34;&gt;&lt;/script&gt;
-&lt;link href=&#34;/blog/blog/rmarkdown-libs/dt-core/css/jquery.dataTables.min.css&#34; rel=&#34;stylesheet&#34; /&gt;
-&lt;link href=&#34;/blog/blog/rmarkdown-libs/dt-core/css/jquery.dataTables.extra.css&#34; rel=&#34;stylesheet&#34; /&gt;
-&lt;script src=&#34;/blog/blog/rmarkdown-libs/dt-core/js/jquery.dataTables.min.js&#34;&gt;&lt;/script&gt;
-&lt;link href=&#34;/blog/blog/rmarkdown-libs/crosstalk/css/crosstalk.css&#34; rel=&#34;stylesheet&#34; /&gt;
-&lt;script src=&#34;/blog/blog/rmarkdown-libs/crosstalk/js/crosstalk.min.js&#34;&gt;&lt;/script&gt;
+      <description>&lt;script src=&#34;/blog/rmarkdown-libs/htmlwidgets/htmlwidgets.js&#34;&gt;&lt;/script&gt;
+&lt;script src=&#34;/blog/rmarkdown-libs/jquery/jquery.min.js&#34;&gt;&lt;/script&gt;
+&lt;link href=&#34;/blog/rmarkdown-libs/datatables-css/datatables-crosstalk.css&#34; rel=&#34;stylesheet&#34; /&gt;
+&lt;script src=&#34;/blog/rmarkdown-libs/datatables-binding/datatables.js&#34;&gt;&lt;/script&gt;
+&lt;link href=&#34;/blog/rmarkdown-libs/dt-core/css/jquery.dataTables.min.css&#34; rel=&#34;stylesheet&#34; /&gt;
+&lt;link href=&#34;/blog/rmarkdown-libs/dt-core/css/jquery.dataTables.extra.css&#34; rel=&#34;stylesheet&#34; /&gt;
+&lt;script src=&#34;/blog/rmarkdown-libs/dt-core/js/jquery.dataTables.min.js&#34;&gt;&lt;/script&gt;
+&lt;link href=&#34;/blog/rmarkdown-libs/crosstalk/css/crosstalk.css&#34; rel=&#34;stylesheet&#34; /&gt;
+&lt;script src=&#34;/blog/rmarkdown-libs/crosstalk/js/crosstalk.min.js&#34;&gt;&lt;/script&gt;
 
 
 &lt;p&gt;So, peaks. When producing a statistical map, it’s good to get a report of the peaks (i.e. most significant findings). RMINC has had this support for a while now, though it has remained somewhat hidden. Here’s a bit of an intro, then.&lt;/p&gt;
@@ -185,7 +184,7 @@ anatVol &amp;lt;- mincArray(mincGetVolume(anatFile))&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;… and show the results at a somewhat arbitrary threshold.&lt;/p&gt;
 &lt;pre class=&#34;r&#34;&gt;&lt;code&gt;mincPlotSliceSeries(anatVol, mincArray(vs, &amp;quot;tvalue-SexM&amp;quot;), anatLow=10, anatHigh=15, low=2, high=6, symmetric = T,
                     begin=50, end=-50)&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;/blog/blog/post/2018-02-08_peaks-intro_files/figure-html/unnamed-chunk-4-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;/blog/post/2018-02-08_peaks-intro_files/figure-html/unnamed-chunk-4-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
 &lt;p&gt;At this point we’ve run a linear model and visually assessed the results. Now we can locate the peak findings, using the &lt;code&gt;mincFindPeaks&lt;/code&gt; command.&lt;/p&gt;
 &lt;pre class=&#34;r&#34;&gt;&lt;code&gt;peaks &amp;lt;- mincFindPeaks(vs, &amp;quot;tvalue-SexM&amp;quot;, minDistance = 1, threshold = 4)&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;## Writing column tvalue-SexM to file /tmp/Rtmpm8tCfQ/file65323a5d369f.mnc 
@@ -227,7 +226,7 @@ nP &amp;lt;- nrow(peaks)
 for (i in c(1:2, nP:(nP-1))) {
   mincPlotPeak(peaks[i,], anatVol, mincArray(vs, &amp;quot;tvalue-SexM&amp;quot;), anatLow=10, anatHigh=15, low=2, high=6, symmetric=T)
 }&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;/blog/blog/post/2018-02-08_peaks-intro_files/figure-html/unnamed-chunk-11-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;/blog/post/2018-02-08_peaks-intro_files/figure-html/unnamed-chunk-11-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
 &lt;pre class=&#34;r&#34;&gt;&lt;code&gt;par(opar)&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;There is an additional argument to &lt;code&gt;mincPlotPeak&lt;/code&gt; - a function to create a plot of the peak. This is illustrated below:&lt;/p&gt;
 &lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# load ggplot2 for plotting
@@ -244,7 +243,7 @@ p &amp;lt;- function(peak) {
 mincPlotPeak(peaks[1,], anatVol, mincArray(vs, &amp;quot;tvalue-SexM&amp;quot;), anatLow=10, anatHigh=15, low=2, high=6, 
              symmetric=T, plotFunction = p)&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;## Don&amp;#39;t know how to automatically pick scale for object of type mincVoxel/vector. Defaulting to continuous.&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;/blog/blog/post/2018-02-08_peaks-intro_files/figure-html/unnamed-chunk-12-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;/blog/post/2018-02-08_peaks-intro_files/figure-html/unnamed-chunk-12-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
 &lt;p&gt;And that’s it. A quick survey for how to extract peaks, view them in a table, and create figures of the most significant findings.&lt;/p&gt;
 </description>
     </item>
@@ -302,7 +301,7 @@ p.mpg_vs_wt +
   labs(x = &amp;quot;Weight (1000 lbs)&amp;quot;,
        y = &amp;quot;Miles per Gallon&amp;quot;,
        title = &amp;quot;Scatter Plot of MPG vs. Weight&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;/blog/blog/post/LinearModels_files/figure-html/unnamed-chunk-3-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;/blog/post/LinearModels_files/figure-html/unnamed-chunk-3-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
 &lt;p&gt;This is as we would expect, since less energy is needed to move lighter cars. Moreover we suspect that this data might be well suited to a simple linear model. As described above, the model we will be building is&lt;/p&gt;
 &lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[y = \beta_0 + \beta_1x + \epsilon\]&lt;/span&gt;&lt;/p&gt;
 &lt;p&gt;or&lt;/p&gt;
@@ -343,7 +342,7 @@ print(mpg_vs_wt)&lt;/code&gt;&lt;/pre&gt;
   geom_abline(intercept = mpg_vs_wt$coefficients[&amp;quot;(Intercept)&amp;quot;,&amp;quot;Estimate&amp;quot;], 
               slope = mpg_vs_wt$coefficients[&amp;quot;wt&amp;quot;, &amp;quot;Estimate&amp;quot;]) + 
   coord_cartesian(xlim=c(0,6),ylim = c(5,40))&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;/blog/blog/post/LinearModels_files/figure-html/unnamed-chunk-6-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;/blog/post/LinearModels_files/figure-html/unnamed-chunk-6-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
 &lt;p&gt;That looks pretty good. A second-order polynomial might better capture the data at the lower and higher &lt;code&gt;wt&lt;/code&gt; values, but we won’t go into that here.&lt;/p&gt;
 &lt;/div&gt;
 &lt;div id=&#34;S4&#34; class=&#34;section level1&#34;&gt;
@@ -369,7 +368,7 @@ print(mpg_vs_am$coefficients)&lt;/code&gt;&lt;/pre&gt;
   labs(x = &amp;quot;Transmission (0 = automatic)&amp;quot;,
        y = &amp;quot;Miles per Gallon&amp;quot;,
        title = &amp;quot;Simple Linear Model: MPG vs. Transmission&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;/blog/blog/post/LinearModels_files/figure-html/unnamed-chunk-9-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;/blog/post/LinearModels_files/figure-html/unnamed-chunk-9-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
 &lt;/div&gt;
 &lt;div id=&#34;S5&#34; class=&#34;section level1&#34;&gt;
 &lt;h1&gt;Multiple Linear Regression in Practice&lt;/h1&gt;
@@ -381,7 +380,7 @@ print(mpg_vs_am$coefficients)&lt;/code&gt;&lt;/pre&gt;
        y = &amp;quot;Miles per Gallon&amp;quot;,
        title = &amp;quot;Fuel Efficiency, Weight, and Transmission&amp;quot;,
        colour=&amp;quot;Transmission&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;/blog/blog/post/LinearModels_files/figure-html/unnamed-chunk-10-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;/blog/post/LinearModels_files/figure-html/unnamed-chunk-10-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
 &lt;p&gt;Again, I’ve plotted &lt;code&gt;mpg&lt;/code&gt; against &lt;code&gt;wt&lt;/code&gt; using a scatter plot, but I’ve mapped the colour aesthetic to the &lt;code&gt;am&lt;/code&gt; variable to see the group variation.&lt;/p&gt;
 &lt;p&gt;Mathematically, the model we will use looks like&lt;/p&gt;
 &lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[\hat{y} = \beta_0 + \beta_1x + \beta_2A\]&lt;/span&gt; where, as above, &lt;span class=&#34;math inline&#34;&gt;\(y\)&lt;/span&gt; is the &lt;code&gt;mpg&lt;/code&gt; variable, &lt;span class=&#34;math inline&#34;&gt;\(x\)&lt;/span&gt; is the &lt;code&gt;wt&lt;/code&gt; continuous variable, and &lt;code&gt;A&lt;/code&gt; is the categorical &lt;code&gt;am&lt;/code&gt; variable. &lt;span class=&#34;math inline&#34;&gt;\(\beta_1\)&lt;/span&gt; is the slope associated with &lt;span class=&#34;math inline&#34;&gt;\(x\)&lt;/span&gt; and &lt;span class=&#34;math inline&#34;&gt;\(\beta_2\)&lt;/span&gt; is the slope associated with &lt;span class=&#34;math inline&#34;&gt;\(A\)&lt;/span&gt;. Recall that &lt;span class=&#34;math inline&#34;&gt;\(A\)&lt;/span&gt; is only 0 or 1.&lt;/p&gt;
@@ -416,7 +415,7 @@ ggplot(mtcars, aes(x = wt, y = mpg, col = am)) +
        y = &amp;quot;Miles per Gallon&amp;quot;,
        title = &amp;quot;Multiple Linear Model: MPG ~ Weight + Transmission&amp;quot;,
        colour=&amp;quot;Transmission&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;/blog/blog/post/LinearModels_files/figure-html/unnamed-chunk-12-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;/blog/post/LinearModels_files/figure-html/unnamed-chunk-12-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
 &lt;p&gt;There are actually two lines in this plot, a blue one and a red one. Given how small &lt;span class=&#34;math inline&#34;&gt;\(\beta_2\)&lt;/span&gt; is we can’t see much of a difference, but the blue trend line should be slightly lower than the red line. Their slopes are the same. Let’s zoom in to be sure.&lt;/p&gt;
 &lt;pre class=&#34;r&#34;&gt;&lt;code&gt;ggplot(mtcars, aes(x = wt, y = mpg, col = am)) + 
   geom_point() + 
@@ -433,7 +432,7 @@ ggplot(mtcars, aes(x = wt, y = mpg, col = am)) +
        y = &amp;quot;Miles per Gallon&amp;quot;,
        title = &amp;quot;Multiple Linear Model: MPG ~ Weight + Transmission (Zoomed In)&amp;quot;,
        colour=&amp;quot;Transmission&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;/blog/blog/post/LinearModels_files/figure-html/unnamed-chunk-13-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;/blog/post/LinearModels_files/figure-html/unnamed-chunk-13-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
 &lt;p&gt;There we go. This is the effect of a multiple linear model with no interactions. In general the trend lines for the two groups don’t have to be so close together. It all depends on the data. In this case we see that, when we impose a fixed slope (using &lt;code&gt;mpg ~ wt + am&lt;/code&gt;), the trend lines describing the two groups are basically the same. Next, we’ll look at how adding interactions to our model results in slope variation.&lt;/p&gt;
 &lt;/div&gt;
 &lt;div id=&#34;S6&#34; class=&#34;section level1&#34;&gt;
@@ -479,7 +478,7 @@ ggplot(mtcars, aes(x = wt, y = mpg, col = am)) +
        y = &amp;quot;Miles per Gallon&amp;quot;,
        title = &amp;quot;Weight-Transmission Interaction&amp;quot;,
        colour=&amp;quot;Transmission&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;/blog/blog/post/LinearModels_files/figure-html/unnamed-chunk-15-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;/blog/post/LinearModels_files/figure-html/unnamed-chunk-15-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
 &lt;p&gt;Perfect. Compared to the non-interactive model in the previous Section, we see that adding an interaction (and thus allowing the slope of &lt;span class=&#34;math inline&#34;&gt;\(y\)&lt;/span&gt; with &lt;span class=&#34;math inline&#34;&gt;\(x\)&lt;/span&gt; to vary between groups) better characterizes the data. If the data was truly not well characterized by an interaction, the equal-slope model of the previous Section would perform just as well as an interactive model of this kind. Of course this would have to be determined by examining the statistics associated with the models.&lt;/p&gt;
 &lt;p&gt;This concludes the majority of what I wanted to cover. In the next Section I’ll go into some of the heavier mathematical details regarding linear models. Read ahead at your own peril.&lt;/p&gt;
 &lt;/div&gt;
@@ -494,7 +493,7 @@ ggplot(mtcars, aes(x = wt, y = mpg, col = am)) +
        y = &amp;quot;Miles per Gallon&amp;quot;,
        title = &amp;quot;Fuel Efficiency, Weight, and Horsepower&amp;quot;,
        colour=&amp;quot;Transmission&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;/blog/blog/post/LinearModels_files/figure-html/unnamed-chunk-16-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;/blog/post/LinearModels_files/figure-html/unnamed-chunk-16-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
 &lt;p&gt;Given the continuous nature of the &lt;code&gt;hp&lt;/code&gt; variable, this is difficult to interpret by eye. That doesn’t invalidate the model however, and we can still estimate the optimal &lt;span class=&#34;math inline&#34;&gt;\(\beta\)&lt;/span&gt; parameters.&lt;/p&gt;
 &lt;pre class=&#34;r&#34;&gt;&lt;code&gt;mpg_hp &amp;lt;- summary(lm(mpg ~ wt*hp, data=mtcars))
 print(mpg_hp$coefficients)&lt;/code&gt;&lt;/pre&gt;
@@ -512,7 +511,7 @@ print(mpg_hp$coefficients)&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[\beta_2 = \frac{\partial\hat{y}}{\partial x_2}\]&lt;/span&gt; We can visualize this two-dimensional plane in a three-dimensional space, where the third axis is represented by the &lt;span class=&#34;math inline&#34;&gt;\(y\)&lt;/span&gt; variable. You can do this easily by grabbing a piece of paper, or preferably a rigid flat object, and orienting it in front of you in real space. You can imagine the &lt;span class=&#34;math inline&#34;&gt;\(y\)&lt;/span&gt; axis as the vertical axis, and the &lt;span class=&#34;math inline&#34;&gt;\(x_1\)&lt;/span&gt; and &lt;span class=&#34;math inline&#34;&gt;\(x_2\)&lt;/span&gt; axes as the horizontal axes. The idea of a flat plane in a multi-dimensional space extends to any number of predictors in our model, provided that the model is non-interactive. Given &lt;span class=&#34;math inline&#34;&gt;\(N\)&lt;/span&gt; predictors &lt;span class=&#34;math inline&#34;&gt;\(\{x_1, x_2, ..., x_N\}\)&lt;/span&gt;, a model of the form&lt;/p&gt;
 &lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[\hat{y} = \beta_0 + \sum_{a=1}^N{\beta_ax_a}\]&lt;/span&gt;&lt;/p&gt;
 &lt;p&gt;describes a N-dimensional hyperplane embedded in a (N+1)-dimensional space. Crazy. This is undoubtedly true of continuous variables, but is a little bit more nuanced for a categorical variable. Going back to our model of &lt;code&gt;mpg&lt;/code&gt; vs. &lt;code&gt;wt&lt;/code&gt; and &lt;code&gt;am&lt;/code&gt;, we can still imagine this in a three-dimensional space. The axes of the space are &lt;code&gt;mpg&lt;/code&gt;,&lt;code&gt;wt&lt;/code&gt; and &lt;code&gt;am&lt;/code&gt;, but notice that we aren’t actually dealing with a plane in this case, since &lt;code&gt;am&lt;/code&gt; only takes on binary values. Rather we are dealing with two different lines embedded in this three-dimensional space. One line will occur at &lt;code&gt;am = 0&lt;/code&gt;, while the other occurs at &lt;code&gt;am = 1&lt;/code&gt;. Given this context, we can re-interpret the scatter plots from Section &lt;a href=&#34;#S5&#34;&gt;5&lt;/a&gt; and &lt;a href=&#34;#S6&#34;&gt;6&lt;/a&gt;. Here is the scatter plot and model from Section &lt;a href=&#34;$S6&#34;&gt;6&lt;/a&gt;:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;/blog/blog/post/LinearModels_files/figure-html/unnamed-chunk-18-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;/blog/post/LinearModels_files/figure-html/unnamed-chunk-18-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
 &lt;p&gt;Within the proper context of a three-dimensional space, this two-dimensional plot is actually the &lt;strong&gt;projection of the binary &lt;code&gt;am&lt;/code&gt; axis onto &lt;code&gt;am = 0&lt;/code&gt;&lt;/strong&gt;. Imagine the red line existing in your computer screen and the blue line actually existing outside of your computer screen, closer to you. I’ve used the interactive model here since the plot is nicer than that for the non-interactive model, but this leads us into a discussion of interactions with continuous variables.&lt;/p&gt;
 &lt;p&gt;Examining the plot above, you might already guess where this is going. Let’s consider a model with a simple product interaction of two continuous variables, like the one at the beginning of this Section:&lt;/p&gt;
 &lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[\hat{y} = \beta_0 + \beta_1x_1 + \beta_2x_2 + \beta_3x_1x_2\]&lt;/span&gt;&lt;/p&gt;

@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">  
   <channel>
     <title>Allen Brain Institute on The Mouse Imaging Centre Blog</title>
     <link>/blog/tags/allen-brain-institute/</link>
     <description>Recent content in Allen Brain Institute on The Mouse Imaging Centre Blog</description>
     <generator>Hugo -- gohugo.io</generator>
-    <language>en</language>
     <lastBuildDate>Fri, 23 Feb 2018 00:00:00 +0000</lastBuildDate>
     
         <atom:link href="/blog/tags/allen-brain-institute/index.xml" rel="self" type="application/rss+xml" />
@@ -50,7 +49,7 @@ fge&lt;/code&gt;&lt;/pre&gt;
 # genedata1 = mincVectorTOallenVector(genedata1)  #This is the inverse function&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;Now, we can visualize the gene expression. Below is a sagittal slice&lt;/p&gt;
 &lt;pre class=&#34;r&#34;&gt;&lt;code&gt;image(mincArray(genedata1)[30,,], ylab=&amp;#39;Superior-Inferior&amp;#39; ,xlab=&amp;#39;Anterior-Posterior&amp;#39;)&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;/blog/blog/post/2018-02-23_gene-expression_files/figure-html/6-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;/blog/post/2018-02-23_gene-expression_files/figure-html/6-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
 &lt;/div&gt;
 &lt;div id=&#34;adding-an-anatomical-underlay&#34; class=&#34;section level2&#34;&gt;
 &lt;h2&gt;Adding an anatomical underlay&lt;/h2&gt;
@@ -62,7 +61,7 @@ mincPlotSliceSeries(
   symmetric=FALSE,
   col=colorRampPalette(c(&amp;quot;darkgreen&amp;quot;,&amp;quot;yellowgreen&amp;quot;))(255),
   legend=&amp;quot;Bdnf Expression&amp;quot;,low=2,high=6.5)&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;/blog/blog/post/2018-02-23_gene-expression_files/figure-html/7-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;/blog/post/2018-02-23_gene-expression_files/figure-html/7-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
 &lt;p&gt;Much better. I can tell there is high expression in the cortex and hippocampus.&lt;/p&gt;
 &lt;p&gt;Let us also look at the other Bdnf experiment (ID: 75695642).&lt;/p&gt;
 &lt;pre class=&#34;r&#34;&gt;&lt;code&gt;genedata2 = read.raw.gene(as.character(fge$URLs[2]),url = TRUE)
@@ -73,7 +72,7 @@ mincPlotSliceSeries(
   symmetric=FALSE,
   col=colorRampPalette(c(&amp;quot;darkgreen&amp;quot;,&amp;quot;yellowgreen&amp;quot;))(255),
   legend=&amp;quot;Bdnf Expression&amp;quot;,low=2,high=6.5)&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;/blog/blog/post/2018-02-23_gene-expression_files/figure-html/8-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;/blog/post/2018-02-23_gene-expression_files/figure-html/8-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
 &lt;p&gt;We see that the sagittal slices only span half the brain. This was a deliberate choice by the ABI and most of the gene experiments are like this. Furthermore, slices are sampled every 200 microns for the sagittal datasets and every 100 microns for the coronal datasets. That is why we prefer using the coronal slices any chance we get, but there are still tools that help us work with sagittal data. We can reflect data across the sagittal midplane to fill in the missing hemisphere as so:&lt;/p&gt;
 &lt;pre class=&#34;r&#34;&gt;&lt;code&gt;genedata2.reflected=midplane.reflect(genedata2,reflect.dim=3)
 mincPlotSliceSeries(
@@ -82,7 +81,7 @@ mincPlotSliceSeries(
   symmetric=FALSE,
   col=colorRampPalette(c(&amp;quot;darkgreen&amp;quot;,&amp;quot;yellowgreen&amp;quot;))(255),
   legend=&amp;quot;Bdnf Expression&amp;quot;,low=2,high=6.5)&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;/blog/blog/post/2018-02-23_gene-expression_files/figure-html/99-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;/blog/post/2018-02-23_gene-expression_files/figure-html/99-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
 &lt;p&gt;We can do better. Because there sagittal sections were only sampled every 200um, there is a lot of missing data due to slice misalignment. We can fill them in using nearest neighbour marching averages.&lt;/p&gt;
 &lt;pre class=&#34;r&#34;&gt;&lt;code&gt;labelfile=system.file(&amp;#39;extdata/gridAnnotation.raw&amp;#39;,package=&amp;quot;ABIgeneRMINC&amp;quot;)
 mask=allenVectorTOmincVector(read.raw.gene(labelfile,labels=TRUE)&amp;gt;0)
@@ -94,7 +93,7 @@ mincPlotSliceSeries(
   symmetric=FALSE,
   col=colorRampPalette(c(&amp;quot;darkgreen&amp;quot;,&amp;quot;yellowgreen&amp;quot;))(255),
   legend=&amp;quot;Bdnf Expression&amp;quot;,low=2,high=6.5)&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;/blog/blog/post/2018-02-23_gene-expression_files/figure-html/9-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;/blog/post/2018-02-23_gene-expression_files/figure-html/9-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
 &lt;p&gt;Even with interpolation, the expression map is not that good.&lt;/p&gt;
 &lt;/div&gt;
 &lt;div id=&#34;expression-statistics&#34; class=&#34;section level2&#34;&gt;

@@ -8,7 +8,7 @@
     <language>en</language>
     <lastBuildDate>Thu, 15 Feb 2018 00:00:00 +0000</lastBuildDate>
     
-	<atom:link href="/blog/tags/murine/index.xml" rel="self" type="application/rss+xml" />
+        <atom:link href="/blog/tags/murine/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
@@ -17,7 +17,48 @@
       <pubDate>Thu, 15 Feb 2018 00:00:00 +0000</pubDate>
       
       <guid>/blog/post/2018-02-15_coclinical-trials/</guid>
-      <description>Why co-clinical trials? Here at the Mouse Imaging Centre, a large portion of our research is related to neurodevelopmental disorders. Ultimately the goal of such research is to improve health outcomes for individuals with these disorders. One clear way to impact health outcomes for individuals with neurodevelopmental disorders is to develop new medicines. Part of my research has been on the animal side of a project aimed at using matched human and animal trials to expedite drug development for autism spectrum disorders.</description>
+      <description>&lt;div id=&#34;why-co-clinical-trials&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Why co-clinical trials?&lt;/h2&gt;
+&lt;p&gt;Here at the Mouse Imaging Centre, a large portion of our research is related to neurodevelopmental disorders. Ultimately the goal of such research is to improve health outcomes for individuals with these disorders. One clear way to impact health outcomes for individuals with neurodevelopmental disorders is to develop new medicines. Part of my research has been on the animal side of a project aimed at using matched human and animal trials to expedite drug development for autism spectrum disorders. This approach of simultaneously merging human and animal trials is termed a co-clinical trial. The purpose of today’s post is to introduce co-clinical trials and explain why they are useful for drug development.&lt;/p&gt;
+&lt;p&gt;But first I’ll introduce the standard paradigm of drug developments.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;drug-development&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Drug development&lt;/h2&gt;
+&lt;p&gt;The general path of drug development currently proceeds as follows.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Pre-clinical phase: first new drugs are developed in labs where they are validated in animal models&lt;/li&gt;
+&lt;li&gt;Phase 1 clinical trial: new drugs are then tested for safety in a small sample of humans.&lt;/li&gt;
+&lt;li&gt;Phase 2 and 3: The drugs are then tested for their primary purpose in humans.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;At each phase, the new drug must pass specific criteria to pass from one step to the next&lt;span class=&#34;math inline&#34;&gt;\(^1\)&lt;/span&gt;. The problem is, this path is &lt;strong&gt;slow&lt;/strong&gt;.&lt;/p&gt;
+&lt;p&gt;The time it takes from the first moment the drug is discovered to helping real people is upwards of 15 years&lt;span class=&#34;math inline&#34;&gt;\(^2\)&lt;/span&gt;! Just one study can cost up to $600 million to implement &lt;span class=&#34;math inline&#34;&gt;\(^3\)&lt;/span&gt;. This doesn’t even consider the cost of failed studies that frequently preceed successful ones&lt;span class=&#34;math inline&#34;&gt;\(^2\)&lt;/span&gt;. In fact, most trials fail.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;why-trials-fail&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Why trials fail&lt;/h2&gt;
+&lt;p&gt;A recent study showed that only 10% of drugs in phase 1 studies make it to the market &lt;span class=&#34;math inline&#34;&gt;\(^4\)&lt;/span&gt;. The biggest challenge in clinical trials is the “high rate of failure to meet primary endpoints due to poor or complex design &lt;span class=&#34;math inline&#34;&gt;\(^5\)&lt;/span&gt;.” In these cases, the drug failed to meet the “efficacy” standards that were originally set.&lt;/p&gt;
+&lt;p&gt;Before a clinical trial is started, the research team (usually made up of researchers, doctors, etc etc) has to determine which exact measures will be improved with treatment, and by how much. These measures and benchmarks are the trials efficacy targets. The trial must then meet those criteria to be considered successful.&lt;/p&gt;
+&lt;p&gt;Let’s take an example from Zamzow (2017)&lt;span class=&#34;math inline&#34;&gt;\(^6\)&lt;/span&gt; to illustrate this point. There was great promise for a drug called mavoglurant, a potential treatment for Fragile X Syndrome (FXS). Fragile X Syndrome is the most common single-gene cause of autism. Mavoglurant, a metabotropic glutamate receptor 5 (mGluR5) antagonist, targets the pathway that is altered in FXS. The drug had successfully reversed many of the behavioural phenotypes in pre-clinical trials using mouse models of autism.&lt;/p&gt;
+&lt;p&gt;Two large pharmaceutical companies invested in clinical trials of the drug, and the autism community held their breath in anticipation. Both studies had picked a questionnaire called the Aberrant Behaviour Checklist (ABC) as the primary measure and therefore, the trial would only be considered successful if a significant proportion of individuals improved on their ABCs, regardless of improvement in other measures. Within half a year of each other, both companies marked their studies as having failed to meet efficacy. Unfortunately, for some individuals, the drug did work really well.&lt;/p&gt;
+&lt;p&gt;The problem is, despite failing to meet the efficacy targets decided before the trial, the drug improved measures other than on the ABCs. The Stevenson’s, one family involved in the trial, spoke of the obvious improvements they saw in their son Taylor, who has FXS. Mavoglurant had decreased his anxiety, his language skills flourished, and he made marked improvements in many other aspects of his behaviour. Because the trial failed, he was taken off the drug and has since regressed. Now, there is no way for him to access the drug or anything similar &lt;span class=&#34;math inline&#34;&gt;\(^6\)&lt;/span&gt;.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;how-co-clinical-trials-can-help&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;How co-clinical trials can help&lt;/h2&gt;
+&lt;p&gt;Mavoglurant is just one example of trials that failed to meet targets due to mispecified efficacy standards or unexpected disease heterogeneity. And this is exactly where co-clinical trials can step in.&lt;/p&gt;
+&lt;p&gt;A pioneering example where the co-clinical trial design came to the rescue was a clinical trial of a drug called selumetinib for lung cancer. The drug, like many others, failed to meet its specified efficacy measures. However, concurrent research in mouse models of the disease suggested that the treatment effected subpopulations differently. Because the researchers had adopted the design of a co-clinical trial, they were able to use the data from the animal work to inform the analysis of the human data. Specifically, multiple genetic mouse models were treated with selumetinib and only one of the lines responded positively to treatment. When the researchers substratified the human patients by their cancer genotype, they also grouped into responders vs non-responders. The drug was then considered a successful treatment option for individuals with that cancer genotype.&lt;/p&gt;
+&lt;p&gt;This case highlights that when there is heterogeneity in your study population, treatment response may be lost &lt;span class=&#34;math inline&#34;&gt;\(^7\)&lt;/span&gt;. Perhaps, there is a subset of individual’s like Taylor Stevenson &lt;span class=&#34;math inline&#34;&gt;\(^6\)&lt;/span&gt;, the boy with FXS, who do respond to treatment. A co-clinical trial, in which mouse models of autism are treated alongside individuals with autism, could potentially identify these subtypes, enhancing our understanding of autism and treatment options for individuals.&lt;/p&gt;
+&lt;p&gt;The co-clinical methodology can be extended to numerous other fields, beyond autism and cancer. Any disease or disorder, in which the population presentation is heterogenous, and our understanding of the mechanisms are limited, could greatly benefit from the new perspective gained from co-clinical trials.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;p&gt;&lt;span class=&#34;math inline&#34;&gt;\(^1\)&lt;/span&gt;: U.S. Food and Drug Administration. (Unknown year) Step 3: Clinical Research, The Drug Development Porcess &lt;a href=&#34;https://www.fda.gov/ForPatients/Approvals/Drugs/ucm405622.htm#Clinical_Research_Phase_Studies&#34;&gt;link&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;span class=&#34;math inline&#34;&gt;\(^2\)&lt;/span&gt;: Ralf Huss. (2016) The High Price Of Failed Clinical Trials: Time To Rethink The Model, Clinical Leader &lt;a href=&#34;https://www.clinicalleader.com/doc/the-high-price-of-failed-clinical-trials-time-to-rethink-the-model-0001&#34;&gt;link&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;span class=&#34;math inline&#34;&gt;\(^3\)&lt;/span&gt;: Institute of Medicine (US) Forum on Drug Discover…. (2010) Challenges and Opportunities: Workshop Summary, Transforming Clinical Research in the United States &lt;a href=&#34;https://www.ncbi.nlm.nih.gov/books/NBK50888/&#34;&gt;link&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;span class=&#34;math inline&#34;&gt;\(^4\)&lt;/span&gt;: Unknown author. (2016) Clinical Development Success Rates 2006-2015, Unknown source &lt;a href=&#34;https://www.bio.org/sites/default/files/Clinical%20Development%20Success%20Rates%202006-2015%20-%20BIO,%20Biomedtracker,%20Amplion%202016.pdf&#34;&gt;link&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;span class=&#34;math inline&#34;&gt;\(^5\)&lt;/span&gt;: Andrew Burrows. (2016) Report: The 8 biggest challenges facing clinical trial professionals, Unknown source &lt;a href=&#34;https://knect365.com/clinical-trials-innovation/article/e414c9b9-8de9-4525-8fe6-fe6264d36df0/report-biggest-challenges-clinical-trials-pt-1&#34;&gt;link&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;span class=&#34;math inline&#34;&gt;\(^6\)&lt;/span&gt;: Rachel Zamzow. (2017) The Flawed Designs of Drug Trials for Autism, Unknown source &lt;a href=&#34;https://www.theatlantic.com/health/archive/2017/02/autism-drugs/516855/&#34;&gt;link&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;span class=&#34;math inline&#34;&gt;\(^7\)&lt;/span&gt;: Chen, Zhao and Cheng, Katherine and Walton, Zandra…. (2012) A murine lung cancer co-clinical trial identifies genetic modifiers of therapeutic response, Nature &lt;a href=&#34;https://www.nature.com/articles/nature10937&#34;&gt;link&lt;/a&gt;&lt;/p&gt;
+&lt;hr /&gt;
+&lt;p&gt;Thanks to Chris Hammill for helpful edits on the first version of this post.&lt;/p&gt;
+&lt;/div&gt;
+</description>
     </item>
     
   </channel>

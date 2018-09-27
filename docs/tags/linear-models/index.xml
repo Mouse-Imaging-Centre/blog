@@ -8,7 +8,7 @@
     <language>en</language>
     <lastBuildDate>Fri, 06 Jul 2018 00:00:00 +0000</lastBuildDate>
     
-	<atom:link href="/blog/tags/linear-models/index.xml" rel="self" type="application/rss+xml" />
+        <atom:link href="/blog/tags/linear-models/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
@@ -17,10 +17,711 @@
       <pubDate>Fri, 06 Jul 2018 00:00:00 +0000</pubDate>
       
       <guid>/blog/post/2018-07-06_linearmodelserrors/</guid>
-      <description>Introduction library(tidyverse) library(matlib) library(knitr) library(RColorBrewer) The purpose of this document is to understand the parameter and residuals error estimates in a basic linear regression model when working with binary categorical variables. Recall the general model definition:
-\[ \mathbf{y} = \mathbf{X}\mathbf{\beta} + \mathbf{e}\]
-where \(\mathbf{X}\) is the design matrix and \(\mathbf{\beta}\) is a \((p+1)\)-vector of coefficients/parameters, including the intercept parameter. The errors are normally distributed around 0 with variance \(\sigma^2\):
-\[e \sim N(0,\sigma^2) \quad .</description>
+      <description>&lt;div id=&#34;introduction&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;Introduction&lt;/h1&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;library(tidyverse)
+library(matlib)
+library(knitr)
+library(RColorBrewer)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The purpose of this document is to understand the parameter and residuals error estimates in a basic linear regression model when working with &lt;strong&gt;binary categorical variables&lt;/strong&gt;. Recall the general model definition:&lt;/p&gt;
+&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[ \mathbf{y} = \mathbf{X}\mathbf{\beta} + \mathbf{e}\]&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;where &lt;span class=&#34;math inline&#34;&gt;\(\mathbf{X}\)&lt;/span&gt; is the &lt;strong&gt;design matrix&lt;/strong&gt; and &lt;span class=&#34;math inline&#34;&gt;\(\mathbf{\beta}\)&lt;/span&gt; is a &lt;span class=&#34;math inline&#34;&gt;\((p+1)\)&lt;/span&gt;-vector of coefficients/parameters, including the intercept parameter. The errors are normally distributed around 0 with variance &lt;span class=&#34;math inline&#34;&gt;\(\sigma^2\)&lt;/span&gt;:&lt;/p&gt;
+&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[e \sim N(0,\sigma^2) \quad .\]&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;Upon fitting the model to data, we obtain estimates for the coefficients, &lt;span class=&#34;math inline&#34;&gt;\(\hat{\beta}\)&lt;/span&gt;. These estimates have an associated covariance matrix &lt;span class=&#34;math inline&#34;&gt;\(\sigma^2_\beta\)&lt;/span&gt;, which is used for statistical inference. The covariance matrix of the parameters is calculated from the estimate for the residual standard error in the following way:&lt;/p&gt;
+&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[\mathbf{\sigma}^2_\beta = (\mathbf{X}&amp;#39;\mathbf{X})^{-1}\hat{\sigma}^2 \quad .\]&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;The focus of this document will be on understanding the details of this covariance matrix, specifically of the parameter standard errors and the residual standard error, &lt;span class=&#34;math inline&#34;&gt;\(\hat{\sigma}\)&lt;/span&gt;. The squared parameter standard errors (i.e. parameter variances) are the diagonal terms in the covariance matrix, and so the two measures of variability are related to one another in the following way:&lt;/p&gt;
+&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[\text{diag}[\mathbf{\sigma}^2_\beta] = \text{diag}[(\mathbf{X}&amp;#39;\mathbf{X})^{-1}]\hat{\sigma}^2 \quad .\]&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;The standard errors can then be obtained by taking the square root of the variances. This transformation between the residual standard error and the parameter standard errors is not trivial and depends on the number of parameters and type of variables. Recall that the estimate for &lt;span class=&#34;math inline&#34;&gt;\(\sigma\)&lt;/span&gt; is given by&lt;/p&gt;
+&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[\hat{\sigma}^2 = \frac{1}{n-p-1} \sum_{i = 1}^n e^2_i \quad .\]&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;If the data includes observations of categorical variables such that it can be pooled into &lt;strong&gt;balanced groups&lt;/strong&gt; with potentially different group sample standard deviations of &lt;span class=&#34;math inline&#34;&gt;\(\sigma_g\)&lt;/span&gt;, it can be shown straightforwardly that if &lt;span class=&#34;math inline&#34;&gt;\(n \gg p\)&lt;/span&gt;, i.e. in the regime of low-dimensional data,&lt;/p&gt;
+&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[\hat{\sigma}^2 = \text{Ave}[\sigma^2_g] \quad .\]&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;If the sample standard deviations of the groups are identical, then &lt;span class=&#34;math inline&#34;&gt;\(\hat{\sigma} = \sigma_g\)&lt;/span&gt;. What this tells us is that the residual standard error is an estimate on the standard deviation of the groups defined by the model.&lt;/p&gt;
+&lt;p&gt;We will get a sense of how these estimates vary by generating some simulated data and playing with different linear models of the data. In particular, we will simulate a &lt;strong&gt;balanced experimental design&lt;/strong&gt; consisting of independent binary categorical variables and a continuous response. We will consider three binary variables: &lt;code&gt;Genotype&lt;/code&gt;, &lt;code&gt;Anxiety&lt;/code&gt;, and &lt;code&gt;Treatment&lt;/code&gt;. The use of binary variables in linear models has the effect of pooling the data across different groups. Since there are 3 binary variables, there will be 8 separate groups, i.e. &lt;span class=&#34;math inline&#34;&gt;\(2^3\)&lt;/span&gt;. To operate well within the low-dimensitonality regime, we will use a large sample size. The data will be simulated by first generating a scaffold data frame containing the observations for the different categorical variables. The scaffold data frame will then be used to generate the response variable stochastically. We will start by generating the scaffold data frame.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;#Define variables related to the experimental design. 
+# Sample size
+nSample &amp;lt;- 100
+# Number of binary variables
+nBinVar &amp;lt;- 3
+# Number of distinct groups
+nGroups &amp;lt;- 2^nBinVar
+#Total number of observations
+nObs &amp;lt;- nSample*nGroups
+
+#Generate data frame (handy trick uisng expand.grid() and map_df())
+dfGrid &amp;lt;- expand.grid(Genotype = c(&amp;quot;WT&amp;quot;,&amp;quot;MUT&amp;quot;), 
+                      Anxiety = c(&amp;quot;No&amp;quot;,&amp;quot;Yes&amp;quot;), 
+                      Treatment = c(&amp;quot;Placebo&amp;quot;, &amp;quot;Drug&amp;quot;))
+dfSimple &amp;lt;- map_df(seq_len(nSample), ~dfGrid) %&amp;gt;% 
+  mutate(Genotype = factor(Genotype, levels = c(&amp;quot;WT&amp;quot;,&amp;quot;MUT&amp;quot;)),
+         Anxiety = factor(Anxiety, levels = c(&amp;quot;No&amp;quot;,&amp;quot;Yes&amp;quot;)),
+         Treatment = factor(Treatment, levels = c(&amp;quot;Placebo&amp;quot;,&amp;quot;Drug&amp;quot;)))
+
+#Verify that this worked
+dfSimple %&amp;gt;% 
+  group_by(Genotype, Anxiety, Treatment) %&amp;gt;% 
+  count&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## # A tibble: 8 x 4
+## # Groups:   Genotype, Anxiety, Treatment [8]
+##   Genotype Anxiety Treatment     n
+##   &amp;lt;fct&amp;gt;    &amp;lt;fct&amp;gt;   &amp;lt;fct&amp;gt;     &amp;lt;int&amp;gt;
+## 1 WT       No      Placebo     100
+## 2 WT       No      Drug        100
+## 3 WT       Yes     Placebo     100
+## 4 WT       Yes     Drug        100
+## 5 MUT      No      Placebo     100
+## 6 MUT      No      Drug        100
+## 7 MUT      Yes     Placebo     100
+## 8 MUT      Yes     Drug        100&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Now we create the distribution of the response based on the independent variables. We will generate data in which &lt;strong&gt;there are no interactions between any of the predictor variables&lt;/strong&gt;. The response will be generated using standardized units so that it can stand in for any physical variable. The main effects of the predictors on the response are taken to be &lt;span class=&#34;math inline&#34;&gt;\(2\sigma\)&lt;/span&gt;, where &lt;span class=&#34;math inline&#34;&gt;\(\sigma\)&lt;/span&gt; is the standard deviation of the normal distribution used to generate observations of the response.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;#Simulation parameters
+meanRef &amp;lt;- 0
+sigma &amp;lt;- 1
+effectGenotype &amp;lt;- 2*sigma
+effectAnxiety &amp;lt;- 2*sigma
+effectTreatment &amp;lt;- 2*sigma
+
+#Generate data based on experimental design. 
+#In this case, no interaction between variables.
+dfSimple$Response &amp;lt;- meanRef +
+  effectGenotype*(as.numeric(dfSimple$Genotype)-1) +
+  effectAnxiety*(as.numeric(dfSimple$Anxiety)-1) +
+  effectTreatment*(as.numeric(dfSimple$Treatment)-1) +
+  rnorm(nrow(dfSimple), 0, sigma)
+
+ggplot(dfSimple, aes(x = Genotype, y = Response, col = Anxiety)) + 
+  geom_jitter(width = 0.2) + 
+  facet_grid(.~Treatment) + 
+  scale_color_brewer(palette = &amp;quot;Set1&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/blog/blog/post/2018-07-06_LinearModelsErrors_files/figure-html/unnamed-chunk-2-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;With the data generated we can start considering different linear models to understand the error/variance estimates. In the following Sections we will consider models with and without interactions to examine how the error estimates change. The general process will be to run a given model on the simulated data and examine the details of the transformation from &lt;span class=&#34;math inline&#34;&gt;\(\sigma\)&lt;/span&gt; to &lt;span class=&#34;math inline&#34;&gt;\(\sigma_\beta\)&lt;/span&gt; for that model. In doing so we will see that a number of patterns emerge.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;non-interactive-models&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;Non-interactive Models&lt;/h1&gt;
+&lt;div id=&#34;model-1-intercept-term-only&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Model 1: Intercept Term Only&lt;/h2&gt;
+&lt;p&gt;The first model is one where the only parameter is the intercept. The &lt;span class=&#34;math inline&#34;&gt;\(\beta\)&lt;/span&gt; estimate returned will be the mean of the data pooled across all groups. The distribution of the pooled response observations is as follows:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;ggplot(dfSimple, aes(x = Response)) + 
+  geom_histogram(binwidth = 1,
+                 alpha = 0.7,
+                 col = &amp;quot;black&amp;quot;,
+                 fill = brewer.pal(3,&amp;quot;Set1&amp;quot;)[2])&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/blog/blog/post/2018-07-06_LinearModelsErrors_files/figure-html/unnamed-chunk-3-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;The model is written as&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;linMod1 &amp;lt;- lm(Response ~ 1, data = dfSimple)
+summary(linMod1)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## 
+## Call:
+## lm(formula = Response ~ 1, data = dfSimple)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -5.1667 -1.4140  0.0039  1.3655  5.5253 
+## 
+## Coefficients:
+##             Estimate Std. Error t value Pr(&amp;gt;|t|)    
+## (Intercept)  2.99865    0.07092   42.28   &amp;lt;2e-16 ***
+## ---
+## Signif. codes:  0 &amp;#39;***&amp;#39; 0.001 &amp;#39;**&amp;#39; 0.01 &amp;#39;*&amp;#39; 0.05 &amp;#39;.&amp;#39; 0.1 &amp;#39; &amp;#39; 1
+## 
+## Residual standard error: 2.006 on 799 degrees of freedom&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;In this simple case, the residual standard error is simply the standard deviation of the full data:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;dfSimple %&amp;gt;% 
+  summarise(sd(Response))&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;##   sd(Response)
+## 1     2.006061&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;What about the standard error of the intercept?&lt;/p&gt;
+&lt;p&gt;Since there is only one parameter for the intercept, the design matrix will just be a vector of ones. The transformation &lt;span class=&#34;math inline&#34;&gt;\(\mathbf{X}&amp;#39;\mathbf{X}\)&lt;/span&gt; is then just the squared norm of the vector and will be equal to the number of observations in the data set, i.e. &lt;span class=&#34;math inline&#34;&gt;\(\sum_{i=1}^n 1 = n\)&lt;/span&gt;. The inverse operation is just that for a scalar value and we get &lt;span class=&#34;math inline&#34;&gt;\(\sigma_\beta = \frac{\sigma}{\sqrt{n}}\)&lt;/span&gt;. Multiplying the standard error estimate by &lt;span class=&#34;math inline&#34;&gt;\(\sqrt{n}\)&lt;/span&gt; should return the value of the residual standard error:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;summary(linMod1)$coefficients[[&amp;quot;(Intercept)&amp;quot;,&amp;quot;Std. Error&amp;quot;]]*sqrt(nObs)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## [1] 2.006061&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;div id=&#34;model-2-one-binary-predictor&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Model 2: One Binary Predictor&lt;/h2&gt;
+&lt;p&gt;Next we add one of the binary variables as a predictor in the model. This will have the effect of pooling the data according to the different levels of that predictor.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;ggplot(dfSimple, aes(x = Genotype, y = Response)) +
+  geom_jitter(width = 0.2,
+              col = brewer.pal(3,&amp;quot;Set1&amp;quot;)[2])&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/blog/blog/post/2018-07-06_LinearModelsErrors_files/figure-html/unnamed-chunk-7-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;In this case the intercept estimate will indicate the pooled mean of the wildtype group (or whatever the reference level is for the chosen predictor) and the slope estimate will indicate the difference between the wildtype mean and the pooled mean of the mutant group.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;linMod2 &amp;lt;- lm(Response ~ Genotype, data = dfSimple)
+summary(linMod2)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## 
+## Call:
+## lm(formula = Response ~ Genotype, data = dfSimple)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -4.7239 -1.1826  0.0098  1.2532  4.5008 
+## 
+## Coefficients:
+##             Estimate Std. Error t value Pr(&amp;gt;|t|)    
+## (Intercept)  1.97414    0.08627   22.88   &amp;lt;2e-16 ***
+## GenotypeMUT  2.04902    0.12201   16.79   &amp;lt;2e-16 ***
+## ---
+## Signif. codes:  0 &amp;#39;***&amp;#39; 0.001 &amp;#39;**&amp;#39; 0.01 &amp;#39;*&amp;#39; 0.05 &amp;#39;.&amp;#39; 0.1 &amp;#39; &amp;#39; 1
+## 
+## Residual standard error: 1.725 on 798 degrees of freedom
+## Multiple R-squared:  0.2611, Adjusted R-squared:  0.2602 
+## F-statistic: 282.1 on 1 and 798 DF,  p-value: &amp;lt; 2.2e-16&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;What do the variance estimates represent? Remember that the residual standard error is an estimate of the variability across all of the data. As mentioned in the introduction, the residual standard error will be the square root of the average of the sample variances of the two groups. The group variances and the resulting standard error estimate are:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;dfSimple %&amp;gt;% 
+  group_by(Genotype) %&amp;gt;% 
+  summarise(varPerGroup = var(Response)) %&amp;gt;% 
+  ungroup() %&amp;gt;% 
+  mutate(sigma = sqrt(mean(varPerGroup)))&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## # A tibble: 2 x 3
+##   Genotype varPerGroup sigma
+##   &amp;lt;fct&amp;gt;          &amp;lt;dbl&amp;gt; &amp;lt;dbl&amp;gt;
+## 1 WT              2.78  1.73
+## 2 MUT             3.17  1.73&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Which is equal to the estimate for the residuals standard error.&lt;/p&gt;
+&lt;p&gt;How do the standard errors of the parameters relate to the residual standard error for this model? Let’s compute the transformation explicitly using the design matrix. First we compute &lt;span class=&#34;math inline&#34;&gt;\(\mathbf{X&amp;#39;X}\)&lt;/span&gt;:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;xMat &amp;lt;- model.matrix(linMod2)
+t(xMat)%*%xMat&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;##             (Intercept) GenotypeMUT
+## (Intercept)         800         400
+## GenotypeMUT         400         400&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Indicating the number of observations explicitly, we can see that this matrix is of the form:&lt;/p&gt;
+&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[\mathbf{X}&amp;#39;\mathbf{X} = n \cdot \begin{bmatrix} 1 &amp;amp; \frac{1}{2} \\ \frac{1}{2} &amp;amp; \frac{1}{2} \end{bmatrix}\]&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;Taking the inverse (which is a straightforward process for a 2x2 matrix such as this) and multiplying by &lt;span class=&#34;math inline&#34;&gt;\(\sigma\)&lt;/span&gt;, we find that the covariance matrix is&lt;/p&gt;
+&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[\sigma^2_\beta = \frac{\sigma^2}{n} \cdot \begin{bmatrix} 2 &amp;amp; -2 \\ -2 &amp;amp; 4 \end{bmatrix}\]&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;Specifically, the standard errors of the estimates are given by the square roots of the diagonal terms in this matrix (note that this isn’t a proper matrix operation but think of this as extracting the diagonal elements and then taking the square root of each of them):&lt;/p&gt;
+&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[\sigma_\beta = \frac{\sigma}{\sqrt{n}}\begin{bmatrix} \sqrt{2} &amp;amp; \sqrt{4} \end{bmatrix}\]&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;A point of interest here is that the parameter errors are related to this quantity &lt;span class=&#34;math inline&#34;&gt;\(\frac{\sigma}{\sqrt{n}}\)&lt;/span&gt; but are scaled by some multiplicative factor. Notably, the slope parameter is more uncertain than the intercept. Multiplying the parameter standard errors by the appropriate multiplicative factors, we should recover the residual standard error:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;vec &amp;lt;- c(sqrt(nObs/2), sqrt(nObs/4))
+summary(linMod2)$coefficients[,&amp;quot;Std. Error&amp;quot;]*vec&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## (Intercept) GenotypeMUT 
+##     1.72542     1.72542&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;div id=&#34;model-3-two-binary-predictors&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Model 3: Two Binary Predictors&lt;/h2&gt;
+&lt;p&gt;In our third model, we consider the effects of two binary predictors without an interaction. This will pool the data into the &lt;span class=&#34;math inline&#34;&gt;\(2^2=4\)&lt;/span&gt; groups defined by these predictors:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;ggplot(dfSimple, aes(x = Genotype, y = Response, col = Anxiety)) +
+  geom_jitter(width = 0.2) + 
+  scale_color_brewer(palette = &amp;quot;Set1&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/blog/blog/post/2018-07-06_LinearModelsErrors_files/figure-html/unnamed-chunk-12-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;The model is as followed:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;linMod3 &amp;lt;- lm(Response ~ Genotype + Anxiety, data = dfSimple)
+summary(linMod3)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## 
+## Call:
+## lm(formula = Response ~ Genotype + Anxiety, data = dfSimple)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -3.7018 -1.0455 -0.0082  1.0402  4.1122 
+## 
+## Coefficients:
+##             Estimate Std. Error t value Pr(&amp;gt;|t|)    
+## (Intercept)  0.95205    0.08512   11.19   &amp;lt;2e-16 ***
+## GenotypeMUT  2.04902    0.09829   20.85   &amp;lt;2e-16 ***
+## AnxietyYes   2.04417    0.09829   20.80   &amp;lt;2e-16 ***
+## ---
+## Signif. codes:  0 &amp;#39;***&amp;#39; 0.001 &amp;#39;**&amp;#39; 0.01 &amp;#39;*&amp;#39; 0.05 &amp;#39;.&amp;#39; 0.1 &amp;#39; &amp;#39; 1
+## 
+## Residual standard error: 1.39 on 797 degrees of freedom
+## Multiple R-squared:  0.5211, Adjusted R-squared:  0.5199 
+## F-statistic: 433.5 on 2 and 797 DF,  p-value: &amp;lt; 2.2e-16&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;We expect that the residual standard error should be approximately equal to the average of the group standard deviations. Note that with the addition of new predictors, we will move slowly out of the regime where &lt;span class=&#34;math inline&#34;&gt;\(n \gg p\)&lt;/span&gt; holds.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;dfSimple %&amp;gt;% 
+  group_by(Genotype, Anxiety) %&amp;gt;%
+  summarise(varPerGroup = var(Response)) %&amp;gt;%
+  ungroup() %&amp;gt;%
+  mutate(sigma = sqrt(mean(varPerGroup)))&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## # A tibble: 4 x 4
+##   Genotype Anxiety varPerGroup sigma
+##   &amp;lt;fct&amp;gt;    &amp;lt;fct&amp;gt;         &amp;lt;dbl&amp;gt; &amp;lt;dbl&amp;gt;
+## 1 WT       No             1.95  1.39
+## 2 WT       Yes            1.44  1.39
+## 3 MUT      No             2.23  1.39
+## 4 MUT      Yes            2.12  1.39&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;How do the errors of the parameter estimates relate back to this?&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;xMat &amp;lt;- model.matrix(linMod3)
+t(xMat) %*% xMat&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;##             (Intercept) GenotypeMUT AnxietyYes
+## (Intercept)         800         400        400
+## GenotypeMUT         400         400        200
+## AnxietyYes          400         200        400&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Explicitly indicating the number of observations, we have:&lt;/p&gt;
+&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[ \mathbf{X&amp;#39;X} = n \cdot \begin{bmatrix} 1 &amp;amp; \frac{1}{2} &amp;amp; \frac{1}{2} \\ \frac{1}{2} &amp;amp; \frac{1}{2} &amp;amp; \frac{1}{4} \\ \frac{1}{2} &amp;amp; \frac{1}{4} &amp;amp; \frac{1}{2} \end{bmatrix}\]&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;Taking the inverse (which is a tedious process for any matrix of dimension greater than 2), the covariance matrix is&lt;/p&gt;
+&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[\sigma^2_\beta = \frac{\sigma^2}{n}\cdot\begin{bmatrix} 3 &amp;amp; -2 &amp;amp; -2 \\ -2 &amp;amp; 4 &amp;amp; 0 \\ -2 &amp;amp; 0 &amp;amp; 4 \end{bmatrix}\]&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;And the standard errors are given by:&lt;/p&gt;
+&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[\sigma_\beta = \frac{\sigma}{\sqrt{n}}\begin{bmatrix} \sqrt{3} &amp;amp; \sqrt{4} &amp;amp; \sqrt{4} \end{bmatrix}\]&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;Notice that this is similar to the mapping from the previous model, except that the intercept error is now estimated using &lt;span class=&#34;math inline&#34;&gt;\(\sqrt{3}\)&lt;/span&gt; rather than &lt;span class=&#34;math inline&#34;&gt;\(\sqrt{2}\)&lt;/span&gt;. Interestingly including an additional predictor does not change the conversion factors for the slope parameters. Applying the appropriate multiplicative factors to the error estimates, we should recover the residual standard error:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;vec &amp;lt;- c(sqrt(nObs/3), sqrt(nObs/4), sqrt(nObs/4))
+summary(linMod3)$coefficients[,&amp;quot;Std. Error&amp;quot;]*vec&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## (Intercept) GenotypeMUT  AnxietyYes 
+##    1.390042    1.390042    1.390042&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;div id=&#34;model-4-three-binary-predictors&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Model 4: Three Binary Predictors&lt;/h2&gt;
+&lt;p&gt;In order to get a clearer sense of the trend in the error estimates with regards to binary predictors, we will add the third main effect into the model. In this case the model will utilize the full 8 groups in the data.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;ggplot(dfSimple, aes(x = Genotype, y = Response, col = Anxiety)) +
+  geom_jitter(width = 0.2) + 
+  facet_grid(.~Treatment) +
+  scale_color_brewer(palette = &amp;quot;Set1&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/blog/blog/post/2018-07-06_LinearModelsErrors_files/figure-html/unnamed-chunk-17-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Here is the model:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;linMod4 &amp;lt;- lm(Response ~ Genotype + Anxiety + Treatment, data = dfSimple)
+summary(linMod4)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## 
+## Call:
+## lm(formula = Response ~ Genotype + Anxiety + Treatment, data = dfSimple)
+## 
+## Residuals:
+##      Min       1Q   Median       3Q      Max 
+## -3.05274 -0.64003 -0.00343  0.63785  3.12745 
+## 
+## Coefficients:
+##               Estimate Std. Error t value Pr(&amp;gt;|t|)    
+## (Intercept)   -0.03268    0.06928  -0.472    0.637    
+## GenotypeMUT    2.04902    0.06928  29.574   &amp;lt;2e-16 ***
+## AnxietyYes     2.04417    0.06928  29.504   &amp;lt;2e-16 ***
+## TreatmentDrug  1.96946    0.06928  28.425   &amp;lt;2e-16 ***
+## ---
+## Signif. codes:  0 &amp;#39;***&amp;#39; 0.001 &amp;#39;**&amp;#39; 0.01 &amp;#39;*&amp;#39; 0.05 &amp;#39;.&amp;#39; 0.1 &amp;#39; &amp;#39; 1
+## 
+## Residual standard error: 0.9798 on 796 degrees of freedom
+## Multiple R-squared:  0.7623, Adjusted R-squared:  0.7614 
+## F-statistic:   851 on 3 and 796 DF,  p-value: &amp;lt; 2.2e-16&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Note that this is the proper model to describe the data based on how we’ve simulated it. In this case the intercept should describe the mean of the reference group, i.e. untreated wildtypes with no anxiety, while the slope parameters should estimate the inputs that we put into the model. The residuals standard error should describe the standard deviation of the response within the 8 different groups, which in this case amounts to the value of &lt;span class=&#34;math inline&#34;&gt;\(\sigma\)&lt;/span&gt; that we specified when simulating the data. The group standard deviations and their average are:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;dfSimple %&amp;gt;% 
+  group_by(Genotype, Anxiety, Treatment) %&amp;gt;% 
+  summarise(varPerGroup = var(Response)) %&amp;gt;%
+  ungroup %&amp;gt;%
+  mutate(sigma = sqrt(mean(varPerGroup)))&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## # A tibble: 8 x 5
+##   Genotype Anxiety Treatment varPerGroup sigma
+##   &amp;lt;fct&amp;gt;    &amp;lt;fct&amp;gt;   &amp;lt;fct&amp;gt;           &amp;lt;dbl&amp;gt; &amp;lt;dbl&amp;gt;
+## 1 WT       No      Placebo         0.870 0.978
+## 2 WT       No      Drug            1.14  0.978
+## 3 WT       Yes     Placebo         0.673 0.978
+## 4 WT       Yes     Drug            0.742 0.978
+## 5 MUT      No      Placebo         1.12  0.978
+## 6 MUT      No      Drug            1.02  0.978
+## 7 MUT      Yes     Placebo         1.02  0.978
+## 8 MUT      Yes     Drug            1.08  0.978&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;As expected the residual standard error is approximately the average of the group standard deviations.&lt;/p&gt;
+&lt;p&gt;What about the parameter errors?&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;xMat &amp;lt;- model.matrix(linMod4)
+t(xMat) %*% xMat&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;##               (Intercept) GenotypeMUT AnxietyYes TreatmentDrug
+## (Intercept)           800         400        400           400
+## GenotypeMUT           400         400        200           200
+## AnxietyYes            400         200        400           200
+## TreatmentDrug         400         200        200           400&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Which gives&lt;/p&gt;
+&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[\mathbf{X&amp;#39;X} = n \cdot \begin{bmatrix} 1 &amp;amp; \frac{1}{2} &amp;amp; \frac{1}{2} &amp;amp; \frac{1}{2} \\ \frac{1}{2} &amp;amp; \frac{1}{2} &amp;amp; \frac{1}{4} &amp;amp; \frac{1}{4} \\ \frac{1}{2} &amp;amp; \frac{1}{4} &amp;amp; \frac{1}{2} &amp;amp; \frac{1}{4} \\ \frac{1}{2} &amp;amp; \frac{1}{4} &amp;amp; \frac{1}{4} &amp;amp; \frac{1}{2}  \end{bmatrix}\]&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;The full covariance matrix is then:&lt;/p&gt;
+&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[\sigma^2_\beta = \frac{\sigma^2}{n}\cdot\begin{bmatrix} 4 &amp;amp; -2 &amp;amp; -2 &amp;amp; -2 \\ -2 &amp;amp; 4 &amp;amp; 0 &amp;amp; 0 \\ -2 &amp;amp; 0 &amp;amp; 4 &amp;amp; 0 \\ -2 &amp;amp; 0 &amp;amp; 0 &amp;amp; 4 \end{bmatrix}\]&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;And the standard errors are:&lt;/p&gt;
+&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[\sigma_\beta = \frac{\sigma}{\sqrt{n}}\begin{bmatrix} \sqrt{4} &amp;amp; \sqrt{4} &amp;amp; \sqrt{4} &amp;amp; \sqrt{4} \end{bmatrix}\]&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;As we can see, the trend from the previous Section continues. The conversion factor for the intercept term is related to the number of parameters in the model, while the values related to the slope parameters are still simply &lt;span class=&#34;math inline&#34;&gt;\(\sqrt{4}\)&lt;/span&gt;. We can expect that, as we continue to add binary predictors, the intercept term will be related to the number of parameters, while the slope parameters will have a conversion of &lt;span class=&#34;math inline&#34;&gt;\(\sqrt{4}\)&lt;/span&gt;. As in the previous Sections, we can recover the residual standard error by multiplying by the appropriate factors:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;vec &amp;lt;- c(sqrt(nObs/4), sqrt(nObs/4), sqrt(nObs/4), sqrt(nObs/4))
+summary(linMod4)$coefficients[,&amp;quot;Std. Error&amp;quot;]*vec&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;##   (Intercept)   GenotypeMUT    AnxietyYes TreatmentDrug 
+##     0.9798371     0.9798371     0.9798371     0.9798371&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;div id=&#34;recap&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Recap&lt;/h2&gt;
+&lt;p&gt;At this stage let’s compare the conversion factors from &lt;span class=&#34;math inline&#34;&gt;\(\sigma\)&lt;/span&gt; to &lt;span class=&#34;math inline&#34;&gt;\(\sigma_\beta\)&lt;/span&gt; for all non-interactive models.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;data.frame(Beta0 = c(1/sqrt(nObs), sqrt(2/nObs), sqrt(3/nObs), sqrt(nObs/4)),
+           Beta1 = c(NA, sqrt(4/nObs), sqrt(4/nObs), sqrt(4/nObs)),
+           Beta2 = c(NA, NA, sqrt(4/nObs), sqrt(4/nObs)),
+           Beta3 = c(NA, NA, NA, sqrt(4/nObs)),
+           row.names = c(&amp;quot;Model 1&amp;quot;, &amp;quot;Model 2&amp;quot;, &amp;quot;Model 3&amp;quot;, &amp;quot;Model 4&amp;quot;)) %&amp;gt;% kable()&lt;/code&gt;&lt;/pre&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr class=&#34;header&#34;&gt;
+&lt;th align=&#34;left&#34;&gt;&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;Beta0&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;Beta1&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;Beta2&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;Beta3&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr class=&#34;odd&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;Model 1&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.0353553&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;NA&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;NA&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;NA&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;even&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;Model 2&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.0500000&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.0707107&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;NA&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;NA&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;odd&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;Model 3&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.0612372&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.0707107&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.0707107&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;NA&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;even&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;Model 4&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;14.1421356&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.0707107&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.0707107&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.0707107&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;As one might expect, we do see some pattern. Specifically, using the total number of observations, we can express this table as:&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr class=&#34;header&#34;&gt;
+&lt;th align=&#34;left&#34;&gt;&lt;/th&gt;
+&lt;th align=&#34;left&#34;&gt;Beta0&lt;/th&gt;
+&lt;th align=&#34;left&#34;&gt;Beta1&lt;/th&gt;
+&lt;th align=&#34;left&#34;&gt;Beta2&lt;/th&gt;
+&lt;th align=&#34;left&#34;&gt;Beta3&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr class=&#34;odd&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;Model 1&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;&lt;span class=&#34;math inline&#34;&gt;\(\sqrt{\frac{1}{n}}\)&lt;/span&gt;&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;NA&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;NA&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;NA&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;even&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;Model 2&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;&lt;span class=&#34;math inline&#34;&gt;\(\sqrt{\frac{2}{n}}\)&lt;/span&gt;&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;&lt;span class=&#34;math inline&#34;&gt;\(\sqrt{\frac{4}{n}}\)&lt;/span&gt;&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;NA&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;NA&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;odd&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;Model 3&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;&lt;span class=&#34;math inline&#34;&gt;\(\sqrt{\frac{3}{n}}\)&lt;/span&gt;&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;&lt;span class=&#34;math inline&#34;&gt;\(\sqrt{\frac{4}{n}}\)&lt;/span&gt;&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;&lt;span class=&#34;math inline&#34;&gt;\(\sqrt{\frac{4}{n}}\)&lt;/span&gt;&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;NA&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;even&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;Model 4&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;&lt;span class=&#34;math inline&#34;&gt;\(\sqrt{\frac{4}{n}}\)&lt;/span&gt;&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;&lt;span class=&#34;math inline&#34;&gt;\(\sqrt{\frac{4}{n}}\)&lt;/span&gt;&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;&lt;span class=&#34;math inline&#34;&gt;\(\sqrt{\frac{4}{n}}\)&lt;/span&gt;&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;&lt;span class=&#34;math inline&#34;&gt;\(\sqrt{\frac{4}{n}}\)&lt;/span&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;As mentioned previously, the multiplicative factor for the intercept error involves the square root of the number of coefficients in the model. Moreover, for the rest of the models, the multiplicative factor is only ever &lt;span class=&#34;math inline&#34;&gt;\(\sqrt{\frac{4}{n}}\)&lt;/span&gt;, i.e. the mappings don’t change as we add more binary variables. This makes sense given that all of the variables are independent in these models. Note that there is no pattern when expressing these conversion factors in terms of the number of data points per group, whic we will denote &lt;span class=&#34;math inline&#34;&gt;\(N\)&lt;/span&gt;:&lt;/p&gt;
+&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[\begin{bmatrix} \sqrt{\frac{1}{N}} &amp;amp; &amp;amp; &amp;amp; \\ \sqrt{\frac{1}{N}}&amp;amp; \sqrt{\frac{2}{N}} &amp;amp; &amp;amp; \\ \sqrt{\frac{3}{4N}} &amp;amp; \sqrt{\frac{1}{N}} &amp;amp; \sqrt{\frac{1}{N}} &amp;amp; \\ \sqrt{\frac{1}{2N}} &amp;amp; \sqrt{\frac{1}{2N}} &amp;amp; \sqrt{\frac{1}{2N}} &amp;amp; \sqrt{\frac{1}{2N}} \end{bmatrix}\]&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;Recall that &lt;span class=&#34;math inline&#34;&gt;\(N\)&lt;/span&gt; here is different for each row, since the different models pool the data in different ways, and takes on values &lt;span class=&#34;math inline&#34;&gt;\(\{n, \frac{n}{2}, \frac{n}{4}, \frac{n}{8}\}\)&lt;/span&gt;.&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id=&#34;interactive-models&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;Interactive Models&lt;/h1&gt;
+&lt;p&gt;In this Section we explore the influence of interactions on the parameter error estimates and the mapping from the residual standard error.&lt;/p&gt;
+&lt;div id=&#34;two-binary-predictors-with-interaction&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Two Binary Predictors with Interaction&lt;/h2&gt;
+&lt;p&gt;In this case we consider the interaction between two of the variables, &lt;code&gt;Genotype&lt;/code&gt; and &lt;code&gt;Anxiety&lt;/code&gt;.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;linModInt &amp;lt;- lm(Response ~ Genotype*Anxiety, data = dfSimple)
+summary(linModInt)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## 
+## Call:
+## lm(formula = Response ~ Genotype * Anxiety, data = dfSimple)
+## 
+## Residuals:
+##    Min     1Q Median     3Q    Max 
+## -3.723 -1.048 -0.014  1.044  4.091 
+## 
+## Coefficients:
+##                        Estimate Std. Error t value Pr(&amp;gt;|t|)    
+## (Intercept)             0.93091    0.09834   9.466   &amp;lt;2e-16 ***
+## GenotypeMUT             2.09130    0.13908  15.037   &amp;lt;2e-16 ***
+## AnxietyYes              2.08645    0.13908  15.002   &amp;lt;2e-16 ***
+## GenotypeMUT:AnxietyYes -0.08456    0.19668  -0.430    0.667    
+## ---
+## Signif. codes:  0 &amp;#39;***&amp;#39; 0.001 &amp;#39;**&amp;#39; 0.01 &amp;#39;*&amp;#39; 0.05 &amp;#39;.&amp;#39; 0.1 &amp;#39; &amp;#39; 1
+## 
+## Residual standard error: 1.391 on 796 degrees of freedom
+## Multiple R-squared:  0.5212, Adjusted R-squared:  0.5194 
+## F-statistic: 288.8 on 3 and 796 DF,  p-value: &amp;lt; 2.2e-16&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Note that though we have added a new predictor, there are still only 4 groups, as in Model 3. The difference is that the mean values of these groups may be more accurately estimated. In the present case we don’t expect this model to out-perform the model without an interaction, since there is no real interaction in the data, making the interaction parameter superfluous. This means that the estimate for the residual standard error should be similar to that from the non-interactive model. If the situation were reversed however and the data truly contained an interaction, then this model would more appropriately recapitulate the group means and lead to a more accurate estimation of &lt;span class=&#34;math inline&#34;&gt;\(\sigma\)&lt;/span&gt;.&lt;/p&gt;
+&lt;p&gt;The design matrix will be different either way however due to the additional interaction predictor.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;xMat &amp;lt;- model.matrix(linModInt)
+t(xMat) %*% xMat&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;##                        (Intercept) GenotypeMUT AnxietyYes
+## (Intercept)                    800         400        400
+## GenotypeMUT                    400         400        200
+## AnxietyYes                     400         200        400
+## GenotypeMUT:AnxietyYes         200         200        200
+##                        GenotypeMUT:AnxietyYes
+## (Intercept)                               200
+## GenotypeMUT                               200
+## AnxietyYes                                200
+## GenotypeMUT:AnxietyYes                    200&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Explicitly using the observation number, we have:&lt;/p&gt;
+&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[n \cdot \begin{bmatrix} 1 &amp;amp; \frac{1}{2} &amp;amp; \frac{1}{2} &amp;amp; \frac{1}{4} \\ \frac{1}{2} &amp;amp; \frac{1}{2} &amp;amp; \frac{1}{4} &amp;amp; \frac{1}{4} \\ \frac{1}{2} &amp;amp; \frac{1}{4} &amp;amp; \frac{1}{2} &amp;amp; \frac{1}{4} \\ \frac{1}{4} &amp;amp; \frac{1}{4} &amp;amp; \frac{1}{4} &amp;amp; \frac{1}{4}  \end{bmatrix}\]&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;The covariance matrix is:&lt;/p&gt;
+&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[\sigma^2_\beta = \frac{\sigma^2}{n}\cdot\begin{bmatrix} 4 &amp;amp; -4 &amp;amp; -4 &amp;amp; 4 \\ -4 &amp;amp; 8 &amp;amp; 4 &amp;amp; -8 \\ -4 &amp;amp; 4 &amp;amp; 8 &amp;amp; -8 \\ 4 &amp;amp; -8 &amp;amp; -8 &amp;amp; 16 \end{bmatrix}\]&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;with parameter standard errors of&lt;/p&gt;
+&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[\sigma_\beta = \frac{\sigma}{\sqrt{n}}\begin{bmatrix} \sqrt{4} &amp;amp; \sqrt{8} &amp;amp; \sqrt{8} &amp;amp; \sqrt{16} \end{bmatrix}\]&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;Here we see a pattern change from the models without an interaction. The intercept mapping still involves a scaling factor that uses the number of parameters in the model, but the standard errors for the main effects parameters are now larger by a factor of &lt;span class=&#34;math inline&#34;&gt;\(\sqrt{2}\)&lt;/span&gt; compared to the model without an interaction. The parameter error for the interaction is also larger than that for the main effects. These considerations will have a slight impact on the inferential side of linear modelling. Specifically, an interaction effect will always be less powerful than a main effect, and a main effect in a model with an interaction will always be less powerful than a main effect in a model without an interaction. The reason for this is that the &lt;span class=&#34;math inline&#34;&gt;\(t\)&lt;/span&gt;-statistic is computed as &lt;span class=&#34;math inline&#34;&gt;\(t = \hat{\beta}/\sigma_\beta\)&lt;/span&gt;. Of course this depends on what model accurately describes the data. The aforementioned power of a non-interactive model will be thrown off on data with an interaction, since the estimate for &lt;span class=&#34;math inline&#34;&gt;\(\sigma\)&lt;/span&gt; will be larger due to the interaction in the data. These are things to keep in mind when considering which model to use.&lt;/p&gt;
+&lt;p&gt;Applying the mappings to the parameter standard errors, we recover the residual standard error:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;vec &amp;lt;- c(sqrt(nObs/4), sqrt(nObs/8), sqrt(nObs/8), sqrt(nObs/16))
+summary(linModInt)$coefficients[,&amp;quot;Std. Error&amp;quot;]*vec&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;##            (Intercept)            GenotypeMUT             AnxietyYes 
+##               1.390754               1.390754               1.390754 
+## GenotypeMUT:AnxietyYes 
+##               1.390754&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;div id=&#34;interaction-without-main-effect&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Interaction without Main Effect&lt;/h2&gt;
+&lt;p&gt;In this final Section I examine the interesting case of a model with a second order interaction but without the main effect for one of the predictors. What this model does is that it describes data in which the reference group for one of the binary variables (e.g. Wildtypes) is not influenced by observations of another variable (e.g. Anxiety). In order to get the &lt;code&gt;lm()&lt;/code&gt; function to do this properly, we have to create an explicit dummy encoding of the variable with a main effect.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;dfSimple &amp;lt;- dfSimple %&amp;gt;% 
+  mutate(GenotypeDummy = case_when(Genotype == &amp;quot;WT&amp;quot; ~ 0,
+                                                          Genotype == &amp;quot;MUT&amp;quot; ~ 1))
+linModInt2 &amp;lt;- lm(Response ~ GenotypeDummy + GenotypeDummy:Anxiety, data = dfSimple)
+summary(linModInt2)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## 
+## Call:
+## lm(formula = Response ~ GenotypeDummy + GenotypeDummy:Anxiety, 
+##     data = dfSimple)
+## 
+## Residuals:
+##    Min     1Q Median     3Q    Max 
+## -4.142 -1.130  0.026  1.166  4.091 
+## 
+## Coefficients:
+##                          Estimate Std. Error t value Pr(&amp;gt;|t|)    
+## (Intercept)               1.97414    0.07871  25.082  &amp;lt; 2e-16 ***
+## GenotypeDummy             1.04807    0.13633   7.688  4.4e-14 ***
+## GenotypeDummy:AnxietyYes  2.00189    0.15742  12.717  &amp;lt; 2e-16 ***
+## ---
+## Signif. codes:  0 &amp;#39;***&amp;#39; 0.001 &amp;#39;**&amp;#39; 0.01 &amp;#39;*&amp;#39; 0.05 &amp;#39;.&amp;#39; 0.1 &amp;#39; &amp;#39; 1
+## 
+## Residual standard error: 1.574 on 797 degrees of freedom
+## Multiple R-squared:  0.3858, Adjusted R-squared:  0.3842 
+## F-statistic: 250.3 on 2 and 797 DF,  p-value: &amp;lt; 2.2e-16&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Note that, in comparison to the fully interactive model presented in the previous Section, the residual standard error estimate is different. This is because the model has pooled the anxiety “yes” and “no” groups for the wildtypes. Since the data we generated included a main effect of anxiety, the variance of this wildtype group will be larger than that of the other two groups (mutant-no-anxiety and mutant-yes-anxiety). Additionally, the residual standard error is no longer just the average of the group standard deviations. This is due mainly to the fact that the wildtype group in this model is twice as large as the other two groups. To demonstrate this, let’s compute the naive average of group standard deviations:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;(dfTemp &amp;lt;- dfSimple %&amp;gt;% 
+  mutate(NewGroups = case_when(Genotype == &amp;quot;WT&amp;quot; ~ &amp;quot;WT&amp;quot;,
+                               Genotype == &amp;quot;MUT&amp;quot; &amp;amp; Anxiety == &amp;quot;No&amp;quot; ~ &amp;quot;NoMUT&amp;quot;,
+                               Genotype == &amp;quot;MUT&amp;quot; &amp;amp; Anxiety == &amp;quot;Yes&amp;quot; ~ &amp;quot;YesMUT&amp;quot;)) %&amp;gt;% 
+  group_by(NewGroups) %&amp;gt;%
+  summarise(varPerGroup = var(Response)) %&amp;gt;% 
+  ungroup %&amp;gt;% 
+  mutate(sigma = sqrt(mean(varPerGroup))))&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## # A tibble: 3 x 3
+##   NewGroups varPerGroup sigma
+##   &amp;lt;chr&amp;gt;           &amp;lt;dbl&amp;gt; &amp;lt;dbl&amp;gt;
+## 1 NoMUT            2.23  1.54
+## 2 WT               2.78  1.54
+## 3 YesMUT           2.12  1.54&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Observe that the wildtype standard deviation is larger than that for the other groups. The average is not equal to the residual standard error. It can be shown mathematically that in this case the residual standard error can be estimated approximately as&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;sqrt((1/4)*(dfTemp$varPerGroup[1] + dfTemp$varPerGroup[3] + 2*dfTemp$varPerGroup[2]))&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## [1] 1.574038&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;An important point is that for the present data, this model is not homoscedastic, which is one of the assumptions underlying inferential statistics using linear models. To move forward we will generate a new data set in which there is no main anxiety effect, only an interaction. This makes it so that the group standard deviations will be approximately the same and put us back in the regime of homoscedasticity. Thus even though the wildtype group will have double the number of observations, the residual standard error will be approximately the average of the group standard deviations. We will ignore the presence of &lt;code&gt;Treatment&lt;/code&gt;.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;meanRef &amp;lt;- 0
+sigma &amp;lt;- 1
+effectGenotype &amp;lt;- 2
+effectAnxiety &amp;lt;- 2
+
+dfSimple &amp;lt;- dfSimple %&amp;gt;%
+  mutate(Response = case_when(Genotype == &amp;quot;WT&amp;quot; ~ rnorm(nrow(.),meanRef,sigma),
+                              Genotype == &amp;quot;MUT&amp;quot; &amp;amp; Anxiety == &amp;quot;No&amp;quot; ~ rnorm(nrow(.),meanRef + effectGenotype, sigma),
+                              Genotype == &amp;quot;MUT&amp;quot; &amp;amp; Anxiety == &amp;quot;Yes&amp;quot; ~ rnorm(nrow(.), meanRef + effectGenotype + effectAnxiety, sigma)))
+
+
+ggplot(dfSimple, aes(x = Genotype, y = Response, col = Anxiety)) + 
+  geom_jitter(width = 0.2) +
+  scale_color_brewer(palette = &amp;quot;Set1&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/blog/blog/post/2018-07-06_LinearModelsErrors_files/figure-html/unnamed-chunk-30-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Re-running the model on this new data, we find:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;dfSimple &amp;lt;- dfSimple %&amp;gt;% mutate(GenotypeDummy = case_when(Genotype == &amp;quot;WT&amp;quot; ~ 0,
+                                                          Genotype == &amp;quot;MUT&amp;quot; ~ 1))
+linModInt2 &amp;lt;- lm(Response ~ GenotypeDummy + GenotypeDummy:Anxiety, data = dfSimple)
+summary(linModInt2)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## 
+## Call:
+## lm(formula = Response ~ GenotypeDummy + GenotypeDummy:Anxiety, 
+##     data = dfSimple)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -3.5477 -0.7041  0.0052  0.6270  3.2098 
+## 
+## Coefficients:
+##                          Estimate Std. Error t value Pr(&amp;gt;|t|)    
+## (Intercept)               0.04718    0.04902   0.962    0.336    
+## GenotypeDummy             1.97039    0.08491  23.206   &amp;lt;2e-16 ***
+## GenotypeDummy:AnxietyYes  1.99567    0.09804  20.355   &amp;lt;2e-16 ***
+## ---
+## Signif. codes:  0 &amp;#39;***&amp;#39; 0.001 &amp;#39;**&amp;#39; 0.01 &amp;#39;*&amp;#39; 0.05 &amp;#39;.&amp;#39; 0.1 &amp;#39; &amp;#39; 1
+## 
+## Residual standard error: 0.9804 on 797 degrees of freedom
+## Multiple R-squared:  0.7382, Adjusted R-squared:  0.7376 
+## F-statistic:  1124 on 2 and 797 DF,  p-value: &amp;lt; 2.2e-16&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Note that the parameter estimates recapitulate what we put into the model. Moreover the residual standard error is now approximately equal to the input value of &lt;span class=&#34;math inline&#34;&gt;\(\sigma\)&lt;/span&gt;. We can compute the group standard deviations to see how this relates to the residual standard error:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;dfSimple %&amp;gt;% 
+  mutate(NewGroups = case_when(Genotype == &amp;quot;WT&amp;quot; ~ &amp;quot;WT&amp;quot;,
+                               Genotype == &amp;quot;MUT&amp;quot; &amp;amp; Anxiety == &amp;quot;No&amp;quot; ~ &amp;quot;NoMUT&amp;quot;,
+                               Genotype == &amp;quot;MUT&amp;quot; &amp;amp; Anxiety == &amp;quot;Yes&amp;quot; ~ &amp;quot;YesMUT&amp;quot;)) %&amp;gt;% 
+  group_by(NewGroups) %&amp;gt;%
+  summarise(varPerGroup = var(Response)) %&amp;gt;% 
+  ungroup %&amp;gt;% 
+  mutate(sigma = sqrt(mean(varPerGroup)))&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## # A tibble: 3 x 3
+##   NewGroups varPerGroup sigma
+##   &amp;lt;chr&amp;gt;           &amp;lt;dbl&amp;gt; &amp;lt;dbl&amp;gt;
+## 1 NoMUT           0.982 0.995
+## 2 WT              0.878 0.995
+## 3 YesMUT          1.11  0.995&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;In this case the average is closer to the residual standard error estimate.&lt;/p&gt;
+&lt;p&gt;Next we examine the mapping from &lt;span class=&#34;math inline&#34;&gt;\(\sigma\)&lt;/span&gt; to &lt;span class=&#34;math inline&#34;&gt;\(\sigma_\beta\)&lt;/span&gt; to see how it compares to the model with a main anxiety effect.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;xMat &amp;lt;- model.matrix(linModInt2)
+t(xMat) %*% xMat&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;##                          (Intercept) GenotypeDummy
+## (Intercept)                      800           400
+## GenotypeDummy                    400           400
+## GenotypeDummy:AnxietyYes         200           200
+##                          GenotypeDummy:AnxietyYes
+## (Intercept)                                   200
+## GenotypeDummy                                 200
+## GenotypeDummy:AnxietyYes                      200&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[ n \cdot \begin{bmatrix} 1 &amp;amp; \frac{1}{2} &amp;amp; \frac{1}{4} \\ \frac{1}{2} &amp;amp; \frac{1}{2} &amp;amp; \frac{1}{4} \\ \frac{1}{4} &amp;amp; \frac{1}{4} &amp;amp; \frac{1}{4} \end{bmatrix}\]&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;The covariance matrix is&lt;/p&gt;
+&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[\frac{\sigma^2}{n}\cdot\begin{bmatrix} 2 &amp;amp; -2 &amp;amp; 0 \\ -2 &amp;amp; 6 &amp;amp; -4 \\ 0 &amp;amp; -4 &amp;amp; 8 \end{bmatrix}\]&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;which leads to standard errors of&lt;/p&gt;
+&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[\sigma_\beta = \frac{\sigma}{\sqrt{n}}\begin{bmatrix} \sqrt{2} &amp;amp; \sqrt{6} &amp;amp; \sqrt{8} \end{bmatrix}\]&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;Now, comparing this model to the previous model with both main effects:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;data.frame(Intercept = c(sqrt(4/nObs),sqrt(2/nObs)),
+           Genotype = c(sqrt(8/nObs), sqrt(6/nObs)),
+           Anxiety = c(sqrt(8/nObs), NA),
+           GenotypeAnxiety = c(sqrt(16/nObs), sqrt(8/nObs)), 
+           row.names = c(&amp;quot;With Main Effect&amp;quot;, &amp;quot;Without Main Effect&amp;quot;))&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;##                      Intercept   Genotype Anxiety GenotypeAnxiety
+## With Main Effect    0.07071068 0.10000000     0.1       0.1414214
+## Without Main Effect 0.05000000 0.08660254      NA       0.1000000&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Using the number of observations &lt;span class=&#34;math inline&#34;&gt;\(n\)&lt;/span&gt; we find:&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr class=&#34;header&#34;&gt;
+&lt;th align=&#34;left&#34;&gt;&lt;/th&gt;
+&lt;th align=&#34;left&#34;&gt;Intercept&lt;/th&gt;
+&lt;th align=&#34;left&#34;&gt;Genotype&lt;/th&gt;
+&lt;th align=&#34;left&#34;&gt;Anxiety&lt;/th&gt;
+&lt;th align=&#34;left&#34;&gt;GenotypeAnxiety&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr class=&#34;odd&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;With Main Effect&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;&lt;span class=&#34;math inline&#34;&gt;\(\sqrt{\frac{4}{n}}\)&lt;/span&gt;&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;&lt;span class=&#34;math inline&#34;&gt;\(\sqrt{\frac{8}{n}}\)&lt;/span&gt;&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;&lt;span class=&#34;math inline&#34;&gt;\(\sqrt{\frac{8}{n}}\)&lt;/span&gt;&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;&lt;span class=&#34;math inline&#34;&gt;\(\sqrt{\frac{16}{n}}\)&lt;/span&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;even&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;Without Main Effect&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;&lt;span class=&#34;math inline&#34;&gt;\(\sqrt{\frac{2}{n}}\)&lt;/span&gt;&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;&lt;span class=&#34;math inline&#34;&gt;\(\sqrt{\frac{6}{n}}\)&lt;/span&gt;&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;&lt;span class=&#34;math inline&#34;&gt;\(\sqrt{\frac{8}{n}}\)&lt;/span&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;The patterns from the previous Sections break down in this case. Notably the conversion factor for the intercept term is no longer related to the number of parameters in the model. The standard errors for both the main effect and interaction term are also smaller in this model compared to the model with both main effects, assuming a fixed value of &lt;span class=&#34;math inline&#34;&gt;\(\sigma\)&lt;/span&gt;. This does require caution however, as we saw that the residual standard error may be larger for this model if there is a actually a main effect in the data.&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id=&#34;conclusion&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;Conclusion&lt;/h1&gt;
+&lt;p&gt;In conclusion, we recapitulate the &lt;span class=&#34;math inline&#34;&gt;\(\sigma\)&lt;/span&gt;-to-&lt;span class=&#34;math inline&#34;&gt;\(\sigma_\beta\)&lt;/span&gt; mappings for the different models that we considered:&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr class=&#34;header&#34;&gt;
+&lt;th align=&#34;left&#34;&gt;&lt;/th&gt;
+&lt;th align=&#34;left&#34;&gt;Intercept&lt;/th&gt;
+&lt;th align=&#34;left&#34;&gt;Genotype&lt;/th&gt;
+&lt;th align=&#34;left&#34;&gt;Anxiety&lt;/th&gt;
+&lt;th align=&#34;left&#34;&gt;Treatment&lt;/th&gt;
+&lt;th align=&#34;left&#34;&gt;GenotypeAnxiety&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;NumGroups&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr class=&#34;odd&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;Intercept Only&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;&lt;span class=&#34;math inline&#34;&gt;\(\sqrt{\frac{1}{n}}\)&lt;/span&gt;&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;NA&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;NA&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;NA&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;NA&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;even&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;One Binary Variable&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;&lt;span class=&#34;math inline&#34;&gt;\(\sqrt{\frac{2}{n}}\)&lt;/span&gt;&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;&lt;span class=&#34;math inline&#34;&gt;\(\sqrt{\frac{4}{n}}\)&lt;/span&gt;&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;NA&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;NA&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;NA&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;2&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;odd&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;Two Binary Variables&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;&lt;span class=&#34;math inline&#34;&gt;\(\sqrt{\frac{3}{n}}\)&lt;/span&gt;&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;&lt;span class=&#34;math inline&#34;&gt;\(\sqrt{\frac{4}{n}}\)&lt;/span&gt;&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;&lt;span class=&#34;math inline&#34;&gt;\(\sqrt{\frac{4}{n}}\)&lt;/span&gt;&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;NA&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;NA&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;4&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;even&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;Three Binary Variables&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;&lt;span class=&#34;math inline&#34;&gt;\(\sqrt{\frac{4}{n}}\)&lt;/span&gt;&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;&lt;span class=&#34;math inline&#34;&gt;\(\sqrt{\frac{4}{n}}\)&lt;/span&gt;&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;&lt;span class=&#34;math inline&#34;&gt;\(\sqrt{\frac{4}{n}}\)&lt;/span&gt;&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;&lt;span class=&#34;math inline&#34;&gt;\(\sqrt{\frac{4}{n}}\)&lt;/span&gt;&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;NA&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;8&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;odd&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;Interaction With Main Effect&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;&lt;span class=&#34;math inline&#34;&gt;\(\sqrt{\frac{4}{n}}\)&lt;/span&gt;&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;&lt;span class=&#34;math inline&#34;&gt;\(\sqrt{\frac{8}{n}}\)&lt;/span&gt;&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;&lt;span class=&#34;math inline&#34;&gt;\(\sqrt{\frac{8}{n}}\)&lt;/span&gt;&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;NA&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;&lt;span class=&#34;math inline&#34;&gt;\(\sqrt{\frac{16}{n}}\)&lt;/span&gt;&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;4&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;even&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;Interaction Without Main Effect&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;&lt;span class=&#34;math inline&#34;&gt;\(\sqrt{\frac{2}{n}}\)&lt;/span&gt;&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;&lt;span class=&#34;math inline&#34;&gt;\(\sqrt{\frac{6}{n}}\)&lt;/span&gt;&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;NA&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;NA&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;&lt;span class=&#34;math inline&#34;&gt;\(\sqrt{\frac{8}{n}}\)&lt;/span&gt;&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;3&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;There are a few things to keep in mind. First, &lt;strong&gt;the standard deviation of the different groups is captured in the residual standard error estimate&lt;/strong&gt;. Specifically if &lt;span class=&#34;math inline&#34;&gt;\(n \gg p\)&lt;/span&gt;, this estimate is approximately equal to the average of the group sample standard deviations.&lt;/p&gt;
+&lt;p&gt;There is no obvious direct relationship between the standard errors of the parameters and the group standard deviations. For instance, the parameter error for the intercept is not equal to the standard error of the reference group, nor is the parameter error for the slope equal to the standard error of the non-reference group. The parameter errors depend on the non-trivial mapping &lt;span class=&#34;math inline&#34;&gt;\((\mathbf{X&amp;#39;X})^{-1}\)&lt;/span&gt;.&lt;/p&gt;
+&lt;p&gt;There are however some patterns in the relationship for certain models. Specifically, for balanced binary variable models without interaction, the slope parameter standard errors are always related to the residual standard error by &lt;span class=&#34;math inline&#34;&gt;\(\sqrt{4/n}\)&lt;/span&gt;, regardless of the number of binary variables in the model. The parameter error for the intercept does change however, and &lt;strong&gt;scales with the square root of the number of parameters in the model&lt;/strong&gt;.&lt;/p&gt;
+&lt;p&gt;The patterns change when we add an interaction to the model. Comparing a two-variable model with an interaction to the corresponding model without an interaction, the parameters have larger errors in the interactive model. The interaction parameter is also the most uncertain parameter in the model. However the intercept parameter error still has a conversion factor related to the number of parameters in the model. If we remove one of the main effects from the model but maintain the interaction, all conversion factors shrink relative to the interactive model with the main effect. However this model should be used with caution as it will likely lead to grouping with uneven variances. On the other hand it can be a useful way to model data if one of the variables is not defined for one of the levels in the main effect, e.g. wildtypes without anxiety scores.&lt;/p&gt;
+&lt;p&gt;More complex interactive models were not explored in depth in this document, but for completion I will include the &lt;span class=&#34;math inline&#34;&gt;\(\sigma\)&lt;/span&gt;-to-&lt;span class=&#34;math inline&#34;&gt;\(\sigma_\beta\)&lt;/span&gt; mappings for two models. The two-variable interaction model described previously can be augmented to include a third variable. The complete interactive model at second order is as follows:&lt;/p&gt;
+&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[\text{Response} \sim \text{Genotype} + \text{Anxiety} + \text{Treatment} + \text{Genotype:Anxiety} + \text{Genotype:Treatment} + \text{Treatment:Anxiety}\]&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;The mapping for this model is:&lt;/p&gt;
+&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[\sigma_\beta = \frac{\sigma}{\sqrt{n}}\begin{bmatrix} \sqrt{7} &amp;amp; \sqrt{12} &amp;amp; \sqrt{12} &amp;amp; \sqrt{12}&amp;amp; \sqrt{16} &amp;amp; \sqrt{16} &amp;amp; \sqrt{16} \end{bmatrix}\]&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;The interactive model at the third order is:&lt;/p&gt;
+&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[\text{Response} \sim \text{Genotype} + \text{Anxiety} + \text{Treatment} + \text{Genotype:Anxiety} + \text{Genotype:Treatment} + \text{Treatment:Anxiety} + \text{Genotype:Anxiety:Treatment}\]&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;The mapping for this model is:&lt;/p&gt;
+&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[\sigma_\beta = \frac{\sigma}{\sqrt{n}}\begin{bmatrix} \sqrt{8} &amp;amp; \sqrt{16} &amp;amp; \sqrt{16} &amp;amp; \sqrt{16}&amp;amp; \sqrt{32} &amp;amp; \sqrt{32} &amp;amp; \sqrt{32} &amp;amp; \sqrt{64} \end{bmatrix}\]&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;The one thing I will mention about these mappings is that the conversion factors for the intercept standard errors continue to be related to the number of parameters in the model. There are likely other interesting patterns in these more complex interactive models, but these will not be explored here.&lt;/p&gt;
+&lt;p&gt;Ultimately these specific cases should serve to provide some intuition about how the parameter errors are estimated for a linear model. Keep in mind however that these mappings were computed for a balanced binary experimental design. Group imbalances will skew these values, though the size of these differences will depend on the degree of imbalance. Moreover the mappings will be different in the case of multi-level categorical variables and continuous numerical variables.&lt;/p&gt;
+&lt;/div&gt;
+</description>
     </item>
     
     <item>
@@ -29,11 +730,276 @@ where \(\mathbf{X}\) is the design matrix and \(\mathbf{\beta}\) is a \((p+1)\)-
       <pubDate>Thu, 25 Jan 2018 00:00:00 +0000</pubDate>
       
       <guid>/blog/post/linearmodels/</guid>
-      <description>Preamble The purpose of this post is to elucidate some of the concepts associated with statistical linear models.
-Let’s start by loading some libraries.
-library(ggplot2) library(datasets)  Background Theory The basic idea is as follows:
-Given two variables, \(x\) and \(y\), for which we’ve measured a set of data points \(\{x_i, y_i\}\) with \(i = 1, ..., n\), we want to estimate a function, \(f(x)\), such that
-\[y_i = f(x_i) + \epsilon_i\]</description>
+      <description>&lt;div id=&#34;S1&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;Preamble&lt;/h1&gt;
+&lt;p&gt;The purpose of this post is to elucidate some of the concepts associated with statistical linear models.&lt;/p&gt;
+&lt;p&gt;Let’s start by loading some libraries.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;library(ggplot2)
+library(datasets)&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;div id=&#34;S2&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;Background Theory&lt;/h1&gt;
+&lt;p&gt;The basic idea is as follows:&lt;/p&gt;
+&lt;p&gt;Given two variables, &lt;span class=&#34;math inline&#34;&gt;\(x\)&lt;/span&gt; and &lt;span class=&#34;math inline&#34;&gt;\(y\)&lt;/span&gt;, for which we’ve measured a set of data points &lt;span class=&#34;math inline&#34;&gt;\(\{x_i, y_i\}\)&lt;/span&gt; with &lt;span class=&#34;math inline&#34;&gt;\(i = 1, ..., n\)&lt;/span&gt;, we want to estimate a function, &lt;span class=&#34;math inline&#34;&gt;\(f(x)\)&lt;/span&gt;, such that&lt;/p&gt;
+&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[y_i = f(x_i) + \epsilon_i\]&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;for each data point &lt;span class=&#34;math inline&#34;&gt;\((x_i,y_i)\)&lt;/span&gt;. Here &lt;span class=&#34;math inline&#34;&gt;\(\epsilon_i\)&lt;/span&gt; is the error in data point &lt;span class=&#34;math inline&#34;&gt;\(y_i\)&lt;/span&gt; compared to the predicted value &lt;span class=&#34;math inline&#34;&gt;\(f(x_i)\)&lt;/span&gt;. Specifically,&lt;/p&gt;
+&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[\epsilon_i = y_i - f(x_i)\]&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;We don’t know &lt;span class=&#34;math inline&#34;&gt;\(f(x)\)&lt;/span&gt;, but the simplest functional form that we can assume is that of a linear function:&lt;/p&gt;
+&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[f(x) = \beta_0 + \beta_1x \]&lt;/span&gt; where &lt;span class=&#34;math inline&#34;&gt;\(\beta_0\)&lt;/span&gt; is the intercept of the line and &lt;span class=&#34;math inline&#34;&gt;\(\beta_1\)&lt;/span&gt; is the slope associated with the variable &lt;span class=&#34;math inline&#34;&gt;\(x\)&lt;/span&gt;. Thus for each data point &lt;span class=&#34;math inline&#34;&gt;\(x_i\)&lt;/span&gt;, we predict a value &lt;span class=&#34;math inline&#34;&gt;\(\hat{y}_i = f(x_i)\)&lt;/span&gt; so that&lt;/p&gt;
+&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[\hat{y}_i = \beta_0 + \beta_1x_i\]&lt;/span&gt; This is known as &lt;strong&gt;simple linear regression&lt;/strong&gt;. Having specified the form of &lt;span class=&#34;math inline&#34;&gt;\(f(x)\)&lt;/span&gt;, the problem becomes one of optimizing the free parameters &lt;span class=&#34;math inline&#34;&gt;\(\beta_0\)&lt;/span&gt; and &lt;span class=&#34;math inline&#34;&gt;\(\beta_1\)&lt;/span&gt; so that the predicted or trend line best describes the real data &lt;span class=&#34;math inline&#34;&gt;\(\{x_i, y_i\}\)&lt;/span&gt;. This is usually accomplished using the “ordinary least-squares” method, in which we minimize the sum of squared errors with respect to the free parameters. Explicitly, if we write the sum of squared errors as&lt;/p&gt;
+&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[\chi^2 = \sum_{i=1}^n{\epsilon_i^2} = \sum_{i=1}^n{(y_i - \hat{y}_i)^2} = \sum_{i=1}^n{(y_i - \beta_0 - \beta_1x_i)^2}\]&lt;/span&gt; we want to determine &lt;span class=&#34;math inline&#34;&gt;\(\beta_0\)&lt;/span&gt; and &lt;span class=&#34;math inline&#34;&gt;\(\beta_1\)&lt;/span&gt; such that&lt;/p&gt;
+&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[\frac{\partial\chi^2}{\partial\beta_0} = 0\]&lt;/span&gt; and &lt;span class=&#34;math display&#34;&gt;\[\frac{\partial\chi^2}{\partial\beta_1} = 0\]&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;This can be solved analytically. In practice we let the computer do it for us.&lt;/p&gt;
+&lt;p&gt;Moving on , there’s no reason we need to restrict ourselves to one predictor for the response variable &lt;span class=&#34;math inline&#34;&gt;\(y\)&lt;/span&gt;, so we can include multiple variables &lt;span class=&#34;math inline&#34;&gt;\(\{x_1, x_2, ..., x_N\}\)&lt;/span&gt; in our model. Here &lt;span class=&#34;math inline&#34;&gt;\(N\)&lt;/span&gt; is the total number of regressors that are included. This is known as &lt;strong&gt;multiple linear regression&lt;/strong&gt;. The model then becomes&lt;/p&gt;
+&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[\hat{y} = \beta_0 + \sum_{a=1}^N{} \beta_ax_a\]&lt;/span&gt; where &lt;span class=&#34;math inline&#34;&gt;\(a\)&lt;/span&gt; is an index summing over the predictors (rather than over the data points themselves as in the expression for &lt;span class=&#34;math inline&#34;&gt;\(\chi^2\)&lt;/span&gt; above). Here I’ve expressed the model in terms of the variables, rather than individual data points. For an individual data point &lt;span class=&#34;math inline&#34;&gt;\(\{x_i,y_i\}\)&lt;/span&gt;, we could write this as&lt;/p&gt;
+&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[\hat{y}_i = \beta_0 + \sum_{a=1}^N{} \beta_ax_{a,i}\]&lt;/span&gt; where &lt;span class=&#34;math inline&#34;&gt;\(x_{a,i}\)&lt;/span&gt; is the &lt;span class=&#34;math inline&#34;&gt;\(i\)&lt;/span&gt;th data point of the &lt;span class=&#34;math inline&#34;&gt;\(a\)&lt;/span&gt;th variable (e.g. the height, which is the variable, of a specific person). The two are identical representations. The optimization process for multiple linear regression is the same as that for simple linear regression, only involving more derivatives.&lt;/p&gt;
+&lt;p&gt;Alright that should be enough background math. In the next Section, we’ll look at this in practice.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;S3&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;Simple Linear Regression in Practice&lt;/h1&gt;
+&lt;p&gt;We’ll be working with the &lt;code&gt;mtcars&lt;/code&gt; dataset.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;str(mtcars)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## &amp;#39;data.frame&amp;#39;:    32 obs. of  11 variables:
+##  $ mpg : num  21 21 22.8 21.4 18.7 18.1 14.3 24.4 22.8 19.2 ...
+##  $ cyl : num  6 6 4 6 8 6 8 4 4 6 ...
+##  $ disp: num  160 160 108 258 360 ...
+##  $ hp  : num  110 110 93 110 175 105 245 62 95 123 ...
+##  $ drat: num  3.9 3.9 3.85 3.08 3.15 2.76 3.21 3.69 3.92 3.92 ...
+##  $ wt  : num  2.62 2.88 2.32 3.21 3.44 ...
+##  $ qsec: num  16.5 17 18.6 19.4 17 ...
+##  $ vs  : num  0 0 1 1 0 1 0 1 1 1 ...
+##  $ am  : num  1 1 1 0 0 0 0 0 0 0 ...
+##  $ gear: num  4 4 4 3 3 3 3 4 4 4 ...
+##  $ carb: num  4 4 1 1 2 1 4 2 2 4 ...&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The description of these variables can be found &lt;a href=&#34;https://stat.ethz.ch/R-manual/R-devel/library/datasets/html/mtcars.html&#34;&gt;here&lt;/a&gt;. We’re going to start by looking at the relationship between two continuous variables. Specifically, I’ve chosen to examine the relationship between car weight, &lt;code&gt;wt&lt;/code&gt;, and fuel efficiency, &lt;code&gt;mpg&lt;/code&gt;. Let’s start by creating a scatter plot to look at how the fuel efficiency varies with car weight.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;p.mpg_vs_wt &amp;lt;- ggplot(mtcars, aes(x=wt,y=mpg)) + geom_point()
+p.mpg_vs_wt + 
+  labs(x = &amp;quot;Weight (1000 lbs)&amp;quot;,
+       y = &amp;quot;Miles per Gallon&amp;quot;,
+       title = &amp;quot;Scatter Plot of MPG vs. Weight&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/blog/blog/post/LinearModels_files/figure-html/unnamed-chunk-3-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;This is as we would expect, since less energy is needed to move lighter cars. Moreover we suspect that this data might be well suited to a simple linear model. As described above, the model we will be building is&lt;/p&gt;
+&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[y = \beta_0 + \beta_1x + \epsilon\]&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;or&lt;/p&gt;
+&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[\hat{y} = \beta_0 + \beta_1x\]&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;where &lt;span class=&#34;math inline&#34;&gt;\(y\)&lt;/span&gt; is the &lt;code&gt;mpg&lt;/code&gt; variable in this case and &lt;span class=&#34;math inline&#34;&gt;\(x\)&lt;/span&gt; is the &lt;code&gt;wt&lt;/code&gt; variable. In &lt;code&gt;R&lt;/code&gt; formula notation, we can express this as &lt;code&gt;mpg ~ wt&lt;/code&gt;, where &lt;code&gt;~&lt;/code&gt; means “is modelled by”. The way to build a linear model in &lt;code&gt;R&lt;/code&gt; is using the &lt;code&gt;lm()&lt;/code&gt; function, as follows:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;mpg_vs_wt &amp;lt;- summary(lm(mpg ~ wt,data=mtcars))
+print(mpg_vs_wt)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## 
+## Call:
+## lm(formula = mpg ~ wt, data = mtcars)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -4.5432 -2.3647 -0.1252  1.4096  6.8727 
+## 
+## Coefficients:
+##             Estimate Std. Error t value Pr(&amp;gt;|t|)    
+## (Intercept)  37.2851     1.8776  19.858  &amp;lt; 2e-16 ***
+## wt           -5.3445     0.5591  -9.559 1.29e-10 ***
+## ---
+## Signif. codes:  0 &amp;#39;***&amp;#39; 0.001 &amp;#39;**&amp;#39; 0.01 &amp;#39;*&amp;#39; 0.05 &amp;#39;.&amp;#39; 0.1 &amp;#39; &amp;#39; 1
+## 
+## Residual standard error: 3.046 on 30 degrees of freedom
+## Multiple R-squared:  0.7528, Adjusted R-squared:  0.7446 
+## F-statistic: 91.38 on 1 and 30 DF,  p-value: 1.294e-10&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The focus of this document will be on interpreting the &lt;code&gt;Estimate&lt;/code&gt; column of the &lt;code&gt;Coefficients&lt;/code&gt; table. Let’s pull this table from the output:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;print(mpg_vs_wt$coefficients)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;##              Estimate Std. Error   t value     Pr(&amp;gt;|t|)
+## (Intercept) 37.285126   1.877627 19.857575 8.241799e-19
+## wt          -5.344472   0.559101 -9.559044 1.293959e-10&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;This is fairly straightforward to interpret. Looking at the &lt;code&gt;Estimate&lt;/code&gt; column, the &lt;code&gt;(Intercept)&lt;/code&gt; value describes the value of &lt;span class=&#34;math inline&#34;&gt;\(\beta_0\)&lt;/span&gt; in our model, while the &lt;code&gt;wt&lt;/code&gt; value describes the slope associated with the &lt;code&gt;wt&lt;/code&gt; variable, i.e. &lt;span class=&#34;math inline&#34;&gt;\(\beta_1\)&lt;/span&gt;. Our fitted model looks like this:&lt;/p&gt;
+&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[\hat{y} = 37.3- 5.3x\]&lt;/span&gt; where &lt;span class=&#34;math inline&#34;&gt;\(x\)&lt;/span&gt; is the &lt;code&gt;wt&lt;/code&gt; variable and &lt;span class=&#34;math inline&#34;&gt;\(y\)&lt;/span&gt; is the &lt;code&gt;mpg&lt;/code&gt; variable, as mentioned above.&lt;/p&gt;
+&lt;p&gt;Let’s see how this looks.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;p.mpg_vs_wt + 
+  labs(x = &amp;quot;Weight (1000 lbs)&amp;quot;,
+       y = &amp;quot;Miles per Gallon&amp;quot;,
+       title = &amp;quot;Simple Linear Model: MPG vs. Weight&amp;quot;) + 
+  geom_abline(intercept = mpg_vs_wt$coefficients[&amp;quot;(Intercept)&amp;quot;,&amp;quot;Estimate&amp;quot;], 
+              slope = mpg_vs_wt$coefficients[&amp;quot;wt&amp;quot;, &amp;quot;Estimate&amp;quot;]) + 
+  coord_cartesian(xlim=c(0,6),ylim = c(5,40))&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/blog/blog/post/LinearModels_files/figure-html/unnamed-chunk-6-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;That looks pretty good. A second-order polynomial might better capture the data at the lower and higher &lt;code&gt;wt&lt;/code&gt; values, but we won’t go into that here.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;S4&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;Simple Linear Regression with Categorical Variables&lt;/h1&gt;
+&lt;p&gt;In the previous Section, we looked at how simple linear regression works when the predictor is a continuous variable, like &lt;code&gt;wt&lt;/code&gt;. Here we will examine what happens when we model categorical variables. Recall that a categorical variable is a variable that takes on discrete, usually non-numerical, values. For example, sex is a categorical variable, with the values being male or female.&lt;/p&gt;
+&lt;p&gt;In the &lt;code&gt;mtcars&lt;/code&gt; dataset, we’ll look at the &lt;code&gt;am&lt;/code&gt; variable, which describes whether the car has manual or automatic transmission. Let’s explicitly express this as a factor and display the unique values.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;mtcars$am &amp;lt;- as.factor(mtcars$am)
+unique(mtcars$am)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## [1] 1 0
+## Levels: 0 1&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;So &lt;code&gt;am&lt;/code&gt; has two possible values. Manual transmission is encoded as &lt;code&gt;am = 1&lt;/code&gt; while automatic transmission is encoded as &lt;code&gt;am = 0&lt;/code&gt; (refer to the &lt;a href=&#34;https://stat.ethz.ch/R-manual/R-devel/library/datasets/html/mtcars.html&#34;&gt;dataset description&lt;/a&gt;). As we did above, we can examine how &lt;code&gt;wt&lt;/code&gt; varies with the &lt;code&gt;am&lt;/code&gt; variable. Again we are fitting a model&lt;/p&gt;
+&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[\hat{y} = \beta_0 + \beta_1A\]&lt;/span&gt; where &lt;span class=&#34;math inline&#34;&gt;\(y\)&lt;/span&gt; is the &lt;code&gt;wt&lt;/code&gt; variable and &lt;span class=&#34;math inline&#34;&gt;\(A\)&lt;/span&gt; is the &lt;code&gt;am&lt;/code&gt; variable. Keep in mind that &lt;span class=&#34;math inline&#34;&gt;\(A\)&lt;/span&gt; is binary. In &lt;code&gt;R&lt;/code&gt;:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;mpg_vs_am &amp;lt;- summary(lm(mpg ~ am, data=mtcars ))
+print(mpg_vs_am$coefficients)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;##              Estimate Std. Error   t value     Pr(&amp;gt;|t|)
+## (Intercept) 17.147368   1.124603 15.247492 1.133983e-15
+## am1          7.244939   1.764422  4.106127 2.850207e-04&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Thus we see that &lt;span class=&#34;math inline&#34;&gt;\(\beta_0\)&lt;/span&gt; = 17.1 and &lt;span class=&#34;math inline&#34;&gt;\(\beta_1\)&lt;/span&gt; = 7.2. Note here that in the &lt;code&gt;Coefficients&lt;/code&gt; table, the slope estimate is associated with the label &lt;code&gt;am1&lt;/code&gt;. This means that it displays the slope going from &lt;code&gt;am = 0&lt;/code&gt; to &lt;code&gt;am = 1&lt;/code&gt;. This is perhaps expected in this case since 1 is greater than 0, but in general categorical variables will not have numerical values. Consider again a variable describing sex. The two instances are “Male” and “Female”. There is no specific order in which to compute the slope. When building a model with categorical variables such as these, &lt;code&gt;R&lt;/code&gt; will implicitly assign values of 0 and 1 to the levels of the variable. By default, &lt;code&gt;R&lt;/code&gt;, assigns the &lt;strong&gt;reference level&lt;/strong&gt;, i.e. a value of 0, to the value that is &lt;strong&gt;lowest in alphabetical order&lt;/strong&gt;. For the sex variable, “Female” would be associated with 0, and “Male” with 1. So when running &lt;code&gt;lm()&lt;/code&gt; on such a model and printing the output, the &lt;code&gt;Coefficients&lt;/code&gt; table will have a row with a name like &lt;code&gt;sexMale&lt;/code&gt;. The &lt;code&gt;Estimate&lt;/code&gt; value associated with this describes the slope of the model going from &lt;code&gt;sex=Female&lt;/code&gt; (which is implicitly defined as 0) to &lt;code&gt;sex=Male&lt;/code&gt; (which is implicitly defined as 1). This might seem unnecessary right now, but it becomes important when trying to interpret the output from more complex models, as we’ll see below.&lt;/p&gt;
+&lt;p&gt;As above, we can plot this data and model.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;ggplot(mtcars, aes(x=am,y=mpg)) + 
+  geom_jitter(width=0.1) + 
+  geom_smooth(method=&amp;quot;lm&amp;quot;, formula = y~x, aes(group=1), se=F) + 
+  labs(x = &amp;quot;Transmission (0 = automatic)&amp;quot;,
+       y = &amp;quot;Miles per Gallon&amp;quot;,
+       title = &amp;quot;Simple Linear Model: MPG vs. Transmission&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/blog/blog/post/LinearModels_files/figure-html/unnamed-chunk-9-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;S5&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;Multiple Linear Regression in Practice&lt;/h1&gt;
+&lt;p&gt;In this Section we will combine the models built in the two previous Sections using multiple linear regression. Specifically, we will model &lt;code&gt;mpg&lt;/code&gt; by &lt;code&gt;wt&lt;/code&gt; and &lt;code&gt;am&lt;/code&gt; together.&lt;/p&gt;
+&lt;p&gt;Let’s start by taking a look at the data.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;ggplot(mtcars, aes(x=wt, y=mpg, col=am)) + 
+  geom_point() +  
+   labs(x = &amp;quot;Weight (1000 lbs)&amp;quot;,
+       y = &amp;quot;Miles per Gallon&amp;quot;,
+       title = &amp;quot;Fuel Efficiency, Weight, and Transmission&amp;quot;,
+       colour=&amp;quot;Transmission&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/blog/blog/post/LinearModels_files/figure-html/unnamed-chunk-10-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Again, I’ve plotted &lt;code&gt;mpg&lt;/code&gt; against &lt;code&gt;wt&lt;/code&gt; using a scatter plot, but I’ve mapped the colour aesthetic to the &lt;code&gt;am&lt;/code&gt; variable to see the group variation.&lt;/p&gt;
+&lt;p&gt;Mathematically, the model we will use looks like&lt;/p&gt;
+&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[\hat{y} = \beta_0 + \beta_1x + \beta_2A\]&lt;/span&gt; where, as above, &lt;span class=&#34;math inline&#34;&gt;\(y\)&lt;/span&gt; is the &lt;code&gt;mpg&lt;/code&gt; variable, &lt;span class=&#34;math inline&#34;&gt;\(x\)&lt;/span&gt; is the &lt;code&gt;wt&lt;/code&gt; continuous variable, and &lt;code&gt;A&lt;/code&gt; is the categorical &lt;code&gt;am&lt;/code&gt; variable. &lt;span class=&#34;math inline&#34;&gt;\(\beta_1\)&lt;/span&gt; is the slope associated with &lt;span class=&#34;math inline&#34;&gt;\(x\)&lt;/span&gt; and &lt;span class=&#34;math inline&#34;&gt;\(\beta_2\)&lt;/span&gt; is the slope associated with &lt;span class=&#34;math inline&#34;&gt;\(A\)&lt;/span&gt;. Recall that &lt;span class=&#34;math inline&#34;&gt;\(A\)&lt;/span&gt; is only 0 or 1.&lt;/p&gt;
+&lt;p&gt;Let’s go ahead and build the model in &lt;code&gt;R&lt;/code&gt;.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;mpg_MLR &amp;lt;- summary(lm(mpg ~ wt + am, data=mtcars))
+print(mpg_MLR$coefficients)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;##                Estimate Std. Error     t value     Pr(&amp;gt;|t|)
+## (Intercept) 37.32155131  3.0546385 12.21799285 5.843477e-13
+## wt          -5.35281145  0.7882438 -6.79080719 1.867415e-07
+## am1         -0.02361522  1.5456453 -0.01527855 9.879146e-01&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Again, keeping in mind the mathematical formula, we see that &lt;code&gt;(Intercept)&lt;/code&gt; corresponds to &lt;span class=&#34;math inline&#34;&gt;\(\beta_0\)&lt;/span&gt; = 37.32, &lt;code&gt;wt&lt;/code&gt; corresponds to &lt;span class=&#34;math inline&#34;&gt;\(\beta_1\)&lt;/span&gt; = -5.35 and &lt;code&gt;am1&lt;/code&gt; corresponds to &lt;span class=&#34;math inline&#34;&gt;\(\beta_2\)&lt;/span&gt; = -0.02. So how do we interpret this? How could we sketch this model on a scatter plot of &lt;span class=&#34;math inline&#34;&gt;\(y\)&lt;/span&gt; vs &lt;span class=&#34;math inline&#34;&gt;\(x\)&lt;/span&gt; like the one above? The way to go about it is to examine the two cases for our categorical variables &lt;span class=&#34;math inline&#34;&gt;\(A\)&lt;/span&gt; = &lt;code&gt;am&lt;/code&gt;. Recall that, regardless of what our factor levels are (0/1, Female/Male), &lt;code&gt;R&lt;/code&gt; always encodes categorical variables as 0 and 1. Consequently we can always examine our mathematical model by setting the corresponding variable to 0 or 1. For &lt;span class=&#34;math inline&#34;&gt;\(A\)&lt;/span&gt; = &lt;code&gt;am&lt;/code&gt; = 0, we have&lt;/p&gt;
+&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[\hat{y} = \beta_0 + \beta_1x\]&lt;/span&gt; In this case, when &lt;span class=&#34;math inline&#34;&gt;\(A\)&lt;/span&gt; = 0, &lt;span class=&#34;math inline&#34;&gt;\(\beta_0\)&lt;/span&gt; is the intercept of the line relating &lt;span class=&#34;math inline&#34;&gt;\(x\)&lt;/span&gt; and &lt;span class=&#34;math inline&#34;&gt;\(y\)&lt;/span&gt;, and &lt;span class=&#34;math inline&#34;&gt;\(\beta_1\)&lt;/span&gt; is the slope associated with &lt;span class=&#34;math inline&#34;&gt;\(x\)&lt;/span&gt;. On the scatter plot, we would draw a line with this slope and intercept. What about when &lt;span class=&#34;math inline&#34;&gt;\(A = 1\)&lt;/span&gt;?&lt;/p&gt;
+&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[\hat{y} = \beta_0 + \beta_1x + \beta_2\]&lt;/span&gt; &lt;span class=&#34;math display&#34;&gt;\[= (\beta_0 + \beta_2) + \beta_1x\]&lt;/span&gt; &lt;span class=&#34;math display&#34;&gt;\[= \beta_0&amp;#39; + \beta_1x\]&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;We find that we actually have a new intercept value &lt;span class=&#34;math inline&#34;&gt;\(\beta_0&amp;#39; = \beta_0 + \beta_2\)&lt;/span&gt;, but the same slope &lt;span class=&#34;math inline&#34;&gt;\(\beta_1\)&lt;/span&gt;. Thus the trend line associated with &lt;span class=&#34;math inline&#34;&gt;\(A = 1\)&lt;/span&gt; has a different intercept than that associated with &lt;span class=&#34;math inline&#34;&gt;\(A = 0\)&lt;/span&gt;. What we’ve discovered is that the &lt;span class=&#34;math inline&#34;&gt;\(\beta_2\)&lt;/span&gt; parameter tells us the &lt;strong&gt;difference in the intercept values&lt;/strong&gt; between the &lt;code&gt;am = 0&lt;/code&gt; and &lt;code&gt;am = 1&lt;/code&gt; groups, i.e. &lt;span class=&#34;math inline&#34;&gt;\(\beta_2 = \beta_0&amp;#39; - \beta_0\)&lt;/span&gt;. The &lt;span class=&#34;math inline&#34;&gt;\(\beta_1\)&lt;/span&gt; parameter tells us the slope of the two lines.&lt;/p&gt;
+&lt;p&gt;Let’s see what this looks like.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;beta0 &amp;lt;- mpg_MLR$coefficients[&amp;quot;(Intercept)&amp;quot;,&amp;quot;Estimate&amp;quot;]
+beta1 &amp;lt;- mpg_MLR$coefficients[&amp;quot;wt&amp;quot;,&amp;quot;Estimate&amp;quot;]
+beta0_prime &amp;lt;- mpg_MLR$coefficients[&amp;quot;(Intercept)&amp;quot;,&amp;quot;Estimate&amp;quot;] + 
+                mpg_MLR$coefficients[&amp;quot;am1&amp;quot;,&amp;quot;Estimate&amp;quot;]
+
+ggplot(mtcars, aes(x = wt, y = mpg, col = am)) + 
+  geom_point() + 
+  geom_abline(intercept = beta0,
+         slope = beta1,
+         col=&amp;quot;red&amp;quot;,
+         alpha=0.5) + 
+  geom_abline(intercept = beta0_prime,
+              slope = beta1, 
+              col=&amp;quot;blue&amp;quot;,
+              alpha=0.5) + 
+  labs(x = &amp;quot;Weight (1000 lbs)&amp;quot;,
+       y = &amp;quot;Miles per Gallon&amp;quot;,
+       title = &amp;quot;Multiple Linear Model: MPG ~ Weight + Transmission&amp;quot;,
+       colour=&amp;quot;Transmission&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/blog/blog/post/LinearModels_files/figure-html/unnamed-chunk-12-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;There are actually two lines in this plot, a blue one and a red one. Given how small &lt;span class=&#34;math inline&#34;&gt;\(\beta_2\)&lt;/span&gt; is we can’t see much of a difference, but the blue trend line should be slightly lower than the red line. Their slopes are the same. Let’s zoom in to be sure.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;ggplot(mtcars, aes(x = wt, y = mpg, col = am)) + 
+  geom_point() + 
+  geom_abline(intercept = beta0,
+         slope = beta1,
+         col=&amp;quot;red&amp;quot;,
+         alpha=0.5) + 
+  geom_abline(intercept = beta0_prime,
+              slope = beta1, 
+              col=&amp;quot;blue&amp;quot;,
+              alpha=0.5) + 
+  coord_cartesian(xlim = c(3.4,3.5),ylim = c(17.5,19.5)) + 
+    labs(x = &amp;quot;Weight (1000 lbs)&amp;quot;,
+       y = &amp;quot;Miles per Gallon&amp;quot;,
+       title = &amp;quot;Multiple Linear Model: MPG ~ Weight + Transmission (Zoomed In)&amp;quot;,
+       colour=&amp;quot;Transmission&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/blog/blog/post/LinearModels_files/figure-html/unnamed-chunk-13-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;There we go. This is the effect of a multiple linear model with no interactions. In general the trend lines for the two groups don’t have to be so close together. It all depends on the data. In this case we see that, when we impose a fixed slope (using &lt;code&gt;mpg ~ wt + am&lt;/code&gt;), the trend lines describing the two groups are basically the same. Next, we’ll look at how adding interactions to our model results in slope variation.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;S6&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;Multiple Linear Regression with Interactions&lt;/h1&gt;
+&lt;p&gt;In the previous Section we examined the use of multiple linear regression to model a response variable in terms of continuous and categorical predictors. We can take this a step further by including an &lt;strong&gt;interaction&lt;/strong&gt; in our model. What does this mean? An interaction describes how a change in one predictor influences change in another predictor. In mathematics this is typically expressed by including a product or more complex term in an equation. A simple product of two variables is the simplest interaction term that we can write down. Consider once again our model of &lt;code&gt;mpg&lt;/code&gt; vs. &lt;code&gt;wt&lt;/code&gt; and &lt;code&gt;am&lt;/code&gt;. This time we will add an interaction:&lt;/p&gt;
+&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[\hat{y} = \beta_0 + \beta_1x + \beta_2A + \beta_3xA\]&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;The model is as above, with the exception of the new interaction term &lt;span class=&#34;math inline&#34;&gt;\(\beta_3xA\)&lt;/span&gt;. &lt;span class=&#34;math inline&#34;&gt;\(xA\)&lt;/span&gt; is the product interaction while &lt;span class=&#34;math inline&#34;&gt;\(\beta_3\)&lt;/span&gt; is the model parameter associated with this interaction.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;An important note&lt;/strong&gt;: In &lt;code&gt;R&lt;/code&gt; formula notation, interactions are expressed as &lt;code&gt;wt*am&lt;/code&gt;. This includes all terms in the model, i.e. &lt;code&gt;wt*am&lt;/code&gt; = &lt;code&gt;1 + wt + am + wt:am&lt;/code&gt; where &lt;code&gt;1&lt;/code&gt; stands in for the “variable” associated with the &lt;span class=&#34;math inline&#34;&gt;\(\beta_0\)&lt;/span&gt; parameter, and the &lt;strong&gt;colon denotes a product&lt;/strong&gt;. We can thus write our full interactive model as &lt;code&gt;mpg ~ wt*am&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;Let’s run this model through &lt;code&gt;lm()&lt;/code&gt; and see what happens.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;mpg_int &amp;lt;- summary(lm(mpg ~ wt*am,data=mtcars))
+print(mpg_int$coefficients)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;##              Estimate Std. Error   t value     Pr(&amp;gt;|t|)
+## (Intercept) 31.416055  3.0201093 10.402291 4.001043e-11
+## wt          -3.785908  0.7856478 -4.818836 4.551182e-05
+## am1         14.878423  4.2640422  3.489277 1.621034e-03
+## wt:am1      -5.298360  1.4446993 -3.667449 1.017148e-03&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;We have four rows for our four parameters. Again each row corresponds to one &lt;span class=&#34;math inline&#34;&gt;\(\beta\)&lt;/span&gt; parameter: &lt;code&gt;(Intercept)&lt;/code&gt; corresponds to &lt;span class=&#34;math inline&#34;&gt;\(\beta_0\)&lt;/span&gt; = 31.42, &lt;code&gt;wt&lt;/code&gt; corresponds to &lt;span class=&#34;math inline&#34;&gt;\(\beta_1\)&lt;/span&gt; = -3.79, &lt;code&gt;am1&lt;/code&gt; corresponds to &lt;span class=&#34;math inline&#34;&gt;\(\beta_2\)&lt;/span&gt; = 14.88 and &lt;code&gt;wt:am1&lt;/code&gt; corresponds to &lt;span class=&#34;math inline&#34;&gt;\(\beta_3\)&lt;/span&gt; = -5.3. Let’s interpret this, as we did in the previous Section, by examining the different values of the categorical variable &lt;code&gt;am&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;When &lt;span class=&#34;math inline&#34;&gt;\(A\)&lt;/span&gt; = &lt;code&gt;am&lt;/code&gt; = 0, we have&lt;/p&gt;
+&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[\hat{y} = \beta_0 + \beta_1x\]&lt;/span&gt; which is just our simple model. So &lt;span class=&#34;math inline&#34;&gt;\(\beta_0\)&lt;/span&gt; describes the intercept when &lt;span class=&#34;math inline&#34;&gt;\(A = 0\)&lt;/span&gt; and &lt;span class=&#34;math inline&#34;&gt;\(\beta_1\)&lt;/span&gt; describes the slope associated with &lt;span class=&#34;math inline&#34;&gt;\(x\)&lt;/span&gt; when &lt;span class=&#34;math inline&#34;&gt;\(A = 0\)&lt;/span&gt;. What happens when &lt;span class=&#34;math inline&#34;&gt;\(A = 1\)&lt;/span&gt;?&lt;/p&gt;
+&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[\hat{y} = \beta_0 + \beta_1x + \beta_2 + \beta_3x\]&lt;/span&gt; &lt;span class=&#34;math display&#34;&gt;\[= (\beta_0 + \beta_2) + (\beta_1 + \beta_3)x\]&lt;/span&gt; &lt;span class=&#34;math display&#34;&gt;\[= \beta_0&amp;#39; + \beta_1&amp;#39;x\]&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;So we actually have a new intercept and a new slope! The new intercept is the same as in the previous Section: &lt;span class=&#34;math inline&#34;&gt;\(\beta_0&amp;#39; = \beta_0 + \beta_2\)&lt;/span&gt;. The new slope is &lt;span class=&#34;math inline&#34;&gt;\(\beta_1&amp;#39; = \beta_1 + \beta_3\)&lt;/span&gt;. Therefore, a simple product interaction like this one causes the slope of &lt;span class=&#34;math inline&#34;&gt;\(y\)&lt;/span&gt; with &lt;span class=&#34;math inline&#34;&gt;\(x\)&lt;/span&gt; to change as we move from &lt;span class=&#34;math inline&#34;&gt;\(A = 0\)&lt;/span&gt; to &lt;span class=&#34;math inline&#34;&gt;\(A = 1\)&lt;/span&gt;. Displaying this on a scatter plot of &lt;span class=&#34;math inline&#34;&gt;\(y\)&lt;/span&gt; and &lt;span class=&#34;math inline&#34;&gt;\(x\)&lt;/span&gt;, we would have two lines with different intercepts and different slopes.&lt;/p&gt;
+&lt;p&gt;Let’s take a look.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;beta0 = mpg_int$coefficients[&amp;quot;(Intercept)&amp;quot;,&amp;quot;Estimate&amp;quot;]
+beta1 = mpg_int$coefficients[&amp;quot;wt&amp;quot;,&amp;quot;Estimate&amp;quot;]
+beta0_prime = mpg_int$coefficients[&amp;quot;(Intercept)&amp;quot;,&amp;quot;Estimate&amp;quot;] + 
+                mpg_int$coefficients[&amp;quot;am1&amp;quot;,&amp;quot;Estimate&amp;quot;]
+beta1_prime = mpg_int$coefficients[&amp;quot;wt&amp;quot;,&amp;quot;Estimate&amp;quot;] + 
+                mpg_int$coefficients[&amp;quot;wt:am1&amp;quot;,&amp;quot;Estimate&amp;quot;]
+
+ggplot(mtcars, aes(x = wt, y = mpg, col = am)) + 
+  geom_point() + 
+  geom_abline(intercept = beta0,
+         slope = beta1,
+         col=&amp;quot;red&amp;quot;,
+         alpha=0.5) + 
+  geom_abline(intercept = beta0_prime,
+              slope = beta1_prime, 
+              col=&amp;quot;blue&amp;quot;,
+              alpha=0.5) + 
+  coord_cartesian(xlim=c(0,6),
+                  ylim = c(0,50)) +
+  labs(x = &amp;quot;Weight (1000 lbs)&amp;quot;,
+       y = &amp;quot;Miles per Gallon&amp;quot;,
+       title = &amp;quot;Weight-Transmission Interaction&amp;quot;,
+       colour=&amp;quot;Transmission&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/blog/blog/post/LinearModels_files/figure-html/unnamed-chunk-15-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Perfect. Compared to the non-interactive model in the previous Section, we see that adding an interaction (and thus allowing the slope of &lt;span class=&#34;math inline&#34;&gt;\(y\)&lt;/span&gt; with &lt;span class=&#34;math inline&#34;&gt;\(x\)&lt;/span&gt; to vary between groups) better characterizes the data. If the data was truly not well characterized by an interaction, the equal-slope model of the previous Section would perform just as well as an interactive model of this kind. Of course this would have to be determined by examining the statistics associated with the models.&lt;/p&gt;
+&lt;p&gt;This concludes the majority of what I wanted to cover. In the next Section I’ll go into some of the heavier mathematical details regarding linear models. Read ahead at your own peril.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;S7&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;Mathematical Embellishments&lt;/h1&gt;
+&lt;p&gt;The previous analysis was focussed on examining linear models built with a continuous and categorical predictor. We’re by no means restricted to this however. We can build a linear model with as many variables as we’d like. As we saw above, the case of one continuous predictor and one categorical predictor can be visualized fairly easily using a scatter plot, where the continous data is mapped to the &lt;span class=&#34;math inline&#34;&gt;\(x\)&lt;/span&gt; and &lt;span class=&#34;math inline&#34;&gt;\(y\)&lt;/span&gt; axes and the categorical data is mapped to a colour/shape/style aesthetic. This becomes harder to do when we’re examining models that use multiple continuous predictors, e.g. something of the form&lt;/p&gt;
+&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[\hat{y} = \beta_0 + \beta_1x_1 + \beta_2x_2 + \beta_3x_1x_2\]&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;Here we have an interactive multiple linear regression with two continuous regressors &lt;span class=&#34;math inline&#34;&gt;\(x_1\)&lt;/span&gt; and &lt;span class=&#34;math inline&#34;&gt;\(x_2\)&lt;/span&gt;. A practical example of this would be modelling the &lt;code&gt;mpg&lt;/code&gt; variable in terms of the &lt;code&gt;wt&lt;/code&gt; and horsepower, &lt;code&gt;hp&lt;/code&gt;. Let’s plot this in the same way we did above, where the &lt;code&gt;hp&lt;/code&gt; variable is mapped to the colour aesthetic.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;ggplot(mtcars, aes(x=wt, y=mpg, col=hp)) + 
+  geom_point() +  
+   labs(x = &amp;quot;Weight (1000 lbs)&amp;quot;,
+       y = &amp;quot;Miles per Gallon&amp;quot;,
+       title = &amp;quot;Fuel Efficiency, Weight, and Horsepower&amp;quot;,
+       colour=&amp;quot;Transmission&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/blog/blog/post/LinearModels_files/figure-html/unnamed-chunk-16-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Given the continuous nature of the &lt;code&gt;hp&lt;/code&gt; variable, this is difficult to interpret by eye. That doesn’t invalidate the model however, and we can still estimate the optimal &lt;span class=&#34;math inline&#34;&gt;\(\beta\)&lt;/span&gt; parameters.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;mpg_hp &amp;lt;- summary(lm(mpg ~ wt*hp, data=mtcars))
+print(mpg_hp$coefficients)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;##                Estimate Std. Error   t value     Pr(&amp;gt;|t|)
+## (Intercept) 49.80842343 3.60515580 13.815887 5.005761e-14
+## wt          -8.21662430 1.26970814 -6.471270 5.199287e-07
+## hp          -0.12010209 0.02469835 -4.862758 4.036243e-05
+## wt:hp        0.02784815 0.00741958  3.753332 8.108307e-04&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The rows in this table still represent the &lt;span class=&#34;math inline&#34;&gt;\(\beta\)&lt;/span&gt; parameters in the model, as before, but it is much harder to interpret this result in the context of a scatter plot of &lt;code&gt;mpg&lt;/code&gt; vs. &lt;code&gt;wt&lt;/code&gt;. We can’t just set &lt;code&gt;hp = 0&lt;/code&gt; and &lt;code&gt;hp = 1&lt;/code&gt; as we did previously. The equivalent here would be setting &lt;code&gt;hp&lt;/code&gt; to an infinite number of incremental values. This isn’t the right way to think about this. This sort of brings us face to face with what the multiple linear model is actually saying. Consider again simple linear regression:&lt;/p&gt;
+&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[\hat{y} = \beta_0 + \beta_1x\]&lt;/span&gt; This is clearly the expression for a line. The variable &lt;span class=&#34;math inline&#34;&gt;\(y\)&lt;/span&gt; is modelled as a linear function of &lt;span class=&#34;math inline&#34;&gt;\(x\)&lt;/span&gt;. As we know, we can plot this easily on a two-dimensional space, where &lt;span class=&#34;math inline&#34;&gt;\(y\)&lt;/span&gt; and &lt;span class=&#34;math inline&#34;&gt;\(x\)&lt;/span&gt; form the axes. Moving to multiple regression, we have&lt;/p&gt;
+&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[\hat{y} = \beta_0 + \beta_1x_1 + \beta_2x_2\]&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;In Sections &lt;a href=&#34;#S5&#34;&gt;5&lt;/a&gt; and &lt;a href=&#34;#S6&#34;&gt;6&lt;/a&gt;, we interpreted this model &lt;strong&gt;within the context of the scatter plot of &lt;span class=&#34;math inline&#34;&gt;\(x_1\)&lt;/span&gt; and &lt;span class=&#34;math inline&#34;&gt;\(y\)&lt;/span&gt;&lt;/strong&gt;. With &lt;span class=&#34;math inline&#34;&gt;\(x_2\)&lt;/span&gt; as a categorical variable, this allowed us to interpret &lt;span class=&#34;math inline&#34;&gt;\(\beta_2\)&lt;/span&gt; as the difference in intercept values on this scatter plot. Mathematically, however, this expression describes a &lt;strong&gt;two-dimensional plane&lt;/strong&gt; characterised by the variables &lt;span class=&#34;math inline&#34;&gt;\(x_1\)&lt;/span&gt; and &lt;span class=&#34;math inline&#34;&gt;\(x_2\)&lt;/span&gt;. We see that the intercept of the plane is &lt;span class=&#34;math inline&#34;&gt;\(\beta_0\)&lt;/span&gt;, i.e. the value of &lt;span class=&#34;math inline&#34;&gt;\(y\)&lt;/span&gt; at which both the parametric variables are 0. Moreover, &lt;span class=&#34;math inline&#34;&gt;\(\beta_1\)&lt;/span&gt; is the slope of the plane with respect to &lt;span class=&#34;math inline&#34;&gt;\(x_1\)&lt;/span&gt;, and &lt;span class=&#34;math inline&#34;&gt;\(\beta_2\)&lt;/span&gt; is the slope of the plane with respect to &lt;span class=&#34;math inline&#34;&gt;\(x_2\)&lt;/span&gt;. Specifically,&lt;/p&gt;
+&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[\beta_1 = \frac{\partial\hat{y}}{\partial x_1}\]&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;and&lt;/p&gt;
+&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[\beta_2 = \frac{\partial\hat{y}}{\partial x_2}\]&lt;/span&gt; We can visualize this two-dimensional plane in a three-dimensional space, where the third axis is represented by the &lt;span class=&#34;math inline&#34;&gt;\(y\)&lt;/span&gt; variable. You can do this easily by grabbing a piece of paper, or preferably a rigid flat object, and orienting it in front of you in real space. You can imagine the &lt;span class=&#34;math inline&#34;&gt;\(y\)&lt;/span&gt; axis as the vertical axis, and the &lt;span class=&#34;math inline&#34;&gt;\(x_1\)&lt;/span&gt; and &lt;span class=&#34;math inline&#34;&gt;\(x_2\)&lt;/span&gt; axes as the horizontal axes. The idea of a flat plane in a multi-dimensional space extends to any number of predictors in our model, provided that the model is non-interactive. Given &lt;span class=&#34;math inline&#34;&gt;\(N\)&lt;/span&gt; predictors &lt;span class=&#34;math inline&#34;&gt;\(\{x_1, x_2, ..., x_N\}\)&lt;/span&gt;, a model of the form&lt;/p&gt;
+&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[\hat{y} = \beta_0 + \sum_{a=1}^N{\beta_ax_a}\]&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;describes a N-dimensional hyperplane embedded in a (N+1)-dimensional space. Crazy. This is undoubtedly true of continuous variables, but is a little bit more nuanced for a categorical variable. Going back to our model of &lt;code&gt;mpg&lt;/code&gt; vs. &lt;code&gt;wt&lt;/code&gt; and &lt;code&gt;am&lt;/code&gt;, we can still imagine this in a three-dimensional space. The axes of the space are &lt;code&gt;mpg&lt;/code&gt;,&lt;code&gt;wt&lt;/code&gt; and &lt;code&gt;am&lt;/code&gt;, but notice that we aren’t actually dealing with a plane in this case, since &lt;code&gt;am&lt;/code&gt; only takes on binary values. Rather we are dealing with two different lines embedded in this three-dimensional space. One line will occur at &lt;code&gt;am = 0&lt;/code&gt;, while the other occurs at &lt;code&gt;am = 1&lt;/code&gt;. Given this context, we can re-interpret the scatter plots from Section &lt;a href=&#34;#S5&#34;&gt;5&lt;/a&gt; and &lt;a href=&#34;#S6&#34;&gt;6&lt;/a&gt;. Here is the scatter plot and model from Section &lt;a href=&#34;$S6&#34;&gt;6&lt;/a&gt;:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;/blog/blog/post/LinearModels_files/figure-html/unnamed-chunk-18-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Within the proper context of a three-dimensional space, this two-dimensional plot is actually the &lt;strong&gt;projection of the binary &lt;code&gt;am&lt;/code&gt; axis onto &lt;code&gt;am = 0&lt;/code&gt;&lt;/strong&gt;. Imagine the red line existing in your computer screen and the blue line actually existing outside of your computer screen, closer to you. I’ve used the interactive model here since the plot is nicer than that for the non-interactive model, but this leads us into a discussion of interactions with continuous variables.&lt;/p&gt;
+&lt;p&gt;Examining the plot above, you might already guess where this is going. Let’s consider a model with a simple product interaction of two continuous variables, like the one at the beginning of this Section:&lt;/p&gt;
+&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[\hat{y} = \beta_0 + \beta_1x_1 + \beta_2x_2 + \beta_3x_1x_2\]&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;We saw that when &lt;span class=&#34;math inline&#34;&gt;\(\beta_3 = 0\)&lt;/span&gt;, the model describes a two-dimensional plane in three-dimensions. What does the interaction do to this plane? Notice that the product interaction is actually a second-order term in the expression for &lt;span class=&#34;math inline&#34;&gt;\(\hat{y}\)&lt;/span&gt;. From univariate calculus, we know that second order terms are responsible for the curvature of a function. The same is true in multivariate calculus. The result is that the plane is no longer a plane, but rather a &lt;strong&gt;curved&lt;/strong&gt; two-dimensional surface (or manifold, if you want to be fancy), embedded in a three-dimensional space. The nature of this curvature is unique as well, since it involves coupling between the two regressors, i.e. the surface changes in the &lt;span class=&#34;math inline&#34;&gt;\(x_1\)&lt;/span&gt; direction as we move along the &lt;span class=&#34;math inline&#34;&gt;\(x_2\)&lt;/span&gt; direction, and vice versa. This is apparent when looking at the partial derivatives:&lt;/p&gt;
+&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[\frac{\partial \hat{y}}{\partial x_1} = \beta_1 + \beta_3x_2 \]&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;and&lt;/p&gt;
+&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[\frac{\partial \hat{y}}{\partial x_2} = \beta_2 + \beta_3x_1 \]&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;We can further characterize the modelled surface if we’d like. For instance, since there aren’t any single-variable higher order terms, e.g. &lt;span class=&#34;math inline&#34;&gt;\(x_1^2\)&lt;/span&gt;, &lt;span class=&#34;math inline&#34;&gt;\(x_1^3\)&lt;/span&gt;, etc., we know that, for a given value of one of the predictors, the response variable varies linearly with the other predictor. You can verify this by setting one of the predictors to 0. Moreover since there are no terms of order higher than 2, we know that this surface has a constant curvature. This can be verified by computing the 2nd order partial derivatives. These steps maybe aren’t necessary, but they give us an idea as to how to interpret the effect of a simple product interaction.&lt;/p&gt;
+&lt;p&gt;In general, a multiple linear regression with &lt;span class=&#34;math inline&#34;&gt;\(N\)&lt;/span&gt; predictors and various interactions between those predictors will describe a curved surface or manifold in a (N+1)-dimensional space. The more complex the interactions between the predictors, the more elaborate the surface will be. In analogy to Section &lt;a href=&#34;#S2&#34;&gt;2&lt;/a&gt; such a surface will be characterized by a function, &lt;span class=&#34;math inline&#34;&gt;\(f\)&lt;/span&gt;, so that&lt;/p&gt;
+&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[y = f[\{x_a\}_{a=1}^N] + \epsilon\]&lt;/span&gt; for a response variable &lt;span class=&#34;math inline&#34;&gt;\(y\)&lt;/span&gt; and predictors &lt;span class=&#34;math inline&#34;&gt;\(x_a\)&lt;/span&gt;. Estimating complex surfaces such as these is the purpose of most statistical and machine learning techniques.&lt;/p&gt;
+&lt;/div&gt;
+</description>
     </item>
     
   </channel>

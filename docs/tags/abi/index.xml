@@ -8,7 +8,7 @@
     <language>en</language>
     <lastBuildDate>Fri, 23 Feb 2018 00:00:00 +0000</lastBuildDate>
     
-	<atom:link href="/blog/tags/abi/index.xml" rel="self" type="application/rss+xml" />
+        <atom:link href="/blog/tags/abi/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
@@ -17,8 +17,132 @@
       <pubDate>Fri, 23 Feb 2018 00:00:00 +0000</pubDate>
       
       <guid>/blog/post/2018-02-23_gene-expression/</guid>
-      <description>Intro In this post I will demonstrate how to use my package ABIgeneRMINC to download, read and analyze mouse brain gene expression data from the Allen Brain Institute.
-The Allen Brain Institute (ABI) has acquired and released genome-wide spatial gene expression maps for the mouse brain. The data is generated using in situ hybridization experiments (ISH), where nucleotide probes for specific genes bind directly to mouse brain tissue. The probe binding is then marked with a biotin label that can be used to locate regions where a gene is expressed.</description>
+      <description>&lt;div id=&#34;intro&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Intro&lt;/h2&gt;
+&lt;p&gt;In this post I will demonstrate how to use my package &lt;code&gt;ABIgeneRMINC&lt;/code&gt; to download, read and analyze mouse brain gene expression data from the Allen Brain Institute.&lt;/p&gt;
+&lt;p&gt;The Allen Brain Institute (ABI) has acquired and released genome-wide spatial gene expression maps for the mouse brain. The data is generated using &lt;em&gt;in situ&lt;/em&gt; hybridization experiments (ISH), where nucleotide probes for specific genes bind directly to mouse brain tissue. The probe binding is then marked with a biotin label that can be used to locate regions where a gene is expressed.&lt;/p&gt;
+&lt;p&gt;For the analysis you will need two R packages &lt;code&gt;RMINC&lt;/code&gt; and &lt;code&gt;ABIgeneRMINC&lt;/code&gt;.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# devtools::install_github(repo=&amp;quot;DJFernandes/ABIgeneRMINC&amp;quot;)   # If you need to install
+library(ABIgeneRMINC)
+library(RMINC)&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;div id=&#34;getting-the-data&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Getting the data&lt;/h2&gt;
+&lt;p&gt;With the packages load you can now look up your favourite gene. You need to know the gene acronym though, which you can find on the NCBI database. In this case, I want to look up Bdnf. The function below queries the Allen Brain API and finds all experiments conducted with Bdnf.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;fge=find.gene.experiment(&amp;#39;Bdnf&amp;#39;)
+fge&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;##   gene   slices ExperimentID
+## 1 Bdnf  coronal     79587720
+## 2 Bdnf sagittal     75695642
+##                                                                  URLs
+## 1 http://api.brain-map.org/grid_data/download/79587720?include=energy
+## 2 http://api.brain-map.org/grid_data/download/75695642?include=energy&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;We are in luck! There are two experiments the Allen Brain Institute ran with Bdnf, identified by ExperimentIDs 79587720 and 75695642. The former was conducted on coronal slices in the brain, and the latter on sagittal slices. We will see why this is important later on. The URLs where you can download expression data is given in the final column. You can enter them in your internet browser and file should begin to download. If you don’t want to leave the wonderful world of R just to download (I don’t blame you), we can actually download and read the data within R itself.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;genedata1 = read.raw.gene(as.character(fge$URLs[1]),url = TRUE)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## Loading required package: bitops&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;It is generally better to download outside R and save the file, so you don’t have to keep downloading. Obtain the path to the file, and use it as as argument to read as follows:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;genedata1 = read.raw.gene(&amp;#39;/projects/egerek/matthijs/2015-07-Allen-Brain/Allen_Gene_Expression/raw_data/coronal/Bdnf_sid79587720/energy.raw&amp;#39;)&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;div id=&#34;visualizing-the-gene-expression&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Visualizing the gene expression&lt;/h2&gt;
+&lt;p&gt;The gene expression data is a 1D vector. It can easily be converted to a 3D array using the mincArray function (which we will do later). But there is an important note to talk about before going further. The 1D vector lists values going from X=Anterior-to-Posterior, Y=Superior-to-Inferior, and Z=Left-to-Right (dimensions written from fastest changing index to slowest). This is the ABI orientation. The RMINC vectors typically are 1D vectors going from X=Left-to-Right, Y=Posterior-to-Anterior, Z=Inferior-to-Superior (dimensions written from fastest changing index to slowest). This is the MNI orientation. You can make a choice as to which orientiation you want to analyze in but I will be choosing MNI orientation in this tutorial. Just make sure you are consistent with your orientations and you won’t have problems. The function below converts ABI orientation to MNI orientation:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;genedata1 = allenVectorTOmincVector(genedata1)
+# genedata1 = mincVectorTOallenVector(genedata1)  #This is the inverse function&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Now, we can visualize the gene expression. Below is a sagittal slice&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;image(mincArray(genedata1)[30,,], ylab=&amp;#39;Superior-Inferior&amp;#39; ,xlab=&amp;#39;Anterior-Posterior&amp;#39;)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/blog/blog/post/2018-02-23_gene-expression_files/figure-html/6-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;adding-an-anatomical-underlay&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Adding an anatomical underlay&lt;/h2&gt;
+&lt;p&gt;I am not a good mouse brain anatomist, and so I find it pretty difficult to tell from this expression heatmap where exactly the expression is in the brain. We will now overlay a background MRI template to tell us where the gene expression is and use RMINC to create slice series.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;anatfile=&amp;#39;/projects/egerek/matthijs/2015-07-Allen-Brain/allenCCFV3_to_dorr_registration/allenCCFV3/atlas_in_200um/Dorr_resampled_200um.mnc&amp;#39;
+mincPlotSliceSeries(
+  anatomy=mincArray(mincGetVolume(anatfile)),
+  statistics=mincArray(genedata1),
+  symmetric=FALSE,
+  col=colorRampPalette(c(&amp;quot;darkgreen&amp;quot;,&amp;quot;yellowgreen&amp;quot;))(255),
+  legend=&amp;quot;Bdnf Expression&amp;quot;,low=2,high=6.5)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/blog/blog/post/2018-02-23_gene-expression_files/figure-html/7-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Much better. I can tell there is high expression in the cortex and hippocampus.&lt;/p&gt;
+&lt;p&gt;Let us also look at the other Bdnf experiment (ID: 75695642).&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;genedata2 = read.raw.gene(as.character(fge$URLs[2]),url = TRUE)
+genedata2 = allenVectorTOmincVector(genedata2)
+mincPlotSliceSeries(
+  anatomy=mincArray(mincGetVolume(anatfile)),
+  statistics=mincArray(genedata2),
+  symmetric=FALSE,
+  col=colorRampPalette(c(&amp;quot;darkgreen&amp;quot;,&amp;quot;yellowgreen&amp;quot;))(255),
+  legend=&amp;quot;Bdnf Expression&amp;quot;,low=2,high=6.5)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/blog/blog/post/2018-02-23_gene-expression_files/figure-html/8-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;We see that the sagittal slices only span half the brain. This was a deliberate choice by the ABI and most of the gene experiments are like this. Furthermore, slices are sampled every 200 microns for the sagittal datasets and every 100 microns for the coronal datasets. That is why we prefer using the coronal slices any chance we get, but there are still tools that help us work with sagittal data. We can reflect data across the sagittal midplane to fill in the missing hemisphere as so:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;genedata2.reflected=midplane.reflect(genedata2,reflect.dim=3)
+mincPlotSliceSeries(
+  anatomy=mincArray(mincGetVolume(anatfile)),
+  statistics=mincArray(genedata2.reflected),
+  symmetric=FALSE,
+  col=colorRampPalette(c(&amp;quot;darkgreen&amp;quot;,&amp;quot;yellowgreen&amp;quot;))(255),
+  legend=&amp;quot;Bdnf Expression&amp;quot;,low=2,high=6.5)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/blog/blog/post/2018-02-23_gene-expression_files/figure-html/99-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;We can do better. Because there sagittal sections were only sampled every 200um, there is a lot of missing data due to slice misalignment. We can fill them in using nearest neighbour marching averages.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;labelfile=system.file(&amp;#39;extdata/gridAnnotation.raw&amp;#39;,package=&amp;quot;ABIgeneRMINC&amp;quot;)
+mask=allenVectorTOmincVector(read.raw.gene(labelfile,labels=TRUE)&amp;gt;0)
+interp.gene=interpolate.gene(genedata2.reflected,mask)
+
+mincPlotSliceSeries(
+  anatomy=mincArray(mincGetVolume(anatfile)),
+  statistics=mincArray(interp.gene),
+  symmetric=FALSE,
+  col=colorRampPalette(c(&amp;quot;darkgreen&amp;quot;,&amp;quot;yellowgreen&amp;quot;))(255),
+  legend=&amp;quot;Bdnf Expression&amp;quot;,low=2,high=6.5)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/blog/blog/post/2018-02-23_gene-expression_files/figure-html/9-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Even with interpolation, the expression map is not that good.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;expression-statistics&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Expression statistics&lt;/h2&gt;
+&lt;p&gt;Moving back to the coronal maps, let’s generate summary statistics for each structure in the ABI atlas.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;labels=read.raw.gene(labelfile,labels=TRUE)
+labels.to.sum=sort(unique(labels))
+labels.to.sum=labels.to.sum[labels.to.sum!=0]
+
+udf=unionize(grid.data=genedata1,             #vector to unionize
+           labels.to.sum=labels.to.sum,       #sum all labels
+           labels.grid=labels                 #the vector of labels
+           )
+udf=udf[order(udf$mean,decreasing=TRUE),]
+head(udf)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;##     labels        sum     mean     stdev
+## 167    287  19.641589 4.910397 12.018447
+## 474    875  48.372759 4.397524  6.287998
+## 261    483 123.968708 3.178685  3.827543
+## 171    292  34.930620 3.175511  6.002760
+## 162    279   6.248917 3.124459  3.977935
+## 22      50  12.193722 3.048430  1.094984&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Now let us read a csv with structure names in it that correspond to the label number and add that as a column in our data frame.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;labeldefs=read.csv(&amp;quot;/projects/egerek/matthijs/2015-07-Allen-Brain/Allen_Gene_Expression/labels/allen_gridlabels_structures.csv&amp;quot;) #this can be downloaded from ABI
+udf$structures=labeldefs[match(labeldefs$id,udf$labels),&amp;#39;name&amp;#39;]
+udf = udf[,c(&amp;#39;structures&amp;#39;,&amp;#39;labels&amp;#39;,&amp;#39;mean&amp;#39;,&amp;#39;sum&amp;#39;,&amp;#39;stdev&amp;#39;)]
+head(udf)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;##                                                                    structures
+## 167                                Main olfactory bulb, outer plexiform layer
+## 474 Bed nuclei of the stria terminalis, anterior division, anterolateral area
+## 261                                                   Visceral area, layer 6b
+## 171                                                Uvula (IX), granular layer
+## 162                       Retrosplenial area, lateral agranular part, layer 1
+## 22        Bed nuclei of the stria terminalis, anterior division, oval nucleus
+##     labels     mean        sum     stdev
+## 167    287 4.910397  19.641589 12.018447
+## 474    875 4.397524  48.372759  6.287998
+## 261    483 3.178685 123.968708  3.827543
+## 171    292 3.175511  34.930620  6.002760
+## 162    279 3.124459   6.248917  3.977935
+## 22      50 3.048430  12.193722  1.094984&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Voila, we can now tell which structures have high gene expression for the gene we are interested in.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;outro&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Outro&lt;/h2&gt;
+&lt;p&gt;I plan to do tutorials on more fancy gene expression analyses in the future, but this is the base from which future tutorials will be built. I hope this gets you started on using gene expression to explore neuroanatomical phenotypes and gives you an understanding of some of the caveats associated with spatial gene expression analysis.&lt;/p&gt;
+&lt;/div&gt;
+</description>
     </item>
     
   </channel>

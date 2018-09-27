@@ -8,7 +8,7 @@
     <language>en</language>
     <lastBuildDate>Wed, 30 May 2018 00:00:00 +0000</lastBuildDate>
     
-	<atom:link href="/blog/tags/bayesian/index.xml" rel="self" type="application/rss+xml" />
+        <atom:link href="/blog/tags/bayesian/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
@@ -17,8 +17,47 @@
       <pubDate>Wed, 30 May 2018 00:00:00 +0000</pubDate>
       
       <guid>/blog/post/2018-05-30_iclr_redux/</guid>
-      <description>I was recently extremely fortunate to attend ICLR 2018, albeit as something of an interloper. Accordingly, what follows is surely a rather atypical highlight reel. All pedantry and any inaccuracy is, of course, due to my own limited understanding of these elegant topics and the breadth of their application.
-Causal reasoning and graphical models There is a well-developed modern theory of causal inference and reasoning based on graphical models developed by Judea Pearl and others.</description>
+      <description>&lt;p&gt;I was recently extremely fortunate to attend ICLR 2018, albeit as something of an interloper. Accordingly, what follows is surely a rather atypical highlight reel. All pedantry and any inaccuracy is, of course, due to my own limited understanding of these elegant topics and the breadth of their application.&lt;/p&gt;
+&lt;div id=&#34;causal-reasoning-and-graphical-models&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Causal reasoning and graphical models&lt;/h2&gt;
+&lt;p&gt;There is a well-developed modern theory of causal inference and reasoning based on graphical models developed by Judea Pearl and others. Oft misunderstood and mostly ignored by most statisticians and practitioners, it featured prominently in both contributed papers and invited talks this year.&lt;/p&gt;
+&lt;p&gt;Bernhard Schölkopf, the inventor of Support Vector Machines and largely of kernel methods in machine learning, &lt;a href=&#34;https://www.youtube.com/watch?v=4qc28RA7HLQ&#34;&gt;discussed&lt;/a&gt; advances in learning causal models, many of which he worked on, such as in the two-variable case via assumptions on the noise distributions, as well as applications of causal modelling to traditional predictive models, such as semi-supervised learning and covariate shift. I’ve since been reading &lt;a href=&#34;https://mitpress.mit.edu/books/elements-causal-inference&#34;&gt;his (open-access) book&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;A &lt;a href=&#34;https://www.youtube.com/watch?v=-maBKmsORwQ&#34;&gt;talk by Suchi Saria&lt;/a&gt; focussed on large datasets in healthcare. She discussed a study involving predicting mortality given test data acquired from patients admitted to hospitals. In this setting, where the illness and subsequent treatment of the patient, as well as other variables regarding the patient and hospital, are occluded, even high-capacity predictive models based on associational data fall flat. At the same time, designing reasonable interventions in this scenario is not obviously even possible, so Saria and collaborators employed the Neyman-Rubin counterfactual framework, a more popular relative of Pearl’s, to predict outcomes in their absence.&lt;/p&gt;
+&lt;p&gt;Daphne Koller - of probabilistic graphical modelling fame - held a &lt;a href=&#34;https://www.youtube.com/watch?v=N4mdV1CIpvI&#34;&gt;‘fireside chat’&lt;/a&gt; with (also distinguished!) moderator Yoshua Bengio. In addition to discussing issues of discrimination and harrassment in the machine learning and tech business communities, she devoted much of her talk to a form of career advice: advocating that ML experts work on diverse socially important problems in addition to ‘mental gymnastics’ and ends-agnostic performance improvements. This may call to mind her education work as co-founder of Coursera, but more recently she’s been working in health care - mentioning a just-announced new startup during her talk - in areas like drug discovery, and urged more people to consider this area. Notably, she sees a need for researchers at the intersection of both disciplines rather than pure stats/ML experts expecting to blindly achieve state-of-the-art results on biology datasets or pure biologists with limited understanding of the strengths and limitations of ML. Like Saria, she considers pure DNNs merely one technique out of many and sees this area as needing diverse approaches such as (unsurprisingly…) PGM/causal techniques.&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://iclr.cc/Conferences/2018/Schedule?showEvent=274&#34;&gt;Tran and Blei&lt;/a&gt;, the creators of the Edward probabilistic programming language (now part of Tensorflow!), had a paper on applying causal models to GWAS studies. On the causal side of the problem, the authors consider structural models where the causal relations are modelled via neural networks, and note that Cybenko’s universal approximation theorem extends to this situation. On the inference side, evaluating the posterior is intractable, so the authors applied their recently-developed &lt;em&gt;likelihood-free variational inference&lt;/em&gt;, which involves estimating the ratio between two intractable distributions (the posterior and the variational approximation) appearing in the ELBO. I don’t yet understand the details but it’s already available in Edward. Ground truth data, however, is not, so the authors conducted simulations and compared their methods to PCA plus regression, linear mixed models, and logistic factor analysis and showed their implicit causal model to have superior performance even when few causal relationships were present. Sadly, Tran’s opinion is that inferring the causal graph itself at such a scale is likely intractable, but even so it’s clear that such models - and the authors’ work in variational approximations - could be quite valuable in neuroinformatics as well as genomics.&lt;/p&gt;
+&lt;p&gt;I was impressed by the attention the subject received - which seems to have coincided with (and maybe caused) an explosion of tutorials and popularizations in the popular press - and hope that continuing interest will help to elucidate the strengths and weaknesses of causal models as well as lead to further research connecting these to other approaches (particularly, under what circumstances can purely statistical approaches recover the conclusions of such models?) as well as more classical areas like logic and reasoning.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;bayesian-reasoning-and-computation&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Bayesian reasoning and computation&lt;/h2&gt;
+&lt;p&gt;Connections between Bayesian reasoning and neural networks are wide-ranging and fruitful, and several new results were presented.&lt;/p&gt;
+&lt;p&gt;One might want to use the learning abilities of NNs to improve Bayesian computation. In this vein, enter &lt;a href=&#34;https://iclr.cc/Conferences/2018/Schedule?showEvent=284&#34;&gt;Levy et al.&lt;/a&gt; on “L2HMC”: using a neural net to learn a useful volume-nonpreserving but detailed-balance-preserving transformation on phase space. (If this sounds familiar, it’s probably because this paper appeared courtesy of Chris at a recent MICe journal club.) It’s an elegant idea which can greatly improve the performance of sampling from previously challenging distributions. I wonder what the transformations look like globally and whether they’re nice/useful across (relevant) phase space or if (hard-to-discover) insufficient model capacity or training schedule - the usual bugbears - might mean that some high-dimensional distributions see no improvement (or even degradation) in some regions.&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://iclr.cc/Conferences/2018/Schedule?showEvent=161&#34;&gt;Matthews et al.&lt;/a&gt; prove the convergence in distribution of the output of Bayesian DNNs with rectified-linear neurons to a Gaussian process with a certain kernel, extending work by Neal on shallow networks. As an interesting application, they show how one might attempt to avoid Gaussian process behaviour (which, they note, suggest a lack of hierarchical representation) in situations where it might be undesirable.&lt;/p&gt;
+&lt;p&gt;There were many papers on GANs (Generative Adversarial Networks), which can be thought of as networks for approximating probability distributions - perhaps in situations where HMC might be computationally infeasible. It would be quite interesting if anyone has been able to relate the architecture/regularizers of any GANs to priors on the distribution to be learned. Ignorant question: are there any cases where we might be say enough about the ability of a GAN to learn a distribution that we would be able to use one for inference about parameters as one is often interested in science?&lt;/p&gt;
+&lt;p&gt;Combining some of the above ideas, &lt;a href=&#34;https://iclr.cc/Conferences/2018/Schedule?showEvent=159&#34;&gt;CausalGAN&lt;/a&gt;, given a causal model, allows sampling from both observational and interventional distributions.&lt;/p&gt;
+&lt;p&gt;The elegant and potentially useful &lt;a href=&#34;https://openreview.net/forum?id=Hy7fDog0b&#34;&gt;AmbientGAN&lt;/a&gt; paper considered this problem: you want to create a generative model but all your samples are corrupted by noise. Luckily, you understand the noise distribution. The authors’ solution: you create a generative model in which simulated noise is applied to the generated samples before they’re passed to the discriminator, which as usual attempts to distinguish the real from fake data. The authors prove it’s possible to recover the underlying data distribution in certain noise models; their empirical results suggest both that learning is feasible in the presence of other classes of noise and that their method is robust to a certain degree of noise misspecification.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;neuro-ml&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Neuro &amp;lt;=&amp;gt; ML&lt;/h2&gt;
+&lt;p&gt;Blake Richards (UTSC) gave a more biologically-centred &lt;a href=&#34;https://www.youtube.com/watch?v=C_2Q7uKtgNs&#34;&gt;invited talk&lt;/a&gt; on creating accurate neural models of learning in the brain reflecting the lack of anatomical and physiological evidence for backpropagation - the so-called ‘credit assignment’ problem. (Question: what are the implications, if any, of these models for understanding the brain via morphometry?) On the machine learning side, these - very heuristically - suggest using microarchitectures more sophisticated than layers of ‘bare’ neurons, e.g., Hinton’s capsule networks or variations thereof.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;pipeline-compilation&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Pipeline compilation&lt;/h2&gt;
+&lt;p&gt;In the modern era of NN frameworks providing GPU execution and automatic differentiation, the first popular frameworks - among them Theano and Tensorflow - allow one to construct the computation graph as a data structure which can then be optimized in some way by the framework. However, this means - roughly - that the architecture must be known independently of the data, which poses problems for interesting networks like RNNs and GNNs. Recent frameworks like Chainer and Pytorch avoid this limitation by constructing the pipeline graph on-the-fly or ‘dynamically’, but this limits possibilities for optimizing the network.&lt;/p&gt;
+&lt;p&gt;The &lt;a href=&#34;https://iclr.cc/Conferences/2018/Schedule?showEvent=520&#34;&gt;DLVM&lt;/a&gt; project (more on this in an upcoming blog post) introduces a DSL embedded in Apple’s Swift programming language and based on ideas present in the Lightweight Modular Staging (LMS) library for Scala, an intermediate representation with support for linear algebra and derivative information, and compilation steps to perform automatic differentiation as a source transformation, hosted on a (modified?) LLVM backend. DLVM is currently not actively developed, but happily that’s because one of the original authors is now working on the similar Swift for Tensorflow project at Google. At the DLVM poster, I learned from another delegate that Facebook has just released &lt;a href=&#34;https://facebook.ai/developers/tools/glow&#34;&gt;Glow&lt;/a&gt; at their own developer conference. Backing from these two ML giants supports the authors’ guess that such technologies will become ubiquitous in the next few years.&lt;/p&gt;
+&lt;p&gt;Fei Wang and Tiark Rompf also workshopped a &lt;a href=&#34;https://iclr.cc/Conferences/2018/Schedule?showEvent=429&#34;&gt;paper&lt;/a&gt; on using LMS in Scala to provide a more expressive DSL for constructing static graphs. Notably, they used &lt;em&gt;delimited continuations&lt;/em&gt;, a powerful mechanism for controlling control flow, to obviate the need for an explicit tape for reverse-mode autodiff, essentially using the underlying language’s stack instead. They claim that their DSL removes the need for compiler passes or other source-to-source transformations as in the DLVM model (although I assume DLVM implements a larger set of optimizations).&lt;/p&gt;
+&lt;p&gt;I intend to understand the relationships between these elegant techniques, and in particular their relation to staged metaprogramming and the rest of the compilation pipeline, in much more detail in the not-too-distant future.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;other-topics&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Other topics&lt;/h2&gt;
+&lt;p&gt;Numerous very large and active subject areas like reinforcement learning, applications to audio and language processing and synthesis, and resistance to adversarial examples are entirely slighted here. Of particular interest given the prevalence of graph- theoretic methods in neuroscience, recursive and graph NNs continue to see rapid advances. A large body of work applies such networks to programming problems such as program synthesis and debugging, which will certainly benefit many scientists.&lt;/p&gt;
+&lt;p&gt;Perhaps due to the relative youth of the field, even the ‘core’ methods continue to improve. For instance, &lt;a href=&#34;https://iclr.cc/Conferences/2018/Schedule?showEvent=372&#34;&gt;Kidambi et al.&lt;/a&gt; showed theoretically that several popular modifications to SGD have in general no asymptotic benefit, although they’ve developed one known method, Accelerated SGD, which provides superior convergence guarantees. I haven’t even discussed my main interest - deep CNNs - much, but there were obviously many, many papers on these, both on specific architectures/problem domains (mostly 2D images, sadly) and on more fundamental issues such as &lt;a href=&#34;https://openreview.net/forum?id=HkwBEMWCZ&#34;&gt;the topology of skip connections&lt;/a&gt; and &lt;a href=&#34;https://iclr.cc/Conferences/2018/Schedule?showEvent=510&#34;&gt;efficient architecture search&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Overall, as someone new to DNNs, I found this conference extremely useful both for discovering a number of novel technologies as well as understanding current thought in the field.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;acknowlegments&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Acknowlegments&lt;/h2&gt;
+&lt;p&gt;Chris Hammill read the draft of this text. Thanks especially to my supervisor, Jason Lerch, for letting me attend.&lt;/p&gt;
+&lt;/div&gt;
+</description>
     </item>
     
     <item>
@@ -27,7 +66,84 @@ Causal reasoning and graphical models There is a well-developed modern theory of
       <pubDate>Wed, 31 Jan 2018 00:00:00 +0000</pubDate>
       
       <guid>/blog/post/2018-01-31_loo-intro/</guid>
-      <description>Pitch In this post I’d like to provide an overview of Pareto-Smoothed Importance Sampling (PSIS-LOO) and how it can be used for bayesian model selection. Everything I discuss regarding this technique can be found in more detail in Vehtari, Gelman, and Gabry (2016). To lead up to PSIS-LOO I will introduce Akaike’s Information Criterion (AIC) to lay the foundation for model selection in general, then cover the expected log predictive density, the corner stone of bayesian model selection.</description>
+      <description>&lt;div id=&#34;pitch&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Pitch&lt;/h2&gt;
+&lt;p&gt;In this post I’d like to provide an overview of Pareto-Smoothed Importance Sampling (PSIS-LOO) and how it can be used for bayesian model selection. Everything I discuss regarding this technique can be found in more detail in &lt;a href=&#34;https://arxiv.org/pdf/1507.04544.pdf&#34;&gt;Vehtari, Gelman, and Gabry (2016)&lt;/a&gt;. To lead up to PSIS-LOO I will introduce Akaike’s Information Criterion (AIC) to lay the foundation for model selection in general, then cover the expected log predictive density, the corner stone of bayesian model selection.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;intro&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Intro&lt;/h2&gt;
+&lt;p&gt;Early in my masters I was introduced to the idea of model selection. The idea stuck, and has been formative in how I think about science. Running against the grain of hypothesis testing, model selection seemed a more natural way to think about what we do in science.&lt;/p&gt;
+&lt;p&gt;Model selection stands apart from standard null hypothesis testing, where we have a single operating (null) model and seek data such that we can judge our model sufficiently unlikely.&lt;/p&gt;
+&lt;p&gt;Model selection on the other hand assumes that we have many potential models that could be generating our data, and provides tools to help us choose which are more likely.&lt;/p&gt;
+&lt;p&gt;Once we have decided to entertain the idea that there are many plausible models for our data, we have to decide how to compare our models.&lt;/p&gt;
+&lt;p&gt;In most cases the first tool for comparison you encounter is Akaike’s An Information Criterion (AIC, also called, Akaike’s Information Criterion). AIC balances the likelihood of the data given the model and the complexity of the model.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;aic&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;AIC&lt;/h2&gt;
+&lt;p&gt;The normal formulation for Akaike’s Information Criterion is&lt;/p&gt;
+&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[ -2\ln[{p(y | \theta)}] + 2k \]&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;but we can pull out the distracting -2 out and get&lt;/p&gt;
+&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[ \ln[{p(y | \theta)}] - k \]&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;Where &lt;span class=&#34;math inline&#34;&gt;\(y\)&lt;/span&gt; is the data we have observed, &lt;span class=&#34;math inline&#34;&gt;\(\theta\)&lt;/span&gt; are our estimated parameters, and k is the number of parameters.&lt;/p&gt;
+&lt;p&gt;We can read the second version as the log likelihood minus the number of parameters. When doing AIC based model comparison you can choose the model that maximizes this quantity.&lt;/p&gt;
+&lt;p&gt;AIC is the sum of two components&lt;/p&gt;
+&lt;ol style=&#34;list-style-type: decimal&#34;&gt;
+&lt;li&gt;The log-likelihood (goodness of fit)&lt;/li&gt;
+&lt;li&gt;A penalty for model size.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;The log-likelihood is a natural choice for goodness of fit. if the model fits the data well, the data will be considered likely, and the log-likelihood will be high relatively high.&lt;/p&gt;
+&lt;p&gt;The penalty term k is equivalent to adding an independent observation that the model gives a probability of &lt;span class=&#34;math inline&#34;&gt;\(1/e\)&lt;/span&gt; (about 1/3), for each parameter you add. Alternatively you can imagine the penalty as dividing your likelihood by &lt;span class=&#34;math inline&#34;&gt;\(e\)&lt;/span&gt; for every parameter you add.&lt;/p&gt;
+&lt;p&gt;The whole reason we need to penalize is because the future is uncertain, and there is a risk of overfitting our data. Models with fewer parameters tend to generalize better, but more satisfying would be to estimate how well the model will perform in the future and use that directly. For this we need to consider how our score function (the likelihood) behaves under a potential model for the future. This leads to the specification of the expected log predictive density (ELPD).&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;elpd&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;ELPD&lt;/h2&gt;
+&lt;p&gt;The expected log predictive density is defined as:&lt;/p&gt;
+&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[ \sum_i \int p_{t}(\tilde{y}_i) \ln{p(\tilde{y}_i | y)} d\tilde{y}_i \]&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;where &lt;span class=&#34;math inline&#34;&gt;\(p_{t}\)&lt;/span&gt; is the true density of future observations, &lt;span class=&#34;math inline&#34;&gt;\(\tilde{y}_i\)&lt;/span&gt; is a future data point. Since &lt;span class=&#34;math inline&#34;&gt;\(p_{t}\)&lt;/span&gt; is unknown, we’re going to need to double dip in our data to get a guess as to what future data are going to look like. This strategy is called &lt;span class=&#34;math inline&#34;&gt;\(\mathit{M}_{closed}\)&lt;/span&gt;.&lt;/p&gt;
+&lt;p&gt;Fortunately we have a strategy for producing fake new data and computing the likelihood at the same time. For this we’re going to reach for the standard machine learning approach of cross validation.&lt;/p&gt;
+&lt;p&gt;We’ll treat some of our data as observed, and we’ll treat the rest like new data. Taking this to the extreme where we leave out one data point we get leave-one-out (loo) cross validation.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;loo&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;LOO&lt;/h2&gt;
+&lt;p&gt;So now we have a strategy for imagining &lt;span class=&#34;math inline&#34;&gt;\(p_{t}\)&lt;/span&gt; which is to pick an observation at random from our data set. Then we need the likelihood our model would assign that datum if it hadn’t been observed. The naive approach would be to refit our model to the held out data, but this is way too expensive computationally. Ideally we wouldn’t need to refit the model at all - if only we knew how to reweight the likelihood as though the datum were unobserved. But such powerful magic surely can’t exist.&lt;/p&gt;
+&lt;p&gt;But of course now I tell you that in fact it does!&lt;/p&gt;
+&lt;p&gt;The trick has been known since the 1990’s and it is called importance sampling, and it is one the most striking results I know of.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;importance-sampling-loo&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Importance Sampling LOO&lt;/h2&gt;
+&lt;p&gt;Since we’re bayesian, we have samples from the posterior distribution of our model. Each of these samples implies a likelihood for each of our data points. Above I promised you a way to approximate the likelihood our model would given a datum if we hadn’t observed that datum. So let’s try to compute this for a single data point. Take point one for example.&lt;/p&gt;
+&lt;p&gt;&lt;span class=&#34;math inline&#34;&gt;\(\int p(y_1 | \theta) d\theta\)&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;Since we’re working with samples we’re going to move from an integral to an average over samples.&lt;/p&gt;
+&lt;p&gt;&lt;span class=&#34;math inline&#34;&gt;\(\frac{1}{S} \sum_s{ p(y_1 | \theta_s) }\)&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;And now we want to reweight these posterior samples as though &lt;span class=&#34;math inline&#34;&gt;\(y_1\)&lt;/span&gt; hadn’t been observed.&lt;/p&gt;
+&lt;p&gt;&lt;span class=&#34;math inline&#34;&gt;\(\frac{1}{\sum_s{w_s}} \sum_s{ w_s p(y_1 | \theta_s) }\)&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;So we want to give weights to each posterior draw such that the weighting adjusts the posterior to what it would have been if &lt;span class=&#34;math inline&#34;&gt;\(y_1\)&lt;/span&gt; hadn’t been observed.&lt;/p&gt;
+&lt;p&gt;So what should this weighting be? Take a moment and try to guess.&lt;/p&gt;
+&lt;p&gt;Here’s a hint, if &lt;span class=&#34;math inline&#34;&gt;\(y_1\)&lt;/span&gt; wasn’t observed do you think it would be assigned as high a probability?&lt;/p&gt;
+&lt;p&gt;Well, obviously not you say. So what should the weighting be?&lt;/p&gt;
+&lt;p&gt;It’s &lt;span class=&#34;math inline&#34;&gt;\(\frac{1}{p(y_1 | \theta_s)}\)&lt;/span&gt; !!!&lt;/p&gt;
+&lt;p&gt;The sample weight is just the inverse of the probability that &lt;em&gt;that&lt;/em&gt; posterior draw gave to the held out point.&lt;/p&gt;
+&lt;p&gt;When I first read this my brain made a little popping noise, probably audible to my coworkers, as it exploded.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;/blog/blog/img/brain-exploding-psis.png&#34; width=&#34;500px&#34; /&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;the-pareto-part&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;The Pareto Part&lt;/h2&gt;
+&lt;p&gt;So we’re not quite done: there’s the pareto smoothing part of this. Importance sampling has a well know draw back, in that it is very noisy. The sampling weights we get are very heavy tailed, and it isn’t uncommon to get a single posterior sample where the held out datum was assigned very low probability dominating the IS adjusted posterior. So we need to smooth out the tails.&lt;/p&gt;
+&lt;p&gt;It turns out that the upper tail of the the importance weights fit a generalized Pareto distribution nicely. This lends itself to smoothing.&lt;/p&gt;
+&lt;p&gt;So to Pareto smooth our weights, we can fit a generalized pareto distribution to, say, the upper 20% of our importance weights. Then we can use the quantile of each weight to predict a smoothed approximation for that weight from the fitted distribution. We can then replace the upper tail weights with their smoothed weight and we’re done.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;all-together-now&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;All Together Now&lt;/h2&gt;
+&lt;p&gt;Now we have the likelihood of each datum in the counterfactual world where it wasn’t observe. We can now average over all the smoother re-weighted posterior draws to get the loo ELPD&lt;/p&gt;
+&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[ \sum_i \ln \left( \frac{1}{\sum_s w_s^i} \sum_s w_s^i p(y_i | \theta_s) \right)\]&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;With the loo ELPD in hand, we can compute the difference between models. The model with the highest ELPD is the best.&lt;/p&gt;
+&lt;p&gt;And there you have it, bayesian model selection using the leave-one-out expected log predictive density. But of course, the story doesn’t end there. With ELPDs computed we &lt;em&gt;could&lt;/em&gt; just pick the best model, but maybe we’d like to do inference over all the model weighted somehow by their score. But these are ideas for another post.&lt;/p&gt;
+&lt;p&gt;Well I hoped you enjoyed learning about Pareto-Smoothed Importance Sampling. Code for doing this is all implemented in the wonderful &lt;a href=&#34;https://cran.r-project.org/web/packages/loo/index.html&#34;&gt;loo package&lt;/a&gt; for R. Happy model selecting!&lt;/p&gt;
+&lt;hr /&gt;
+&lt;p&gt;I’d like to thank Dulcie Vousden and Ben Darwin for reading and commenting on an earlier version of this post.&lt;/p&gt;
+&lt;p&gt;I’d like to thank Aki Vehtari for correctimg error in an earlier version of this post. I had mistakenly claimed the generalized pareto distribution was fit to the data &lt;em&gt;not&lt;/em&gt; in the upper tail of weights.&lt;/p&gt;
+&lt;/div&gt;
+</description>
     </item>
     
   </channel>

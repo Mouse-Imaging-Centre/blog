@@ -8,7 +8,7 @@
     <language>en</language>
     <lastBuildDate>Fri, 23 Feb 2018 00:00:00 +0000</lastBuildDate>
     
-	<atom:link href="/blog/tags/rminc/index.xml" rel="self" type="application/rss+xml" />
+        <atom:link href="/blog/tags/rminc/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
@@ -17,8 +17,132 @@
       <pubDate>Fri, 23 Feb 2018 00:00:00 +0000</pubDate>
       
       <guid>/blog/post/2018-02-23_gene-expression/</guid>
-      <description>Intro In this post I will demonstrate how to use my package ABIgeneRMINC to download, read and analyze mouse brain gene expression data from the Allen Brain Institute.
-The Allen Brain Institute (ABI) has acquired and released genome-wide spatial gene expression maps for the mouse brain. The data is generated using in situ hybridization experiments (ISH), where nucleotide probes for specific genes bind directly to mouse brain tissue. The probe binding is then marked with a biotin label that can be used to locate regions where a gene is expressed.</description>
+      <description>&lt;div id=&#34;intro&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Intro&lt;/h2&gt;
+&lt;p&gt;In this post I will demonstrate how to use my package &lt;code&gt;ABIgeneRMINC&lt;/code&gt; to download, read and analyze mouse brain gene expression data from the Allen Brain Institute.&lt;/p&gt;
+&lt;p&gt;The Allen Brain Institute (ABI) has acquired and released genome-wide spatial gene expression maps for the mouse brain. The data is generated using &lt;em&gt;in situ&lt;/em&gt; hybridization experiments (ISH), where nucleotide probes for specific genes bind directly to mouse brain tissue. The probe binding is then marked with a biotin label that can be used to locate regions where a gene is expressed.&lt;/p&gt;
+&lt;p&gt;For the analysis you will need two R packages &lt;code&gt;RMINC&lt;/code&gt; and &lt;code&gt;ABIgeneRMINC&lt;/code&gt;.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# devtools::install_github(repo=&amp;quot;DJFernandes/ABIgeneRMINC&amp;quot;)   # If you need to install
+library(ABIgeneRMINC)
+library(RMINC)&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;div id=&#34;getting-the-data&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Getting the data&lt;/h2&gt;
+&lt;p&gt;With the packages load you can now look up your favourite gene. You need to know the gene acronym though, which you can find on the NCBI database. In this case, I want to look up Bdnf. The function below queries the Allen Brain API and finds all experiments conducted with Bdnf.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;fge=find.gene.experiment(&amp;#39;Bdnf&amp;#39;)
+fge&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;##   gene   slices ExperimentID
+## 1 Bdnf  coronal     79587720
+## 2 Bdnf sagittal     75695642
+##                                                                  URLs
+## 1 http://api.brain-map.org/grid_data/download/79587720?include=energy
+## 2 http://api.brain-map.org/grid_data/download/75695642?include=energy&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;We are in luck! There are two experiments the Allen Brain Institute ran with Bdnf, identified by ExperimentIDs 79587720 and 75695642. The former was conducted on coronal slices in the brain, and the latter on sagittal slices. We will see why this is important later on. The URLs where you can download expression data is given in the final column. You can enter them in your internet browser and file should begin to download. If you don’t want to leave the wonderful world of R just to download (I don’t blame you), we can actually download and read the data within R itself.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;genedata1 = read.raw.gene(as.character(fge$URLs[1]),url = TRUE)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## Loading required package: bitops&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;It is generally better to download outside R and save the file, so you don’t have to keep downloading. Obtain the path to the file, and use it as as argument to read as follows:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;genedata1 = read.raw.gene(&amp;#39;/projects/egerek/matthijs/2015-07-Allen-Brain/Allen_Gene_Expression/raw_data/coronal/Bdnf_sid79587720/energy.raw&amp;#39;)&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;div id=&#34;visualizing-the-gene-expression&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Visualizing the gene expression&lt;/h2&gt;
+&lt;p&gt;The gene expression data is a 1D vector. It can easily be converted to a 3D array using the mincArray function (which we will do later). But there is an important note to talk about before going further. The 1D vector lists values going from X=Anterior-to-Posterior, Y=Superior-to-Inferior, and Z=Left-to-Right (dimensions written from fastest changing index to slowest). This is the ABI orientation. The RMINC vectors typically are 1D vectors going from X=Left-to-Right, Y=Posterior-to-Anterior, Z=Inferior-to-Superior (dimensions written from fastest changing index to slowest). This is the MNI orientation. You can make a choice as to which orientiation you want to analyze in but I will be choosing MNI orientation in this tutorial. Just make sure you are consistent with your orientations and you won’t have problems. The function below converts ABI orientation to MNI orientation:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;genedata1 = allenVectorTOmincVector(genedata1)
+# genedata1 = mincVectorTOallenVector(genedata1)  #This is the inverse function&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Now, we can visualize the gene expression. Below is a sagittal slice&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;image(mincArray(genedata1)[30,,], ylab=&amp;#39;Superior-Inferior&amp;#39; ,xlab=&amp;#39;Anterior-Posterior&amp;#39;)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/blog/blog/post/2018-02-23_gene-expression_files/figure-html/6-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;adding-an-anatomical-underlay&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Adding an anatomical underlay&lt;/h2&gt;
+&lt;p&gt;I am not a good mouse brain anatomist, and so I find it pretty difficult to tell from this expression heatmap where exactly the expression is in the brain. We will now overlay a background MRI template to tell us where the gene expression is and use RMINC to create slice series.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;anatfile=&amp;#39;/projects/egerek/matthijs/2015-07-Allen-Brain/allenCCFV3_to_dorr_registration/allenCCFV3/atlas_in_200um/Dorr_resampled_200um.mnc&amp;#39;
+mincPlotSliceSeries(
+  anatomy=mincArray(mincGetVolume(anatfile)),
+  statistics=mincArray(genedata1),
+  symmetric=FALSE,
+  col=colorRampPalette(c(&amp;quot;darkgreen&amp;quot;,&amp;quot;yellowgreen&amp;quot;))(255),
+  legend=&amp;quot;Bdnf Expression&amp;quot;,low=2,high=6.5)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/blog/blog/post/2018-02-23_gene-expression_files/figure-html/7-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Much better. I can tell there is high expression in the cortex and hippocampus.&lt;/p&gt;
+&lt;p&gt;Let us also look at the other Bdnf experiment (ID: 75695642).&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;genedata2 = read.raw.gene(as.character(fge$URLs[2]),url = TRUE)
+genedata2 = allenVectorTOmincVector(genedata2)
+mincPlotSliceSeries(
+  anatomy=mincArray(mincGetVolume(anatfile)),
+  statistics=mincArray(genedata2),
+  symmetric=FALSE,
+  col=colorRampPalette(c(&amp;quot;darkgreen&amp;quot;,&amp;quot;yellowgreen&amp;quot;))(255),
+  legend=&amp;quot;Bdnf Expression&amp;quot;,low=2,high=6.5)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/blog/blog/post/2018-02-23_gene-expression_files/figure-html/8-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;We see that the sagittal slices only span half the brain. This was a deliberate choice by the ABI and most of the gene experiments are like this. Furthermore, slices are sampled every 200 microns for the sagittal datasets and every 100 microns for the coronal datasets. That is why we prefer using the coronal slices any chance we get, but there are still tools that help us work with sagittal data. We can reflect data across the sagittal midplane to fill in the missing hemisphere as so:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;genedata2.reflected=midplane.reflect(genedata2,reflect.dim=3)
+mincPlotSliceSeries(
+  anatomy=mincArray(mincGetVolume(anatfile)),
+  statistics=mincArray(genedata2.reflected),
+  symmetric=FALSE,
+  col=colorRampPalette(c(&amp;quot;darkgreen&amp;quot;,&amp;quot;yellowgreen&amp;quot;))(255),
+  legend=&amp;quot;Bdnf Expression&amp;quot;,low=2,high=6.5)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/blog/blog/post/2018-02-23_gene-expression_files/figure-html/99-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;We can do better. Because there sagittal sections were only sampled every 200um, there is a lot of missing data due to slice misalignment. We can fill them in using nearest neighbour marching averages.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;labelfile=system.file(&amp;#39;extdata/gridAnnotation.raw&amp;#39;,package=&amp;quot;ABIgeneRMINC&amp;quot;)
+mask=allenVectorTOmincVector(read.raw.gene(labelfile,labels=TRUE)&amp;gt;0)
+interp.gene=interpolate.gene(genedata2.reflected,mask)
+
+mincPlotSliceSeries(
+  anatomy=mincArray(mincGetVolume(anatfile)),
+  statistics=mincArray(interp.gene),
+  symmetric=FALSE,
+  col=colorRampPalette(c(&amp;quot;darkgreen&amp;quot;,&amp;quot;yellowgreen&amp;quot;))(255),
+  legend=&amp;quot;Bdnf Expression&amp;quot;,low=2,high=6.5)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/blog/blog/post/2018-02-23_gene-expression_files/figure-html/9-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Even with interpolation, the expression map is not that good.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;expression-statistics&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Expression statistics&lt;/h2&gt;
+&lt;p&gt;Moving back to the coronal maps, let’s generate summary statistics for each structure in the ABI atlas.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;labels=read.raw.gene(labelfile,labels=TRUE)
+labels.to.sum=sort(unique(labels))
+labels.to.sum=labels.to.sum[labels.to.sum!=0]
+
+udf=unionize(grid.data=genedata1,             #vector to unionize
+           labels.to.sum=labels.to.sum,       #sum all labels
+           labels.grid=labels                 #the vector of labels
+           )
+udf=udf[order(udf$mean,decreasing=TRUE),]
+head(udf)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;##     labels        sum     mean     stdev
+## 167    287  19.641589 4.910397 12.018447
+## 474    875  48.372759 4.397524  6.287998
+## 261    483 123.968708 3.178685  3.827543
+## 171    292  34.930620 3.175511  6.002760
+## 162    279   6.248917 3.124459  3.977935
+## 22      50  12.193722 3.048430  1.094984&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Now let us read a csv with structure names in it that correspond to the label number and add that as a column in our data frame.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;labeldefs=read.csv(&amp;quot;/projects/egerek/matthijs/2015-07-Allen-Brain/Allen_Gene_Expression/labels/allen_gridlabels_structures.csv&amp;quot;) #this can be downloaded from ABI
+udf$structures=labeldefs[match(labeldefs$id,udf$labels),&amp;#39;name&amp;#39;]
+udf = udf[,c(&amp;#39;structures&amp;#39;,&amp;#39;labels&amp;#39;,&amp;#39;mean&amp;#39;,&amp;#39;sum&amp;#39;,&amp;#39;stdev&amp;#39;)]
+head(udf)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;##                                                                    structures
+## 167                                Main olfactory bulb, outer plexiform layer
+## 474 Bed nuclei of the stria terminalis, anterior division, anterolateral area
+## 261                                                   Visceral area, layer 6b
+## 171                                                Uvula (IX), granular layer
+## 162                       Retrosplenial area, lateral agranular part, layer 1
+## 22        Bed nuclei of the stria terminalis, anterior division, oval nucleus
+##     labels     mean        sum     stdev
+## 167    287 4.910397  19.641589 12.018447
+## 474    875 4.397524  48.372759  6.287998
+## 261    483 3.178685 123.968708  3.827543
+## 171    292 3.175511  34.930620  6.002760
+## 162    279 3.124459   6.248917  3.977935
+## 22      50 3.048430  12.193722  1.094984&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Voila, we can now tell which structures have high gene expression for the gene we are interested in.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;outro&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Outro&lt;/h2&gt;
+&lt;p&gt;I plan to do tutorials on more fancy gene expression analyses in the future, but this is the base from which future tutorials will be built. I hope this gets you started on using gene expression to explore neuroanatomical phenotypes and gives you an understanding of some of the caveats associated with spatial gene expression analysis.&lt;/p&gt;
+&lt;/div&gt;
+</description>
     </item>
     
     <item>
@@ -27,9 +151,102 @@ The Allen Brain Institute (ABI) has acquired and released genome-wide spatial ge
       <pubDate>Fri, 09 Feb 2018 00:00:00 +0000</pubDate>
       
       <guid>/blog/post/2018-02-08_peaks-intro/</guid>
-      <description>So, peaks. When producing a statistical map, it’s good to get a report of the peaks (i.e. most significant findings). RMINC has had this support for a while now, though it has remained somewhat hidden. Here’s a bit of an intro, then.
-I will walk through the example we used from the Mouse Imaging Summer School in 2017, which is data from this paper:
-de Guzman AE, Gazdzinski LM, Alsop RJ, Stewart JM, Jaffray DA, Wong CS, Nieman BJ.</description>
+      <description>&lt;script src=&#34;/blog/blog/rmarkdown-libs/htmlwidgets/htmlwidgets.js&#34;&gt;&lt;/script&gt;
+&lt;script src=&#34;/blog/blog/rmarkdown-libs/jquery/jquery.min.js&#34;&gt;&lt;/script&gt;
+&lt;link href=&#34;/blog/blog/rmarkdown-libs/datatables-css/datatables-crosstalk.css&#34; rel=&#34;stylesheet&#34; /&gt;
+&lt;script src=&#34;/blog/blog/rmarkdown-libs/datatables-binding/datatables.js&#34;&gt;&lt;/script&gt;
+&lt;link href=&#34;/blog/blog/rmarkdown-libs/dt-core/css/jquery.dataTables.min.css&#34; rel=&#34;stylesheet&#34; /&gt;
+&lt;link href=&#34;/blog/blog/rmarkdown-libs/dt-core/css/jquery.dataTables.extra.css&#34; rel=&#34;stylesheet&#34; /&gt;
+&lt;script src=&#34;/blog/blog/rmarkdown-libs/dt-core/js/jquery.dataTables.min.js&#34;&gt;&lt;/script&gt;
+&lt;link href=&#34;/blog/blog/rmarkdown-libs/crosstalk/css/crosstalk.css&#34; rel=&#34;stylesheet&#34; /&gt;
+&lt;script src=&#34;/blog/blog/rmarkdown-libs/crosstalk/js/crosstalk.min.js&#34;&gt;&lt;/script&gt;
+
+
+&lt;p&gt;So, peaks. When producing a statistical map, it’s good to get a report of the peaks (i.e. most significant findings). RMINC has had this support for a while now, though it has remained somewhat hidden. Here’s a bit of an intro, then.&lt;/p&gt;
+&lt;p&gt;I will walk through the example we used from the Mouse Imaging Summer School in 2017, which is data from this paper:&lt;/p&gt;
+&lt;p&gt;de Guzman AE, Gazdzinski LM, Alsop RJ, Stewart JM, Jaffray DA, Wong CS, Nieman BJ. Treatment age, dose and sex determine neuroanatomical outcome in irradiated juvenile mice. Radiat Res. 2015 May;183(5):541–9.&lt;/p&gt;
+&lt;p&gt;To keep it simple, however, I’ll only look at sex differences in that dataset for now.&lt;/p&gt;
+&lt;p&gt;Let’s start - load the libraries and read in the csv file that describes the data.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;suppressMessages(library(RMINC))
+gf &amp;lt;- read.csv(&amp;quot;/hpf/largeprojects/MICe/jason/MISS2017/intro-stats/fixed_datatable_IRdose.csv&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;And run a linear model relating the Jacobian determinants to sex and radiation dose. I’ll use the segmentations file as a mask; it’ll be needed later on anyway.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;labelFile &amp;lt;- &amp;quot;/hpf/largeprojects/MICe/jason/MISS2017/intro-stats/atlas-registration/pipeline-18-08-2017-at-07-08-48_processed/nlin-3/voted.mnc&amp;quot;
+vs &amp;lt;- mincLm(Jacobfile_scaled0.2 ~ Sex + Dose, gf, mask = labelFile)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## Method: lm
+## Number of volumes: 41
+## Volume sizes: 152 320 225
+## N: 41 P: 3
+## In slice 
+##  0  1  2  3  4  5  6  7  8  9  10  11  12  13  14  15  16  17  18  19  20  21  22  23  24  25  26  27  28  29  30  31  32  33  34  35  36  37  38  39  40  41  42  43  44  45  46  47  48  49  50  51  52  53  54  55  56  57  58  59  60  61  62  63  64  65  66  67  68  69  70  71  72  73  74  75  76  77  78  79  80  81  82  83  84  85  86  87  88  89  90  91  92  93  94  95  96  97  98  99  100  101  102  103  104  105  106  107  108  109  110  111  112  113  114  115  116  117  118  119  120  121  122  123  124  125  126  127  128  129  130  131  132  133  134  135  136  137  138  139  140  141  142  143  144  145  146  147  148  149  150  151 
+## Done&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Some more data preparation: read in the background anatomy file …&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;anatFile &amp;lt;- &amp;quot;/projects/moush/lbernas/Irradiation_behaviour_project/fixed_build_masked_23mar13_nlin/nlin-3.mnc&amp;quot;
+anatVol &amp;lt;- mincArray(mincGetVolume(anatFile))&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;… and show the results at a somewhat arbitrary threshold.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;mincPlotSliceSeries(anatVol, mincArray(vs, &amp;quot;tvalue-SexM&amp;quot;), anatLow=10, anatHigh=15, low=2, high=6, symmetric = T,
+                    begin=50, end=-50)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/blog/blog/post/2018-02-08_peaks-intro_files/figure-html/unnamed-chunk-4-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;At this point we’ve run a linear model and visually assessed the results. Now we can locate the peak findings, using the &lt;code&gt;mincFindPeaks&lt;/code&gt; command.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;peaks &amp;lt;- mincFindPeaks(vs, &amp;quot;tvalue-SexM&amp;quot;, minDistance = 1, threshold = 4)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## Writing column tvalue-SexM to file /tmp/Rtmpm8tCfQ/file65323a5d369f.mnc 
+## Range: 10.627142 -5.694668&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;code&gt;mincFindPeaks&lt;/code&gt; uses the &lt;code&gt;find_peaks&lt;/code&gt; command from the MINC toolkit under the hood. You pass in the output of one of the RMINC modelling commands (mincLm in this case, but can be anything), along with the column from that model you want to get peaks from. You can then set the minimum distance between peaks (in mm) - i.e. how far apart do two statistical peaks have to be to be included? - as well as the threshold to be considered a peak. Optionally thresholds can be different for positive and negative peaks; as always, see &lt;code&gt;?mincFindPeaks&lt;/code&gt; for more detail.&lt;/p&gt;
+&lt;p&gt;This is what we have at this point:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;peaks&lt;/code&gt;&lt;/pre&gt;
+&lt;div id=&#34;htmlwidget-1&#34; style=&#34;width:100%;height:auto;&#34; class=&#34;datatables html-widget&#34;&gt;&lt;/div&gt;
+&lt;script type=&#34;application/json&#34; data-for=&#34;htmlwidget-1&#34;&gt;{&#34;x&#34;:{&#34;filter&#34;:&#34;none&#34;,&#34;data&#34;:[[&#34;1&#34;,&#34;2&#34;,&#34;3&#34;,&#34;4&#34;,&#34;5&#34;,&#34;6&#34;,&#34;7&#34;,&#34;8&#34;,&#34;9&#34;,&#34;10&#34;,&#34;11&#34;,&#34;12&#34;,&#34;13&#34;,&#34;14&#34;,&#34;15&#34;,&#34;16&#34;,&#34;17&#34;,&#34;18&#34;,&#34;19&#34;,&#34;20&#34;,&#34;21&#34;,&#34;22&#34;,&#34;23&#34;,&#34;24&#34;,&#34;25&#34;,&#34;26&#34;,&#34;27&#34;,&#34;28&#34;,&#34;29&#34;,&#34;30&#34;,&#34;31&#34;,&#34;32&#34;,&#34;33&#34;,&#34;34&#34;,&#34;35&#34;,&#34;36&#34;,&#34;37&#34;],[75,154,104,124,94,176,158,102,74,131,122,67,78,105,107,51,110,60,138,85,148,38,56,104,120,143,29,107,30,168,159,32,122,70,89,175,107],[157,156,193,193,184,116,121,146,108,186,144,171,135,140,171,129,46,211,228,124,203,164,74,221,222,230,172,59,143,121,72,189,161,92,66,156,141],[50,52,56,52,75,83,83,105,96,75,108,41,52,67,107,62,45,114,136,63,132,58,60,80,125,105,96,116,65,47,91,76,131,61,34,127,46],[-2.126,2.298,-0.502,0.618,-1.062,3.53,2.522,-0.614,-2.182,1.01,0.506,-2.574,-1.958,-0.446,-0.334,-3.47,-0.165999999999999,-2.966,1.402,-1.566,1.962,-4.198,-3.19,-0.502,0.394,1.682,-4.702,-0.334,-4.646,3.082,2.578,-4.534,0.506,-2.406,-1.342,3.474,-0.334],[0.546000000000001,0.49,2.562,2.562,2.058,-1.75,-1.47,-0.0699999999999985,-2.198,2.17,-0.181999999999999,1.33,-0.685999999999999,-0.406,1.33,-1.022,-5.67,3.57,4.522,-1.302,3.122,0.938000000000001,-4.102,4.13,4.186,4.634,1.386,-4.942,-0.238,-1.47,-4.214,2.338,0.770000000000001,-3.094,-4.55,0.49,-0.35],[-1.456,-1.344,-1.12,-1.344,-0.056,0.392,0.392,1.624,1.12,-0.056,1.792,-1.96,-1.344,-0.504,1.736,-0.784,-1.736,2.128,3.36,-0.728,3.136,-1.008,-0.896,0.224,2.744,1.624,1.12,2.24,-0.616,-1.624,0.84,0,3.08,-0.84,-2.352,2.856,-1.68],[10.63,9.435,8.88,7.064,5.521,5.373,5.37,5.357,5.318,5.234,5.203,4.965,4.357,4.324,4.205,4.152,4.039,-5.695,-4.836,-4.832,-4.791,-4.711,-4.632,-4.612,-4.507,-4.506,-4.504,-4.439,-4.392,-4.345,-4.278,-4.209,-4.162,-4.142,-4.088,-4.054,-4.011]],&#34;container&#34;:&#34;&lt;table class=\&#34;display\&#34;&gt;\n  &lt;thead&gt;\n    &lt;tr&gt;\n      &lt;th&gt; &lt;\/th&gt;\n      &lt;th&gt;d1&lt;\/th&gt;\n      &lt;th&gt;d2&lt;\/th&gt;\n      &lt;th&gt;d3&lt;\/th&gt;\n      &lt;th&gt;x&lt;\/th&gt;\n      &lt;th&gt;y&lt;\/th&gt;\n      &lt;th&gt;z&lt;\/th&gt;\n      &lt;th&gt;value&lt;\/th&gt;\n    &lt;\/tr&gt;\n  &lt;\/thead&gt;\n&lt;\/table&gt;&#34;,&#34;options&#34;:{&#34;pageLength&#34;:5,&#34;columnDefs&#34;:[{&#34;className&#34;:&#34;dt-right&#34;,&#34;targets&#34;:[1,2,3,4,5,6,7]},{&#34;orderable&#34;:false,&#34;targets&#34;:0}],&#34;order&#34;:[],&#34;autoWidth&#34;:false,&#34;orderClasses&#34;:false,&#34;lengthMenu&#34;:[5,10,25,50,100]}},&#34;evals&#34;:[],&#34;jsHooks&#34;:[]}&lt;/script&gt;
+&lt;p&gt;There are 7 columns; the first three give the coordinates in voxel space, the next three the coordinates in world space, and then the peak value itself. There’s a further helpful command that labels the peaks with the atlas location within which the peak is located:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;defsFile &amp;lt;- &amp;quot;/hpf/largeprojects/MICe/tools/atlases/Dorr_2008_Steadman_2013_Ullmann_2013_Richards_2011_Qiu_2016_Egan_2015_40micron/mappings/DSURQE_40micron_R_mapping.csv&amp;quot;
+peaks &amp;lt;- mincLabelPeaks(peaks, labelFile, defsFile)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## Warning in peaks$label[i] &amp;lt;- mdefs$Structure[mdefs$value == peaks
+## $label[i]]: number of items to replace is not a multiple of replacement
+## length
+
+## Warning in peaks$label[i] &amp;lt;- mdefs$Structure[mdefs$value == peaks
+## $label[i]]: number of items to replace is not a multiple of replacement
+## length
+
+## Warning in peaks$label[i] &amp;lt;- mdefs$Structure[mdefs$value == peaks
+## $label[i]]: number of items to replace is not a multiple of replacement
+## length
+
+## Warning in peaks$label[i] &amp;lt;- mdefs$Structure[mdefs$value == peaks
+## $label[i]]: number of items to replace is not a multiple of replacement
+## length
+
+## Warning in peaks$label[i] &amp;lt;- mdefs$Structure[mdefs$value == peaks
+## $label[i]]: number of items to replace is not a multiple of replacement
+## length&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;This adds an extra column containing the name of the label for each peak:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;peaks&lt;/code&gt;&lt;/pre&gt;
+&lt;div id=&#34;htmlwidget-2&#34; style=&#34;width:100%;height:auto;&#34; class=&#34;datatables html-widget&#34;&gt;&lt;/div&gt;
+&lt;script type=&#34;application/json&#34; data-for=&#34;htmlwidget-2&#34;&gt;{&#34;x&#34;:{&#34;filter&#34;:&#34;none&#34;,&#34;data&#34;:[[&#34;1&#34;,&#34;2&#34;,&#34;3&#34;,&#34;4&#34;,&#34;5&#34;,&#34;6&#34;,&#34;7&#34;,&#34;8&#34;,&#34;9&#34;,&#34;10&#34;,&#34;11&#34;,&#34;12&#34;,&#34;13&#34;,&#34;14&#34;,&#34;15&#34;,&#34;16&#34;,&#34;17&#34;,&#34;18&#34;,&#34;19&#34;,&#34;20&#34;,&#34;21&#34;,&#34;22&#34;,&#34;23&#34;,&#34;24&#34;,&#34;25&#34;,&#34;26&#34;,&#34;27&#34;,&#34;28&#34;,&#34;29&#34;,&#34;30&#34;,&#34;31&#34;,&#34;32&#34;,&#34;33&#34;,&#34;34&#34;,&#34;35&#34;,&#34;36&#34;,&#34;37&#34;],[75,154,104,124,94,176,158,102,74,131,122,67,78,105,107,51,110,60,138,85,148,38,56,104,120,143,29,107,30,168,159,32,122,70,89,175,107],[157,156,193,193,184,116,121,146,108,186,144,171,135,140,171,129,46,211,228,124,203,164,74,221,222,230,172,59,143,121,72,189,161,92,66,156,141],[50,52,56,52,75,83,83,105,96,75,108,41,52,67,107,62,45,114,136,63,132,58,60,80,125,105,96,116,65,47,91,76,131,61,34,127,46],[-2.126,2.298,-0.502,0.618,-1.062,3.53,2.522,-0.614,-2.182,1.01,0.506,-2.574,-1.958,-0.446,-0.334,-3.47,-0.165999999999999,-2.966,1.402,-1.566,1.962,-4.198,-3.19,-0.502,0.394,1.682,-4.702,-0.334,-4.646,3.082,2.578,-4.534,0.506,-2.406,-1.342,3.474,-0.334],[0.546000000000001,0.49,2.562,2.562,2.058,-1.75,-1.47,-0.0699999999999985,-2.198,2.17,-0.181999999999999,1.33,-0.685999999999999,-0.406,1.33,-1.022,-5.67,3.57,4.522,-1.302,3.122,0.938000000000001,-4.102,4.13,4.186,4.634,1.386,-4.942,-0.238,-1.47,-4.214,2.338,0.770000000000001,-3.094,-4.55,0.49,-0.35],[-1.456,-1.344,-1.12,-1.344,-0.056,0.392,0.392,1.624,1.12,-0.056,1.792,-1.96,-1.344,-0.504,1.736,-0.784,-1.736,2.128,3.36,-0.728,3.136,-1.008,-0.896,0.224,2.744,1.624,1.12,2.24,-0.616,-1.624,0.84,0,3.08,-0.84,-2.352,2.856,-1.68],[10.63,9.435,8.88,7.064,5.521,5.373,5.37,5.357,5.318,5.234,5.203,4.965,4.357,4.324,4.205,4.152,4.039,-5.695,-4.836,-4.832,-4.791,-4.711,-4.632,-4.612,-4.507,-4.506,-4.504,-4.439,-4.392,-4.345,-4.278,-4.209,-4.162,-4.142,-4.088,-4.054,-4.011],[&#34;left Medial amygdala&#34;,&#34;right Medial amygdala&#34;,&#34;left hypothalamus&#34;,&#34;right hypothalamus&#34;,&#34;left bed nucleus of stria terminalis&#34;,&#34;right subiculum&#34;,&#34;right MoDG&#34;,&#34;left LMol&#34;,&#34;left pre-para subiculum&#34;,&#34;right bed nucleus of stria terminalis&#34;,&#34;right CA1Rad&#34;,&#34;left amygdala&#34;,&#34;left CA3Py Inner&#34;,&#34;left fasciculus retroflexus&#34;,&#34;left CA30r&#34;,&#34;left CA1Py&#34;,&#34; medulla&#34;,&#34;left Primary somatosensory cortex&#34;,&#34;right Frontal association cortex&#34;,&#34; midbrain&#34;,&#34;right Primary motor cortex&#34;,&#34;left Piriform cortex&#34;,&#34;left paramedian lobule (lobule 7)&#34;,&#34;left Dorsal tenia tecta&#34;,&#34;right Cingulate cortex: area 32&#34;,&#34;right Lateral orbital cortex&#34;,&#34;left Secondary somatosensory cortex&#34;,&#34; lobule 6: declive&#34;,&#34;left Dorsolateral entorhinal cortex&#34;,&#34;right Caudomedial entorhinal cortex&#34;,&#34;right crus 1: ansiform lobule (lobule 6)&#34;,&#34;left Insular region: not subdivided&#34;,&#34;right Cingulate cortex: area 24b&#39;&#34;,&#34; medulla&#34;,&#34; medulla&#34;,&#34;right Primary somatosensory cortex: barrel field&#34;,&#34;left mammillary bodies&#34;]],&#34;container&#34;:&#34;&lt;table class=\&#34;display\&#34;&gt;\n  &lt;thead&gt;\n    &lt;tr&gt;\n      &lt;th&gt; &lt;\/th&gt;\n      &lt;th&gt;d1&lt;\/th&gt;\n      &lt;th&gt;d2&lt;\/th&gt;\n      &lt;th&gt;d3&lt;\/th&gt;\n      &lt;th&gt;x&lt;\/th&gt;\n      &lt;th&gt;y&lt;\/th&gt;\n      &lt;th&gt;z&lt;\/th&gt;\n      &lt;th&gt;value&lt;\/th&gt;\n      &lt;th&gt;label&lt;\/th&gt;\n    &lt;\/tr&gt;\n  &lt;\/thead&gt;\n&lt;\/table&gt;&#34;,&#34;options&#34;:{&#34;pageLength&#34;:5,&#34;columnDefs&#34;:[{&#34;className&#34;:&#34;dt-right&#34;,&#34;targets&#34;:[1,2,3,4,5,6,7]},{&#34;orderable&#34;:false,&#34;targets&#34;:0}],&#34;order&#34;:[],&#34;autoWidth&#34;:false,&#34;orderClasses&#34;:false,&#34;lengthMenu&#34;:[5,10,25,50,100]}},&#34;evals&#34;:[],&#34;jsHooks&#34;:[]}&lt;/script&gt;
+&lt;p&gt;At this point you have all the info about the most significant peaks in the dataset. There is one additional useful command, a shortcut to plot each peak. Plotting the two most positive and the two most negative peaks, for example:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;opar &amp;lt;- par(mfrow=c(2,2), mar=c(0,0,0,0))
+nP &amp;lt;- nrow(peaks)
+for (i in c(1:2, nP:(nP-1))) {
+  mincPlotPeak(peaks[i,], anatVol, mincArray(vs, &amp;quot;tvalue-SexM&amp;quot;), anatLow=10, anatHigh=15, low=2, high=6, symmetric=T)
+}&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/blog/blog/post/2018-02-08_peaks-intro_files/figure-html/unnamed-chunk-11-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;par(opar)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;There is an additional argument to &lt;code&gt;mincPlotPeak&lt;/code&gt; - a function to create a plot of the peak. This is illustrated below:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# load ggplot2 for plotting
+library(ggplot2)
+# the plotting function; needs to take a single argument, the peak
+p &amp;lt;- function(peak) {
+  # read in the data for that particular peak
+  gf$voxel &amp;lt;- mincGetWorldVoxel(gf$Jacobfile_scaled0.2, peak[&amp;quot;x&amp;quot;], peak[&amp;quot;y&amp;quot;], peak[&amp;quot;z&amp;quot;])
+  # and create a box-plot; also read in info from the peak for a meaningful title
+  ggplot(gf) + aes(x=Sex, y=exp(voxel)) + geom_boxplot() + 
+    ggtitle(paste(&amp;quot;Peak:&amp;quot;, peak[&amp;quot;label&amp;quot;]), subtitle = paste(&amp;quot;T statistic:&amp;quot;, peak[&amp;quot;value&amp;quot;]))
+}
+# and plot the peak with its plot
+mincPlotPeak(peaks[1,], anatVol, mincArray(vs, &amp;quot;tvalue-SexM&amp;quot;), anatLow=10, anatHigh=15, low=2, high=6, 
+             symmetric=T, plotFunction = p)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## Don&amp;#39;t know how to automatically pick scale for object of type mincVoxel/vector. Defaulting to continuous.&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/blog/blog/post/2018-02-08_peaks-intro_files/figure-html/unnamed-chunk-12-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;And that’s it. A quick survey for how to extract peaks, view them in a table, and create figures of the most significant findings.&lt;/p&gt;
+</description>
     </item>
     
   </channel>

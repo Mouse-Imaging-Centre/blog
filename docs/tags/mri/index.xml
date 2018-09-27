@@ -8,7 +8,7 @@
     <language>en</language>
     <lastBuildDate>Fri, 10 Aug 2018 00:00:00 +0000</lastBuildDate>
     
-	<atom:link href="/blog/tags/mri/index.xml" rel="self" type="application/rss+xml" />
+        <atom:link href="/blog/tags/mri/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
@@ -17,10 +17,222 @@
       <pubDate>Fri, 10 Aug 2018 00:00:00 +0000</pubDate>
       
       <guid>/blog/post/2018-08-10_ismrm-highlights/</guid>
-      <description>Jacob’s Highlights I recently attended the Workshop on Animal Population Imaging (APPNING 2018) held after the ISMRM conference in Paris. It was a well run workshop highlighting the benefits and troubles with large scale animal population imaging (https://appning2018.sciencesconf.org/).
-Several Highlights from the workshop:
-Quantitative Connectomic Histology Presented by GA Johnson from Duke University
- Used Diffusion Tensor Imaging to assess how the brain was connected in the mouse. Attempt to determine the structural connectivity of mouse brain and compare with the tracer studies performed at the Allen Brain Institute  Tractograms currently have more invalid than valid bundles, and therefore they are attempting to be as accurate as possible Goal was to push the technology as hard as possible to get the best resolution and images possible  First scan that pushed the boundaries was a 120 direction DTI scan with b-values up to 4000 s/mm2.</description>
+      <description>&lt;div id=&#34;jacobs-highlights&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;Jacob’s Highlights&lt;/h1&gt;
+&lt;p&gt;I recently attended the Workshop on Animal Population Imaging (APPNING 2018) held after the ISMRM conference in Paris. It was a well run workshop highlighting the benefits and troubles with large scale animal population imaging (&lt;a href=&#34;https://appning2018.sciencesconf.org/&#34;&gt;&lt;em&gt;https://appning2018.sciencesconf.org/&lt;/em&gt;&lt;/a&gt;).&lt;/p&gt;
+&lt;p&gt;Several Highlights from the workshop:&lt;/p&gt;
+&lt;div id=&#34;quantitative-connectomic-histology&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Quantitative Connectomic Histology&lt;/h2&gt;
+&lt;p&gt;Presented by GA Johnson from Duke University&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Used Diffusion Tensor Imaging to assess how the brain was connected in the mouse. Attempt to determine the structural connectivity of mouse brain and compare with the tracer studies performed at the Allen Brain Institute
+&lt;ul&gt;
+&lt;li&gt;Tractograms currently have more invalid than valid bundles, and therefore they are attempting to be as accurate as possible&lt;/li&gt;
+&lt;li&gt;Goal was to push the technology as hard as possible to get the best resolution and images possible&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;First scan that pushed the boundaries was a 120 direction DTI scan with b-values up to 4000 s/mm2. Full details of this sequence can be found in Calabrese et al. Cerebral Cortex 2015 25(11): 4628-37
+&lt;ul&gt;
+&lt;li&gt;Total scan time for that sequence was 235 hours!&lt;/li&gt;
+&lt;li&gt;Ten day scan protocol was not practical long term so they decided to work on ways to speed it up.
+&lt;ol style=&#34;list-style-type: decimal&#34;&gt;
+&lt;li&gt;Less angular resolution from 120 directions to 46&lt;/li&gt;
+&lt;li&gt;Use Compressed Sensing&lt;/li&gt;
+&lt;/ol&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;Final protocol using compressed sensing got their scan time down to 11 hours and 45um resolution, which was quite impressive.
+&lt;ul&gt;
+&lt;li&gt;The images look gorgeous and the study was well done, but scanning one mouse at a time for 11 hours is not practical for our projects. Additionally the practicality of using tractography as a ground truth for connectivity studies seems questionable.&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;
+&lt;div id=&#34;tech-demonstrations&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Tech demonstrations&lt;/h2&gt;
+&lt;p&gt;Several of the talks highlighted the individuals “toys” or techniques that they have created to help speed up their own research and they were sharing them with all of us.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;SBA Composer - Web based software for 3D imaging&lt;/li&gt;
+&lt;li&gt;An Electronic Collection of Vertebrate Brains - &lt;a href=&#34;https://braincatalogue.org&#34;&gt;&lt;em&gt;https://braincatalogue.org&lt;/em&gt;&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;Sammba- MRI - Imaging toolbox for small animal imaging (&lt;a href=&#34;http://sammba-mri.github.io&#34;&gt;&lt;em&gt;http://sammba-mri.github.io&lt;/em&gt;&lt;/a&gt;)&lt;/li&gt;
+&lt;li&gt;Dicomifier - A generic Bruker-DICOM-NIfTI convertor (&lt;a href=&#34;https://github.com/lamyj/dicomifier&#34;&gt;&lt;em&gt;https://github.com/lamyj/dicomifier&lt;/em&gt;&lt;/a&gt;)&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;
+&lt;div id=&#34;diffusion-spectroscopy&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Diffusion Spectroscopy&lt;/h2&gt;
+&lt;p&gt;One of the Posters discussed DW-MRS in a mouse model:&lt;/p&gt;
+&lt;p&gt;Glial and axonal changes in the cuprizone mouse model investigated with diffusion magnetic resonance spectroscopy.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;This was particularly interesting to me as I did my PhD on DW-MRS.&lt;/li&gt;
+&lt;li&gt;This technique allows you to probe the underlying tissue microstructure, by allowing you to assess specific markers of axonal, myelin, and glial cell damage&lt;/li&gt;
+&lt;li&gt;The mouse model they used was a cuprizone mouse, which has been shown to reproduce pathological features of MS&lt;/li&gt;
+&lt;li&gt;The aim of the study was to compare the concentrations and ADC values of the different metabolites in the brain to see if they can determine any biomarkers of axonal, myelin, and glial cells injuries&lt;/li&gt;
+&lt;li&gt;They conclude that markers like a decrease in NAA/Cr ratio with no variation in NAA ADC could reflect myelination damage, and intact axons. Additionally, they conclude that an increase of Cho and Inositol ADCs could be caused by glial cell activation and swelling&lt;/li&gt;
+&lt;li&gt;While it is true that the conclusions reached in the DW-MRS study are feasible, they are a long way from providing a true biomarker and are just speculating at this point.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;hr /&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id=&#34;leighs-highlights&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;Leigh’s Highlights&lt;/h1&gt;
+&lt;p&gt;I was happy to attend ISMRM 2018 in Paris. Below are a few of my favourite sessions.&lt;/p&gt;
+&lt;div id=&#34;diffusion-mrs&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Diffusion MRS&lt;/h2&gt;
+&lt;p&gt;There were a few talks on this, and it played a prominent role in the educational sessions (*&lt;a href=&#34;https://www.ismrm.org/18/program\_files/WE18AB.htm*&#34; class=&#34;uri&#34;&gt;https://www.ismrm.org/18/program\_files/WE18AB.htm*&lt;/a&gt;).&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;The goal is to measure typical diffusion parameters for individual metabolites, rather than water, which is the the more common approach.&lt;/li&gt;
+&lt;li&gt;Parameters include:
+&lt;ul&gt;
+&lt;li&gt;apparent diffusion coefficient (ADC)&lt;/li&gt;
+&lt;li&gt;fractional anisotropy (FA)&lt;/li&gt;
+&lt;li&gt;axial diffusivity (AD)&lt;/li&gt;
+&lt;li&gt;and radial diffusivity (RD)&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;While water is present in all cell types, metabolites can be cell-type specific, allowing us to gain diffusion information about individual cell types. For example, neurons contain NAA, while glia contain tCho.&lt;/li&gt;
+&lt;li&gt;One method of measuring diffusion MRS is to modify the PRESS sequence to include diffusion pulses.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Francesca Branzoli&lt;/strong&gt; - An example presented at ISMRM was the use of diffusion MRS to study multiple sclerosis patients, where the NAA axial diffusivity in the corpus callosum is different from that of water.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;
+&lt;div id=&#34;normal-pediatric-brain-development&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Normal Pediatric Brain Development&lt;/h2&gt;
+&lt;p&gt;This session was mainly about studying markers of brain development in young children under different developmental circumstances (*&lt;a href=&#34;https://www.ismrm.org/18/program\_files/O02.htm*&#34; class=&#34;uri&#34;&gt;https://www.ismrm.org/18/program\_files/O02.htm*&lt;/a&gt;).&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Joseph Yang&lt;/strong&gt; - One speaker found that signal obtained from the the ratio of T1W to T2W scans was correlated with myelin content. As myelination progresses the signal from this ratio increases, but the trend is non-linear with age.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Douglas Dean&lt;/strong&gt; - Gestational cortisol levels affect myelination in the brain of unborn children. Poor cortisol regulation in mothers is associated with dispersed white matter fibers and altered white matter development in children. The authors used NODDI MRI to study white matter integrity in children, and measured cortisol levels in the mother population. Interestingly, they found that there is a large distribution of cortisol in the mother population.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Sean Deoni&lt;/strong&gt; - Breastfeeding and brain development. In one study, the authors aimed to compare the white matter development in children that were either breastfed or formula-fed for three months. The authors tested three commercial formula brands against a breastfed control group. They found that myelin development in babies was impaired in two of the three formula-fed groups, as compared to the breast-fed group. However, the speaker would not say which brand gave similar results to the breastfed group.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;
+&lt;div id=&#34;lectures-and-posters&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Lectures and Posters&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;Plenary Lecture: Point-of-Care Diagnostics: MR’s Friend or Foe &lt;strong&gt;Steven J. Schiff&lt;/strong&gt;, Sustainable Low-Field MRI for Point of Care Diagnostics (*&lt;a href=&#34;https://www.ismrm.org/18/program\_files/P03.htm*&#34; class=&#34;uri&#34;&gt;https://www.ismrm.org/18/program\_files/P03.htm*&lt;/a&gt;)&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;This talk, in part, focused on portable healthcare for developing countries - an example was a van that drove around in African nations delivering TB vaccines.&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;As researchers in MRI, we tend to move towards high-field, high-resolution systems that push the limits, but are expensive.&lt;/li&gt;
+&lt;li&gt;He pointed out that many diseases can be diagnosed with lower-resolution images, which do not require expensive, state-of-the-art, equipment. There is a significant need in developing countries for affordable diagnostic tools. Low field, inexpensive magnets might be able to provide a solution for this.
+&lt;ul&gt;
+&lt;li&gt;It would benefit many people if researchers began to think about ways to make more affordable magnets, which deliver images with lower resolution that would help in diagnosing common diseases in developing nations.&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;E-Poster presented by &lt;strong&gt;Junyu Guo&lt;/strong&gt;, a student of Gene Reddick from St.Jude Children’s Hospital (*&lt;a href=&#34;https://www.ismrm.org/18/program\_files/EP21.htm\#sub5*&#34; class=&#34;uri&#34;&gt;https://www.ismrm.org/18/program\_files/EP21.htm\#sub5*&lt;/a&gt;)
+&lt;ul&gt;
+&lt;li&gt;Myelination occurs asymmetrically across the brain during development, left/right and front/back. This asymmetry is detectible with DTI metrics.&lt;/li&gt;
+&lt;li&gt;Junyo was studying the development of the asymmetry in myelination in children after treatment with high-dose methotrexate for acute lymphoblastic leukemia.&lt;/li&gt;
+&lt;li&gt;After treatment, patients have LESS asymmetry than controls of the same age.&lt;/li&gt;
+&lt;li&gt;Damage to myelin slows development of natural asymmetry.&lt;/li&gt;
+&lt;li&gt;Asymmetry measurements detected differences between patients and controls before traditional T2-weighted scans, usually used to detect leucoencephalopathy in this patient population.&lt;/li&gt;
+&lt;li&gt;Children treated at younger ages were more severely impacted, having more significant impairment, and less asymmetry than controls.&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;hr /&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id=&#34;stephanias-highlights&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;Stephania’s Highlights&lt;/h1&gt;
+&lt;p&gt;Recently, I was fortunate to attend the ISMRM 2018 Annual Meeting. It was the first time I attended this meeting, so it was a rather eye-opening experience. The main topics of interest seemed to be MR Spectroscopy (MRS), Diffusion, and Machine learning applications to most fields of MRI. Most of the information presented was novel to me. So, any inaccuracies are, of course, due to my elementary knowledge of these advanced topics.&lt;/p&gt;
+&lt;div id=&#34;diffusion-validation&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Diffusion Validation&lt;/h2&gt;
+&lt;p&gt;&lt;em&gt;&lt;a href=&#34;https://www.ismrm.org/18/program_files/O72.htm&#34;&gt;&lt;em&gt;https://www.ismrm.org/18/program_files/O72.htm&lt;/em&gt;&lt;/a&gt;&lt;/em&gt;) *&lt;/p&gt;
+&lt;p&gt;I chose to highlight this session because it is an important aspect of method development that is often overlooked. From all abstracts presented I have selected 3 which I found the most intriguing.&lt;/p&gt;
+&lt;ol style=&#34;list-style-type: decimal&#34;&gt;
+&lt;li&gt;Phantoms are extensively used for testing and validation purposes. In Diffusion MRI, a lot of weight has been put primarily on anisotropic phantoms. &lt;strong&gt;Papaioannou et al.&lt;/strong&gt; from &lt;em&gt;NYU&lt;/em&gt;, introduced a permeable phantom with tunable microstructural characteristics (pore size, pore density and permeability).
+&lt;ul&gt;
+&lt;li&gt;Model molecular transport in the presence of permeable membranes.&lt;/li&gt;
+&lt;li&gt;Time-dependent diffusion experiments were performed by varying the pore size.&lt;/li&gt;
+&lt;li&gt;Experiments performed on 3 different MRI and NMR systems.&lt;/li&gt;
+&lt;li&gt;Results nicely agree with theoretical expectations, for all three systems:
+&lt;ul&gt;
+&lt;li&gt;diffusivity time dependence in z but not in the x and y directions.&lt;/li&gt;
+&lt;li&gt;kurtosis (non-monotonic) time dependence in z but not in the x and y directions.&lt;/li&gt;
+&lt;li&gt;power-law scaling of diffusivity with respect to time in z.&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Such a phantom, that allows a controlled modification of its microstructural properties, opens the door to studying molecular diffusion in the presence of permeable membranes, which is rather ubiquitous in living tissues. Thus, a different aspect of phantom studies in diffusion can be explored.&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;A classic method for validating Diffusion MR (dMR) data is comparing the results to Histology results. &lt;strong&gt;Howard et al.&lt;/strong&gt; from &lt;em&gt;The University of Oxford&lt;/em&gt;, proposed a different method for using Histology in dMR data validation. It involves joint modelling of diffusion MRI and Histology data.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;When modelling dMR data the signal intensity is approximated to equal the convolution of the single-fibre response function (FRF) and the within-voxel fibre orientation distribution function (ODF).&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Constrained spherical deconvolution (CSD) is commonly used to characterize the distribution of fibre orientation.&lt;/li&gt;
+&lt;li&gt;Main assumption of CSD is that there is a “brain-wide” FRF that is approximated.&lt;/li&gt;
+&lt;li&gt;However, this assumption is challenged by the fact that the white matter (WM) diffusion profile is dependent on many microstructural parameters (axonal density, axonal packing, myelination).&lt;/li&gt;
+&lt;li&gt;Joint model (JM) allows for joint estimation of the FRF and ODF where FRF estimation is constrained by the 2D histological information on the ODF.&lt;/li&gt;
+&lt;li&gt;Results obtained from the corpus callosum and the corticospinal tract:
+&lt;ul&gt;
+&lt;li&gt;the FRF depends on local anatomy&lt;/li&gt;
+&lt;li&gt;current method of empirically estimating the FRF can bias the ODF shape.&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;JM method allows for more accurate FRF and ODF estimation. It can be further enhanced by additionally using 3D information obtained by polarized light imaging for better characterization and more constrained estimation of the FRF and ODF.&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;Influenced by the advancements in computational neuroscience, &lt;strong&gt;Palombo et al.&lt;/strong&gt; from &lt;em&gt;University College London&lt;/em&gt;, developed a numerical simulation of molecular diffusion within realistic digitized brain cells (neurons, glia):
+&lt;ul&gt;
+&lt;li&gt;Numerical simulations are used in various fields for model development and assessment as well as for experimental design, mainly because they can overcome various experimental limitations.&lt;/li&gt;
+&lt;li&gt;Explore the relationship between the macroscopic diffusion weighted NMR (DW-NMR) signal and the underlying tissue microstructure. Has proven complex to describe.&lt;/li&gt;
+&lt;li&gt;Pipeline:
+&lt;ol style=&#34;list-style-type: lower-roman&#34;&gt;
+&lt;li&gt;In-house software that generates a 3D mesh of the skeletonized structure (brain cell network).&lt;/li&gt;
+&lt;li&gt;Step (i) output passed through commercially available packages, CAMINO and the TREES toolbox, for Diffusion NMR simulation and cell morphology analysis respectively.&lt;/li&gt;
+&lt;/ol&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;The work presented focused on reducing computational burden and ensuring correct connectivity between distinct compartments comprising the system. Further work will be done to support even more realistic conditions (dense packing of numerous 3D cell structures, varying cell surface permeability). Overall, computational validation enables testing the limits of biophysical models and even development of new models, eliminating many of the common experimental limitations.&lt;/p&gt;&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/div&gt;
+&lt;div id=&#34;myelin-and-microstructural-imaging&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Myelin and Microstructural Imaging&lt;/h2&gt;
+&lt;p&gt;A lot of work presented involved Magnetization Transfer Imaging (MTI) and comparison of various commonly used techniques. There are two talks I found most relevant for the work done in our lab:&lt;/p&gt;
+&lt;ol style=&#34;list-style-type: decimal&#34;&gt;
+&lt;li&gt;(&lt;a href=&#34;https://www.ismrm.org/18/program_files/O54.htm&#34;&gt;&lt;em&gt;https://www.ismrm.org/18/program_files/O54.htm&lt;/em&gt;&lt;/a&gt;) &lt;strong&gt;Lam et al.&lt;/strong&gt; &lt;em&gt;from UBC&lt;/em&gt;, explored how white and grey matter intensities vary by technique.
+&lt;ul&gt;
+&lt;li&gt;They compared:
+&lt;ul&gt;
+&lt;li&gt;MTI&lt;/li&gt;
+&lt;li&gt;inhomogeneous MTI (ihMTI)&lt;/li&gt;
+&lt;li&gt;Myelin Water Imaging (MWI).&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;Using samples from post-mortem healthy and multiple sclerosis (MS) human brain tissues.&lt;/li&gt;
+&lt;li&gt;They showed:
+&lt;ul&gt;
+&lt;li&gt;for MTI and ihMTI the contrast obtained is based on different tissue properties than for MWI.&lt;/li&gt;
+&lt;li&gt;Expected since MTI and ihMTI are more sensitive to dipolar couplings whereas MWI is more affected by water exchange.&lt;/li&gt;
+&lt;li&gt;Histological validation of their results is necessary.&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;This work comes to show that, in the realm of MT and MWI, there is still some variation in techniques and the choice of which one to use depends on what molecules we wish to target.&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;em&gt;(&lt;/em&gt;&lt;a href=&#34;https://www.ismrm.org/18/program_files/O13.htm&#34;&gt;&lt;em&gt;https://www.ismrm.org/18/program_files/O13.htm&lt;/em&gt;&lt;/a&gt;&lt;em&gt;)&lt;/em&gt; &lt;strong&gt;Soustelle et al.&lt;/strong&gt; from &lt;em&gt;Université de Strasbourg,&lt;/em&gt; compared &lt;em&gt;quantitative MT&lt;/em&gt;, &lt;em&gt;diffusion tensor imaging (DTI)&lt;/em&gt; and &lt;em&gt;ultrashort-echo time&lt;/em&gt; measurements in a mouse model of demyelination.
+&lt;ul&gt;
+&lt;li&gt;A sketch of the experiment:
+&lt;ul&gt;
+&lt;li&gt;Cuprizone was the drug used to cause global demyelination of white and grey matter.&lt;/li&gt;
+&lt;li&gt;All of the techniques used are sensitive to myelin content, but each is affected by other factors as well.&lt;/li&gt;
+&lt;li&gt;Data was collected from ROIs in the corpus callosum, external capsules and cortex.&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;They showed:
+&lt;ul&gt;
+&lt;li&gt;ultrashort-echo time measurements are more informative than the DTI diffusivity&lt;/li&gt;
+&lt;li&gt;ultrashort-echo time measurements are less informative than the MTI bound-pool fraction metric.&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;So, there is a stratification of the various myelin sensitive techniques, with MTI providing more information, despite its limitations.&lt;/p&gt;&lt;/li&gt;
+&lt;/ol&gt;
+&lt;hr /&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id=&#34;lukes-highlights&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;Luke’s Highlights&lt;/h1&gt;
+&lt;p&gt;ISMRM 2018 was a very enlightening experience for me. This was my first time attending an international science conference, and I would like to share some of my highlights from this conference:&lt;/p&gt;
+&lt;ol style=&#34;list-style-type: decimal&#34;&gt;
+&lt;li&gt;&lt;strong&gt;Imaging Metabolism in the Developing Brain (&lt;/strong&gt;&lt;a href=&#34;https://www.ismrm.org/18/program_files/Tu02.htm&#34;&gt;&lt;strong&gt;&lt;em&gt;https://www.ismrm.org/18/program_files/Tu02.htm&lt;/em&gt;&lt;/strong&gt;&lt;/a&gt;&lt;strong&gt;)&lt;/strong&gt;
+&lt;ul&gt;
+&lt;li&gt;This session was categorized as an educational session and I greatly appreciated how it differed from the scientific sessions by starting with a thorough introduction to the topic.&lt;/li&gt;
+&lt;li&gt;Based on some brief survey questions asked by one of the speakers, it became clear to me that magnetic resonance spectroscopy (MRS), although very useful in the context of studying brain metabolism, does not get used much in the clinic.&lt;/li&gt;
+&lt;li&gt;This session promoted the use of MRS for diagnosis and disease monitoring of neurometabolic diseases - Moyoko Tomiyasu (Kanagawa Children’s Medical Center) explained how subtle spectral abnormalities, such as elevated/reduced peaks, can reflect deficiencies in various molecular transporters and enzymes.&lt;/li&gt;
+&lt;li&gt;Stefan Bluml (USC) gave an interesting talk on neuroimaging techniques used to study brain metabolism in pediatric populations. He explained that accumulation of a 13C label on glutamate can represent glucose uptake/metabolism in the brain, which were measured in adults and premature newborns. The presented data showed that premature infants displayed prolonged uptake while the adults have a plateau and subsequent decline in their glucose uptake.&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Traumatic Brain Injury (&lt;/strong&gt;&lt;a href=&#34;https://www.ismrm.org/18/program_files/O09.htm&#34;&gt;&lt;strong&gt;&lt;em&gt;https://www.ismrm.org/18/program_files/O09.htm&lt;/em&gt;&lt;/strong&gt;&lt;/a&gt;&lt;strong&gt;)&lt;/strong&gt;
+&lt;ul&gt;
+&lt;li&gt;One of the talks that stood out during this session was presented by Chia-Feng Lu et al (Taipei Medical University) and this talk introduced an association between concussion-induced dizziness and damage of thalamo-cortical connectivity after mild traumatic brain injury. The thalamo -cortical tracts involved were primarily connections to the primary and associated somatosensory cortices. These tracts displayed decreased functional connectivity which was often accompanied by elevated scores of Dizziness Handicap Inventory (i.e. increased dizziness).&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;Overall, I would highly recommend this conference to any first-timers. Despite my constant need for caffeine throughout the week (the lecture rooms were very dark!), it was very exciting to see all the different applications of MR. You can also expect a warm welcome at the special “newbie” reception that they typically host.&lt;/p&gt;
+&lt;/div&gt;
+</description>
     </item>
     
     <item>
@@ -29,7 +241,53 @@ Quantitative Connectomic Histology Presented by GA Johnson from Duke University
       <pubDate>Tue, 06 Mar 2018 00:00:00 +0000</pubDate>
       
       <guid>/blog/post/2018-03-05_why-volumes/</guid>
-      <description>Intro Figuring out how one group’s brain is different from another’s is a big part of neuroscience. MRI-neuroanatomy – the study of the sizes of brain regions – is a wonderful tool for this job and makes up a sizeable chunk of what we study. MRI operates in a lovely middle ground in the scales of neuroscience. It is strongly related to macroscale features of the organism, including sex, behaviour, etc; but can also inform us about the effects of microscale factors – such as gene expression.</description>
+      <description>&lt;div id=&#34;intro&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Intro&lt;/h2&gt;
+&lt;p&gt;Figuring out how one group’s brain is different from another’s is a big part of neuroscience. MRI-neuroanatomy – the study of the sizes of brain regions – is a wonderful tool for this job and makes up a sizeable chunk of what we study. MRI operates in a lovely middle ground in the scales of neuroscience. It is strongly related to macroscale features of the organism, including sex, behaviour, etc; but can also inform us about the effects of microscale factors – such as gene expression.&lt;/p&gt;
+&lt;p&gt;While neuroanatomy is tremendously advantageous in the study of &lt;em&gt;what&lt;/em&gt; makes one group’s brain is different from another’s, it is ill-suited to the question of &lt;em&gt;why&lt;/em&gt; they are different. It is ultimately the question of mechanism – the &lt;em&gt;why&lt;/em&gt; – that drives science forward. However, the fact that neuroanatomy can’t identify mechanism doesn’t make it useless. This blog will detail one way that neuroscience benefits from the neuroanatomy.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;The pursuit of &lt;em&gt;why&lt;/em&gt; begins with the question of &lt;em&gt;what&lt;/em&gt;.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;/div&gt;
+&lt;div id=&#34;brain-volumes&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Brain Volumes&lt;/h2&gt;
+&lt;p&gt;There are two types of sizes when one typically talks about brain volumes. The first is absolute size (or absolute volume) which is typically measured in cubic millimeters. This is the true volume of a brain region. The second is relative size (or relative volume), which is the absolute volume divided by whole-brain volume. Both measures have their advantages and disadvantages, however the advantage of relative volume may not be readily apparent. Absolute volumes are built from local microscale properties such as neurons, glia, the dendritic tree, etc. It is the sum of these microscale properties that determines the absolute volume of a region and ultimately contributes to the size of the brain. Relative volumes, on the other hand, normalise to whole brain size and, therefore, don’t have any trivial local influences. This issue of locality naturally leads to a criticism that relative volumes are meaningless compared to absolutes as they can’t help us infer localized changes. This cirticism may appear true at face value, but a closer inspection of real data reveals subtle nuances that strengthen the case for relative volumes.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;the-data&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;The Data&lt;/h2&gt;
+&lt;p&gt;The data we will be examining – graciously provided by Lily Qiu – is neuroanatomy data comparing male and female mice over a comprehensive period of neurodevelopment spanning nine timepoints ranging from p3 (i.e 3-day-old mouse, which corresponds to a human fetus) to p65 (i.e 65-day-old mice, which corresponding a human adult). In order to evaluate whether absolute volumes or relative volumes are more useful to study sex differences in the brain, we employed techniques from machine learning to develop a classifier that predicts sex from neuroanatomical structure volumes at a particular age. First, we excluded one mouse’s neuroanatomy data and fit a &lt;a href=&#34;https://web.stanford.edu/~hastie/glmnet/glmnet_beta.html&#34;&gt;LASSO logistic regression&lt;/a&gt; to simulataneously perform feature selection and predict sex from neuroanatomy. Once trained, the model was then provided the excluded mouse’s data to test whether it could successfully predict the excluded mouse’s sex. We repeated this process for every mouse and every age, training a unique classifier each time. Importantly, each classifier was always assessed for accuracy on data it had not seen during training. We trained one set of classifiers to predict sex from absolute volumes and another set to predict sex from relative volumes. Figure 1 shows the accuracy of the classifier and we see that for most ages, classifiers trained using relative volumes predicted sex better than those trained with absolute volumes. More importantly, relative-based classifiers vastly out-performed their absolute-based counterparts at the early ages between 3-17 (p17 corresponds to a human child). While absolute volumes may have a favorable interpretation, an unbiased machine learning procedure favors studying sex differences in terms of relative volumes. Absolute volumes may actually be biased against sex differences at the early ages between p3-17.&lt;/p&gt;
+&lt;div class=&#34;figure&#34;&gt;&lt;span id=&#34;fig:1&#34;&gt;&lt;/span&gt;
+&lt;img src=&#34;/blog/blog/post/2018-03-05_why-volumes_files/figure-html/1-1.png&#34; alt=&#34;*Relative volumes predict sex better than absolute volumes, especially p3-p17.*&#34; width=&#34;672&#34; /&gt;
+&lt;p class=&#34;caption&#34;&gt;
+Figure 1: &lt;em&gt;Relative volumes predict sex better than absolute volumes, especially p3-p17.&lt;/em&gt;
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;p&gt;To understand why the classifier performs better with relative volumes over absolute volumes, it is instructive to look at Figure 2, which plots the Coefficient of Variation (CV) over time for the Bed Nucleus of the Stria Terminalis (BNST) measured using absolute and relative volumes. CV is the standard deviation divided by the mean and is therefore unitless. In the BNST, as well as other brain regions, we see a clear pattern where the young brain has high CV in their absolute volumes but remarkably stable CV in relative volumes, therefore explaining why classifiers based on relative volumes outperformed their absolute counterparts at young ages. This consistent low CV is what makes relative volumes so useful in studying sexual dimorphisms. The young brain has quite a lot of variability in growth between subjects that relative volumes effectively correct for. Once corrected, the subtle neuroanatomy that distinguishes males and females becomes clearer to the LASSO-based classifiers. The correction also makes statistical modelling easier as well, as illustrated by Figure 3. The greater variability in the young brain masks statistics relating to when absolute volume sexual dimorphisms emerge, thereby providing a delayed estimate as to when male BNST becomes larger than females (around p10-p17). Relative volumes, however, have sexual dimorphisms emerge much earlier (p5), which is close to and supported by extensive histological evidence. Finally, relative volumes also scale away the overall growth of the brain and can therefore be approximated using linear models. Abolute volumes, on the other hand, need to be fitted with non-linear function, especially when considering their growth throughout a comprehensive period of neurodevelopment. While, in this case, non-linear fitting is not really an issue for statistical significance, the additional degrees-of-freedom needed to properly fit non-linear curves might be too costly in studies with less subjects.&lt;/p&gt;
+&lt;div class=&#34;figure&#34;&gt;&lt;span id=&#34;fig:2&#34;&gt;&lt;/span&gt;
+&lt;img src=&#34;/blog/blog/post/2018-03-05_why-volumes_files/figure-html/2-1.png&#34; alt=&#34;*Relative volumes have low coefficient of variation over the neurodevelopment time period.*&#34; width=&#34;672&#34; /&gt;
+&lt;p class=&#34;caption&#34;&gt;
+Figure 2: &lt;em&gt;Relative volumes have low coefficient of variation over the neurodevelopment time period.&lt;/em&gt;
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class=&#34;figure&#34;&gt;&lt;span id=&#34;fig:3&#34;&gt;&lt;/span&gt;
+&lt;img src=&#34;/blog/blog/post/2018-03-05_why-volumes_files/figure-html/3-1.png&#34; alt=&#34;*Volume of the BNST over time. We see with absolue volumes that sexual dimorphisms emerge between p10 and p17. Relative volumes on the other hand have dimorphisms emerging around p5. Extensive histological evidence in literature supports the timing of relative volume sexual dimorphisms. Shaded regions represent standard error estimated from linear mixed-effect models.*&#34; width=&#34;672&#34; /&gt;
+&lt;p class=&#34;caption&#34;&gt;
+Figure 3: &lt;em&gt;Volume of the BNST over time. We see with absolue volumes that sexual dimorphisms emerge between p10 and p17. Relative volumes on the other hand have dimorphisms emerging around p5. Extensive histological evidence in literature supports the timing of relative volume sexual dimorphisms. Shaded regions represent standard error estimated from linear mixed-effect models.&lt;/em&gt;
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;p&gt;What about the issue of locality I mentioned earlier? Absolute volumes are guaranteed to have local causes, but relative volumes do not. While it is certainly true that relative volumes may have nonlocal causes, we find that nonlocal effects are either exceedingly small in a mouse or rare in a proper image registration procedure. To illustrate relative volumes, please consider Figures 4 and 5. We showed the relative and absolute determinants for a registration of the p3 average mouse brain and the p5 average mouse brain. In both relative and absolute determinants, there is a great deal of agreement as to which structures have a high degree of change from p5 to p3 (cerebellum, cortex, olfactory bulb). Therefore, local causes that affect absolute determinants would affect relative volumes as well. In summary, both relative and absolute volumes are important for volume analysis depending on the situation. Relative volumes are useful when there is a high degree of variation in brain sizes obscuring potentially interesting effects and are generally easier to model. Absolute volumes on the other hand provide information in cannonical units that may be more intuitive to other researchers. Even with just these two measures, we can already get a glimpse into what is happening in the young mouse brain. There is a high degree of variability in the young mouse brain that becomes less noticable with time. &lt;em&gt;Why&lt;/em&gt; does this variability exist? The answer is unclear but it could be related to the uterine position and horn size (McLaurin, et al. 2015). &lt;em&gt;What&lt;/em&gt; can this young variability tell us about the adult mouse? This question can be explored with neuroanatomy.&lt;/p&gt;
+&lt;div class=&#34;figure&#34;&gt;
+&lt;img src=&#34;/blog/blog/img/why_vols_figs/supp_registration.png&#34; alt=&#34;Figure 4: Registration of a source image (p03 average) to a target (p05 average). The native images (after rigid alignment) are on the top row and their overlay is in the middle column. Poor alignment can be found in structures like the cerebellum where there is rapid neonatal growth. Affine registration scales and shears the source image to better align with target image. The affine transformation (generated from the affine registration) is applied to the source image and is shown in the second row. The overlay shows a good match between the affine-transformed source and the target images. However, zooming into the cerebellum of the affine-transformed source and target image (third row), shows that affine registration does not produce proper alignment of the cerebellum. This is illustrated by applying a red contour to the cerebellum of the target image and overlaying this contour to the source image. The non-affine registration corrects this discrepancy (fourth row) and produces the best alignment between source and target images (fifth row).&#34; /&gt;
+&lt;p class=&#34;caption&#34;&gt;&lt;strong&gt;Figure 4:&lt;/strong&gt; &lt;em&gt;Registration of a source image (p03 average) to a target (p05 average). The native images (after rigid alignment) are on the top row and their overlay is in the middle column. Poor alignment can be found in structures like the cerebellum where there is rapid neonatal growth. Affine registration scales and shears the source image to better align with target image. The affine transformation (generated from the affine registration) is applied to the source image and is shown in the second row. The overlay shows a good match between the affine-transformed source and the target images. However, zooming into the cerebellum of the affine-transformed source and target image (third row), shows that affine registration does not produce proper alignment of the cerebellum. This is illustrated by applying a red contour to the cerebellum of the target image and overlaying this contour to the source image. The non-affine registration corrects this discrepancy (fourth row) and produces the best alignment between source and target images (fifth row).&lt;/em&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class=&#34;figure&#34;&gt;
+&lt;img src=&#34;/blog/blog/img/why_vols_figs/supp_determinant.png&#34; alt=&#34;Figure 5: Visualizing deformations caused by transformation of target image using grids and determinants. Illustrated in the left figure, upon transformation of the target image to the source image (this transformation is the inverse of the transformation in Figure 4), gridlines in the target image become warped. In the top row, the gridlines warp from transformation to the source image; and in the bottom row, the gridlines warp from transformation to the affine-transformed source. Volumetric changes caused by the transformation can be qualitatively assessed by observing how the volume of a square region (region defined by the open space between gridlines) changes after transformation. Absolute determinants capture volumetric changes upon transformation between the Target and Native Source images. Relative determinants capture volumetric changes upon transformation between the Target image and Source image after affine transformation.&#34; /&gt;
+&lt;p class=&#34;caption&#34;&gt;&lt;strong&gt;Figure 5:&lt;/strong&gt; &lt;em&gt;Visualizing deformations caused by transformation of target image using grids and determinants. Illustrated in the left figure, upon transformation of the target image to the source image (this transformation is the inverse of the transformation in Figure 4), gridlines in the target image become warped. In the top row, the gridlines warp from transformation to the source image; and in the bottom row, the gridlines warp from transformation to the affine-transformed source. Volumetric changes caused by the transformation can be qualitatively assessed by observing how the volume of a square region (region defined by the open space between gridlines) changes after transformation. Absolute determinants capture volumetric changes upon transformation between the Target and Native Source images. Relative determinants capture volumetric changes upon transformation between the Target image and Source image after affine transformation.&lt;/em&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;p&gt;A major criticism of neuroanatomy analysis is that mouse models are useful for the study of cellular mechanisms; and strictly studying brain volumes does not take advantage of what makes mouse research so useful. This criticism ignores the myriad number of informative analysis that mouse models make possible and I will be describing one such analysis in the remainder of this blog. In vivo longitudinal imaging throughout mouse neurodevelopment (provided by Lily Qiu’s data), in conjunction with the control of genetic and environmental factors afforded by mouse studies, renders it possible to explore exciting analysis in brain prediction. Neuroanatomy of the young mouse brain predicts neuroanatomy of the adolescent and adult mouse brain (I will show our work in more detail in a future blogpost). By developing a computational model to predict mouse brain neuroanatomy, we found that only the first 10-17 days of neuroanatomical data are enough to make sensitive and specific predictions of individualised neuroanatomy at p36 and p65. As expected, if we provide the model with only p03 data and ask it to predict p36 or p65, the model will fail to make specific predictions because young brains’ variability is not very informative. However, the more data we provide from later in development, the better the model is at identifying features of variability unique to a mouse and predicting mature individualised neuroanatomy. It is through a combination of many timepoints and more recent timepoints that individual differences in young neuroanatomy emerge, which the model can use to make predictions about mature neuroanatomy. Our prediction accuracies were not influenced by the sex of the predicted subject (i.e. males and females are equally well predicted), however, we found that male neuroanatomy individualised (became easier to predict) significantly earlier in development than female neuroanatomy.&lt;/p&gt;
+&lt;p&gt;Neuroanatomical phenotyping tends to be used to study how groups of organisms are similar. However, it is also important to study what makes organisms unique from the rest of the members of its group. The control of genetic and environmental factors limits the variability in mice making it easier for machine-learning tools to make individualised predictions. “Easier” in this context means using simple models and few subjects. While humans have far more variability compared to mice, with the advent of ever-bigger datasets collected on human neurodevelopment, it will be possible in the near future to use more advanced machine-learning tools to predict some individuality in these data sets. It might even be possible to predict the development of neuroanatomical pathologies associated with neurological disorders prior to disorder onset. Neuroanatomy research in mouse models can spur research in this exciting direction. Neuroanatomy can be a marker for individaulity: &lt;em&gt;what&lt;/em&gt; makes mice different from other mice and humans different from other human. I can hardly wait for future science to determine &lt;em&gt;why&lt;/em&gt;.&lt;/p&gt;
+&lt;/div&gt;
+</description>
     </item>
     
     <item>
@@ -38,9 +296,102 @@ Quantitative Connectomic Histology Presented by GA Johnson from Duke University
       <pubDate>Fri, 09 Feb 2018 00:00:00 +0000</pubDate>
       
       <guid>/blog/post/2018-02-08_peaks-intro/</guid>
-      <description>So, peaks. When producing a statistical map, it’s good to get a report of the peaks (i.e. most significant findings). RMINC has had this support for a while now, though it has remained somewhat hidden. Here’s a bit of an intro, then.
-I will walk through the example we used from the Mouse Imaging Summer School in 2017, which is data from this paper:
-de Guzman AE, Gazdzinski LM, Alsop RJ, Stewart JM, Jaffray DA, Wong CS, Nieman BJ.</description>
+      <description>&lt;script src=&#34;/blog/blog/rmarkdown-libs/htmlwidgets/htmlwidgets.js&#34;&gt;&lt;/script&gt;
+&lt;script src=&#34;/blog/blog/rmarkdown-libs/jquery/jquery.min.js&#34;&gt;&lt;/script&gt;
+&lt;link href=&#34;/blog/blog/rmarkdown-libs/datatables-css/datatables-crosstalk.css&#34; rel=&#34;stylesheet&#34; /&gt;
+&lt;script src=&#34;/blog/blog/rmarkdown-libs/datatables-binding/datatables.js&#34;&gt;&lt;/script&gt;
+&lt;link href=&#34;/blog/blog/rmarkdown-libs/dt-core/css/jquery.dataTables.min.css&#34; rel=&#34;stylesheet&#34; /&gt;
+&lt;link href=&#34;/blog/blog/rmarkdown-libs/dt-core/css/jquery.dataTables.extra.css&#34; rel=&#34;stylesheet&#34; /&gt;
+&lt;script src=&#34;/blog/blog/rmarkdown-libs/dt-core/js/jquery.dataTables.min.js&#34;&gt;&lt;/script&gt;
+&lt;link href=&#34;/blog/blog/rmarkdown-libs/crosstalk/css/crosstalk.css&#34; rel=&#34;stylesheet&#34; /&gt;
+&lt;script src=&#34;/blog/blog/rmarkdown-libs/crosstalk/js/crosstalk.min.js&#34;&gt;&lt;/script&gt;
+
+
+&lt;p&gt;So, peaks. When producing a statistical map, it’s good to get a report of the peaks (i.e. most significant findings). RMINC has had this support for a while now, though it has remained somewhat hidden. Here’s a bit of an intro, then.&lt;/p&gt;
+&lt;p&gt;I will walk through the example we used from the Mouse Imaging Summer School in 2017, which is data from this paper:&lt;/p&gt;
+&lt;p&gt;de Guzman AE, Gazdzinski LM, Alsop RJ, Stewart JM, Jaffray DA, Wong CS, Nieman BJ. Treatment age, dose and sex determine neuroanatomical outcome in irradiated juvenile mice. Radiat Res. 2015 May;183(5):541–9.&lt;/p&gt;
+&lt;p&gt;To keep it simple, however, I’ll only look at sex differences in that dataset for now.&lt;/p&gt;
+&lt;p&gt;Let’s start - load the libraries and read in the csv file that describes the data.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;suppressMessages(library(RMINC))
+gf &amp;lt;- read.csv(&amp;quot;/hpf/largeprojects/MICe/jason/MISS2017/intro-stats/fixed_datatable_IRdose.csv&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;And run a linear model relating the Jacobian determinants to sex and radiation dose. I’ll use the segmentations file as a mask; it’ll be needed later on anyway.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;labelFile &amp;lt;- &amp;quot;/hpf/largeprojects/MICe/jason/MISS2017/intro-stats/atlas-registration/pipeline-18-08-2017-at-07-08-48_processed/nlin-3/voted.mnc&amp;quot;
+vs &amp;lt;- mincLm(Jacobfile_scaled0.2 ~ Sex + Dose, gf, mask = labelFile)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## Method: lm
+## Number of volumes: 41
+## Volume sizes: 152 320 225
+## N: 41 P: 3
+## In slice 
+##  0  1  2  3  4  5  6  7  8  9  10  11  12  13  14  15  16  17  18  19  20  21  22  23  24  25  26  27  28  29  30  31  32  33  34  35  36  37  38  39  40  41  42  43  44  45  46  47  48  49  50  51  52  53  54  55  56  57  58  59  60  61  62  63  64  65  66  67  68  69  70  71  72  73  74  75  76  77  78  79  80  81  82  83  84  85  86  87  88  89  90  91  92  93  94  95  96  97  98  99  100  101  102  103  104  105  106  107  108  109  110  111  112  113  114  115  116  117  118  119  120  121  122  123  124  125  126  127  128  129  130  131  132  133  134  135  136  137  138  139  140  141  142  143  144  145  146  147  148  149  150  151 
+## Done&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Some more data preparation: read in the background anatomy file …&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;anatFile &amp;lt;- &amp;quot;/projects/moush/lbernas/Irradiation_behaviour_project/fixed_build_masked_23mar13_nlin/nlin-3.mnc&amp;quot;
+anatVol &amp;lt;- mincArray(mincGetVolume(anatFile))&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;… and show the results at a somewhat arbitrary threshold.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;mincPlotSliceSeries(anatVol, mincArray(vs, &amp;quot;tvalue-SexM&amp;quot;), anatLow=10, anatHigh=15, low=2, high=6, symmetric = T,
+                    begin=50, end=-50)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/blog/blog/post/2018-02-08_peaks-intro_files/figure-html/unnamed-chunk-4-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;At this point we’ve run a linear model and visually assessed the results. Now we can locate the peak findings, using the &lt;code&gt;mincFindPeaks&lt;/code&gt; command.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;peaks &amp;lt;- mincFindPeaks(vs, &amp;quot;tvalue-SexM&amp;quot;, minDistance = 1, threshold = 4)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## Writing column tvalue-SexM to file /tmp/Rtmpm8tCfQ/file65323a5d369f.mnc 
+## Range: 10.627142 -5.694668&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;code&gt;mincFindPeaks&lt;/code&gt; uses the &lt;code&gt;find_peaks&lt;/code&gt; command from the MINC toolkit under the hood. You pass in the output of one of the RMINC modelling commands (mincLm in this case, but can be anything), along with the column from that model you want to get peaks from. You can then set the minimum distance between peaks (in mm) - i.e. how far apart do two statistical peaks have to be to be included? - as well as the threshold to be considered a peak. Optionally thresholds can be different for positive and negative peaks; as always, see &lt;code&gt;?mincFindPeaks&lt;/code&gt; for more detail.&lt;/p&gt;
+&lt;p&gt;This is what we have at this point:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;peaks&lt;/code&gt;&lt;/pre&gt;
+&lt;div id=&#34;htmlwidget-1&#34; style=&#34;width:100%;height:auto;&#34; class=&#34;datatables html-widget&#34;&gt;&lt;/div&gt;
+&lt;script type=&#34;application/json&#34; data-for=&#34;htmlwidget-1&#34;&gt;{&#34;x&#34;:{&#34;filter&#34;:&#34;none&#34;,&#34;data&#34;:[[&#34;1&#34;,&#34;2&#34;,&#34;3&#34;,&#34;4&#34;,&#34;5&#34;,&#34;6&#34;,&#34;7&#34;,&#34;8&#34;,&#34;9&#34;,&#34;10&#34;,&#34;11&#34;,&#34;12&#34;,&#34;13&#34;,&#34;14&#34;,&#34;15&#34;,&#34;16&#34;,&#34;17&#34;,&#34;18&#34;,&#34;19&#34;,&#34;20&#34;,&#34;21&#34;,&#34;22&#34;,&#34;23&#34;,&#34;24&#34;,&#34;25&#34;,&#34;26&#34;,&#34;27&#34;,&#34;28&#34;,&#34;29&#34;,&#34;30&#34;,&#34;31&#34;,&#34;32&#34;,&#34;33&#34;,&#34;34&#34;,&#34;35&#34;,&#34;36&#34;,&#34;37&#34;],[75,154,104,124,94,176,158,102,74,131,122,67,78,105,107,51,110,60,138,85,148,38,56,104,120,143,29,107,30,168,159,32,122,70,89,175,107],[157,156,193,193,184,116,121,146,108,186,144,171,135,140,171,129,46,211,228,124,203,164,74,221,222,230,172,59,143,121,72,189,161,92,66,156,141],[50,52,56,52,75,83,83,105,96,75,108,41,52,67,107,62,45,114,136,63,132,58,60,80,125,105,96,116,65,47,91,76,131,61,34,127,46],[-2.126,2.298,-0.502,0.618,-1.062,3.53,2.522,-0.614,-2.182,1.01,0.506,-2.574,-1.958,-0.446,-0.334,-3.47,-0.165999999999999,-2.966,1.402,-1.566,1.962,-4.198,-3.19,-0.502,0.394,1.682,-4.702,-0.334,-4.646,3.082,2.578,-4.534,0.506,-2.406,-1.342,3.474,-0.334],[0.546000000000001,0.49,2.562,2.562,2.058,-1.75,-1.47,-0.0699999999999985,-2.198,2.17,-0.181999999999999,1.33,-0.685999999999999,-0.406,1.33,-1.022,-5.67,3.57,4.522,-1.302,3.122,0.938000000000001,-4.102,4.13,4.186,4.634,1.386,-4.942,-0.238,-1.47,-4.214,2.338,0.770000000000001,-3.094,-4.55,0.49,-0.35],[-1.456,-1.344,-1.12,-1.344,-0.056,0.392,0.392,1.624,1.12,-0.056,1.792,-1.96,-1.344,-0.504,1.736,-0.784,-1.736,2.128,3.36,-0.728,3.136,-1.008,-0.896,0.224,2.744,1.624,1.12,2.24,-0.616,-1.624,0.84,0,3.08,-0.84,-2.352,2.856,-1.68],[10.63,9.435,8.88,7.064,5.521,5.373,5.37,5.357,5.318,5.234,5.203,4.965,4.357,4.324,4.205,4.152,4.039,-5.695,-4.836,-4.832,-4.791,-4.711,-4.632,-4.612,-4.507,-4.506,-4.504,-4.439,-4.392,-4.345,-4.278,-4.209,-4.162,-4.142,-4.088,-4.054,-4.011]],&#34;container&#34;:&#34;&lt;table class=\&#34;display\&#34;&gt;\n  &lt;thead&gt;\n    &lt;tr&gt;\n      &lt;th&gt; &lt;\/th&gt;\n      &lt;th&gt;d1&lt;\/th&gt;\n      &lt;th&gt;d2&lt;\/th&gt;\n      &lt;th&gt;d3&lt;\/th&gt;\n      &lt;th&gt;x&lt;\/th&gt;\n      &lt;th&gt;y&lt;\/th&gt;\n      &lt;th&gt;z&lt;\/th&gt;\n      &lt;th&gt;value&lt;\/th&gt;\n    &lt;\/tr&gt;\n  &lt;\/thead&gt;\n&lt;\/table&gt;&#34;,&#34;options&#34;:{&#34;pageLength&#34;:5,&#34;columnDefs&#34;:[{&#34;className&#34;:&#34;dt-right&#34;,&#34;targets&#34;:[1,2,3,4,5,6,7]},{&#34;orderable&#34;:false,&#34;targets&#34;:0}],&#34;order&#34;:[],&#34;autoWidth&#34;:false,&#34;orderClasses&#34;:false,&#34;lengthMenu&#34;:[5,10,25,50,100]}},&#34;evals&#34;:[],&#34;jsHooks&#34;:[]}&lt;/script&gt;
+&lt;p&gt;There are 7 columns; the first three give the coordinates in voxel space, the next three the coordinates in world space, and then the peak value itself. There’s a further helpful command that labels the peaks with the atlas location within which the peak is located:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;defsFile &amp;lt;- &amp;quot;/hpf/largeprojects/MICe/tools/atlases/Dorr_2008_Steadman_2013_Ullmann_2013_Richards_2011_Qiu_2016_Egan_2015_40micron/mappings/DSURQE_40micron_R_mapping.csv&amp;quot;
+peaks &amp;lt;- mincLabelPeaks(peaks, labelFile, defsFile)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## Warning in peaks$label[i] &amp;lt;- mdefs$Structure[mdefs$value == peaks
+## $label[i]]: number of items to replace is not a multiple of replacement
+## length
+
+## Warning in peaks$label[i] &amp;lt;- mdefs$Structure[mdefs$value == peaks
+## $label[i]]: number of items to replace is not a multiple of replacement
+## length
+
+## Warning in peaks$label[i] &amp;lt;- mdefs$Structure[mdefs$value == peaks
+## $label[i]]: number of items to replace is not a multiple of replacement
+## length
+
+## Warning in peaks$label[i] &amp;lt;- mdefs$Structure[mdefs$value == peaks
+## $label[i]]: number of items to replace is not a multiple of replacement
+## length
+
+## Warning in peaks$label[i] &amp;lt;- mdefs$Structure[mdefs$value == peaks
+## $label[i]]: number of items to replace is not a multiple of replacement
+## length&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;This adds an extra column containing the name of the label for each peak:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;peaks&lt;/code&gt;&lt;/pre&gt;
+&lt;div id=&#34;htmlwidget-2&#34; style=&#34;width:100%;height:auto;&#34; class=&#34;datatables html-widget&#34;&gt;&lt;/div&gt;
+&lt;script type=&#34;application/json&#34; data-for=&#34;htmlwidget-2&#34;&gt;{&#34;x&#34;:{&#34;filter&#34;:&#34;none&#34;,&#34;data&#34;:[[&#34;1&#34;,&#34;2&#34;,&#34;3&#34;,&#34;4&#34;,&#34;5&#34;,&#34;6&#34;,&#34;7&#34;,&#34;8&#34;,&#34;9&#34;,&#34;10&#34;,&#34;11&#34;,&#34;12&#34;,&#34;13&#34;,&#34;14&#34;,&#34;15&#34;,&#34;16&#34;,&#34;17&#34;,&#34;18&#34;,&#34;19&#34;,&#34;20&#34;,&#34;21&#34;,&#34;22&#34;,&#34;23&#34;,&#34;24&#34;,&#34;25&#34;,&#34;26&#34;,&#34;27&#34;,&#34;28&#34;,&#34;29&#34;,&#34;30&#34;,&#34;31&#34;,&#34;32&#34;,&#34;33&#34;,&#34;34&#34;,&#34;35&#34;,&#34;36&#34;,&#34;37&#34;],[75,154,104,124,94,176,158,102,74,131,122,67,78,105,107,51,110,60,138,85,148,38,56,104,120,143,29,107,30,168,159,32,122,70,89,175,107],[157,156,193,193,184,116,121,146,108,186,144,171,135,140,171,129,46,211,228,124,203,164,74,221,222,230,172,59,143,121,72,189,161,92,66,156,141],[50,52,56,52,75,83,83,105,96,75,108,41,52,67,107,62,45,114,136,63,132,58,60,80,125,105,96,116,65,47,91,76,131,61,34,127,46],[-2.126,2.298,-0.502,0.618,-1.062,3.53,2.522,-0.614,-2.182,1.01,0.506,-2.574,-1.958,-0.446,-0.334,-3.47,-0.165999999999999,-2.966,1.402,-1.566,1.962,-4.198,-3.19,-0.502,0.394,1.682,-4.702,-0.334,-4.646,3.082,2.578,-4.534,0.506,-2.406,-1.342,3.474,-0.334],[0.546000000000001,0.49,2.562,2.562,2.058,-1.75,-1.47,-0.0699999999999985,-2.198,2.17,-0.181999999999999,1.33,-0.685999999999999,-0.406,1.33,-1.022,-5.67,3.57,4.522,-1.302,3.122,0.938000000000001,-4.102,4.13,4.186,4.634,1.386,-4.942,-0.238,-1.47,-4.214,2.338,0.770000000000001,-3.094,-4.55,0.49,-0.35],[-1.456,-1.344,-1.12,-1.344,-0.056,0.392,0.392,1.624,1.12,-0.056,1.792,-1.96,-1.344,-0.504,1.736,-0.784,-1.736,2.128,3.36,-0.728,3.136,-1.008,-0.896,0.224,2.744,1.624,1.12,2.24,-0.616,-1.624,0.84,0,3.08,-0.84,-2.352,2.856,-1.68],[10.63,9.435,8.88,7.064,5.521,5.373,5.37,5.357,5.318,5.234,5.203,4.965,4.357,4.324,4.205,4.152,4.039,-5.695,-4.836,-4.832,-4.791,-4.711,-4.632,-4.612,-4.507,-4.506,-4.504,-4.439,-4.392,-4.345,-4.278,-4.209,-4.162,-4.142,-4.088,-4.054,-4.011],[&#34;left Medial amygdala&#34;,&#34;right Medial amygdala&#34;,&#34;left hypothalamus&#34;,&#34;right hypothalamus&#34;,&#34;left bed nucleus of stria terminalis&#34;,&#34;right subiculum&#34;,&#34;right MoDG&#34;,&#34;left LMol&#34;,&#34;left pre-para subiculum&#34;,&#34;right bed nucleus of stria terminalis&#34;,&#34;right CA1Rad&#34;,&#34;left amygdala&#34;,&#34;left CA3Py Inner&#34;,&#34;left fasciculus retroflexus&#34;,&#34;left CA30r&#34;,&#34;left CA1Py&#34;,&#34; medulla&#34;,&#34;left Primary somatosensory cortex&#34;,&#34;right Frontal association cortex&#34;,&#34; midbrain&#34;,&#34;right Primary motor cortex&#34;,&#34;left Piriform cortex&#34;,&#34;left paramedian lobule (lobule 7)&#34;,&#34;left Dorsal tenia tecta&#34;,&#34;right Cingulate cortex: area 32&#34;,&#34;right Lateral orbital cortex&#34;,&#34;left Secondary somatosensory cortex&#34;,&#34; lobule 6: declive&#34;,&#34;left Dorsolateral entorhinal cortex&#34;,&#34;right Caudomedial entorhinal cortex&#34;,&#34;right crus 1: ansiform lobule (lobule 6)&#34;,&#34;left Insular region: not subdivided&#34;,&#34;right Cingulate cortex: area 24b&#39;&#34;,&#34; medulla&#34;,&#34; medulla&#34;,&#34;right Primary somatosensory cortex: barrel field&#34;,&#34;left mammillary bodies&#34;]],&#34;container&#34;:&#34;&lt;table class=\&#34;display\&#34;&gt;\n  &lt;thead&gt;\n    &lt;tr&gt;\n      &lt;th&gt; &lt;\/th&gt;\n      &lt;th&gt;d1&lt;\/th&gt;\n      &lt;th&gt;d2&lt;\/th&gt;\n      &lt;th&gt;d3&lt;\/th&gt;\n      &lt;th&gt;x&lt;\/th&gt;\n      &lt;th&gt;y&lt;\/th&gt;\n      &lt;th&gt;z&lt;\/th&gt;\n      &lt;th&gt;value&lt;\/th&gt;\n      &lt;th&gt;label&lt;\/th&gt;\n    &lt;\/tr&gt;\n  &lt;\/thead&gt;\n&lt;\/table&gt;&#34;,&#34;options&#34;:{&#34;pageLength&#34;:5,&#34;columnDefs&#34;:[{&#34;className&#34;:&#34;dt-right&#34;,&#34;targets&#34;:[1,2,3,4,5,6,7]},{&#34;orderable&#34;:false,&#34;targets&#34;:0}],&#34;order&#34;:[],&#34;autoWidth&#34;:false,&#34;orderClasses&#34;:false,&#34;lengthMenu&#34;:[5,10,25,50,100]}},&#34;evals&#34;:[],&#34;jsHooks&#34;:[]}&lt;/script&gt;
+&lt;p&gt;At this point you have all the info about the most significant peaks in the dataset. There is one additional useful command, a shortcut to plot each peak. Plotting the two most positive and the two most negative peaks, for example:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;opar &amp;lt;- par(mfrow=c(2,2), mar=c(0,0,0,0))
+nP &amp;lt;- nrow(peaks)
+for (i in c(1:2, nP:(nP-1))) {
+  mincPlotPeak(peaks[i,], anatVol, mincArray(vs, &amp;quot;tvalue-SexM&amp;quot;), anatLow=10, anatHigh=15, low=2, high=6, symmetric=T)
+}&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/blog/blog/post/2018-02-08_peaks-intro_files/figure-html/unnamed-chunk-11-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;par(opar)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;There is an additional argument to &lt;code&gt;mincPlotPeak&lt;/code&gt; - a function to create a plot of the peak. This is illustrated below:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# load ggplot2 for plotting
+library(ggplot2)
+# the plotting function; needs to take a single argument, the peak
+p &amp;lt;- function(peak) {
+  # read in the data for that particular peak
+  gf$voxel &amp;lt;- mincGetWorldVoxel(gf$Jacobfile_scaled0.2, peak[&amp;quot;x&amp;quot;], peak[&amp;quot;y&amp;quot;], peak[&amp;quot;z&amp;quot;])
+  # and create a box-plot; also read in info from the peak for a meaningful title
+  ggplot(gf) + aes(x=Sex, y=exp(voxel)) + geom_boxplot() + 
+    ggtitle(paste(&amp;quot;Peak:&amp;quot;, peak[&amp;quot;label&amp;quot;]), subtitle = paste(&amp;quot;T statistic:&amp;quot;, peak[&amp;quot;value&amp;quot;]))
+}
+# and plot the peak with its plot
+mincPlotPeak(peaks[1,], anatVol, mincArray(vs, &amp;quot;tvalue-SexM&amp;quot;), anatLow=10, anatHigh=15, low=2, high=6, 
+             symmetric=T, plotFunction = p)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## Don&amp;#39;t know how to automatically pick scale for object of type mincVoxel/vector. Defaulting to continuous.&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/blog/blog/post/2018-02-08_peaks-intro_files/figure-html/unnamed-chunk-12-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;And that’s it. A quick survey for how to extract peaks, view them in a table, and create figures of the most significant findings.&lt;/p&gt;
+</description>
     </item>
     
   </channel>

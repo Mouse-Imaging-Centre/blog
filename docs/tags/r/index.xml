@@ -8,7 +8,7 @@
     <language>en</language>
     <lastBuildDate>Fri, 23 Feb 2018 00:00:00 +0000</lastBuildDate>
     
-	<atom:link href="/blog/tags/r/index.xml" rel="self" type="application/rss+xml" />
+        <atom:link href="/blog/tags/r/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
@@ -17,8 +17,132 @@
       <pubDate>Fri, 23 Feb 2018 00:00:00 +0000</pubDate>
       
       <guid>/blog/post/2018-02-23_gene-expression/</guid>
-      <description>Intro In this post I will demonstrate how to use my package ABIgeneRMINC to download, read and analyze mouse brain gene expression data from the Allen Brain Institute.
-The Allen Brain Institute (ABI) has acquired and released genome-wide spatial gene expression maps for the mouse brain. The data is generated using in situ hybridization experiments (ISH), where nucleotide probes for specific genes bind directly to mouse brain tissue. The probe binding is then marked with a biotin label that can be used to locate regions where a gene is expressed.</description>
+      <description>&lt;div id=&#34;intro&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Intro&lt;/h2&gt;
+&lt;p&gt;In this post I will demonstrate how to use my package &lt;code&gt;ABIgeneRMINC&lt;/code&gt; to download, read and analyze mouse brain gene expression data from the Allen Brain Institute.&lt;/p&gt;
+&lt;p&gt;The Allen Brain Institute (ABI) has acquired and released genome-wide spatial gene expression maps for the mouse brain. The data is generated using &lt;em&gt;in situ&lt;/em&gt; hybridization experiments (ISH), where nucleotide probes for specific genes bind directly to mouse brain tissue. The probe binding is then marked with a biotin label that can be used to locate regions where a gene is expressed.&lt;/p&gt;
+&lt;p&gt;For the analysis you will need two R packages &lt;code&gt;RMINC&lt;/code&gt; and &lt;code&gt;ABIgeneRMINC&lt;/code&gt;.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# devtools::install_github(repo=&amp;quot;DJFernandes/ABIgeneRMINC&amp;quot;)   # If you need to install
+library(ABIgeneRMINC)
+library(RMINC)&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;div id=&#34;getting-the-data&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Getting the data&lt;/h2&gt;
+&lt;p&gt;With the packages load you can now look up your favourite gene. You need to know the gene acronym though, which you can find on the NCBI database. In this case, I want to look up Bdnf. The function below queries the Allen Brain API and finds all experiments conducted with Bdnf.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;fge=find.gene.experiment(&amp;#39;Bdnf&amp;#39;)
+fge&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;##   gene   slices ExperimentID
+## 1 Bdnf  coronal     79587720
+## 2 Bdnf sagittal     75695642
+##                                                                  URLs
+## 1 http://api.brain-map.org/grid_data/download/79587720?include=energy
+## 2 http://api.brain-map.org/grid_data/download/75695642?include=energy&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;We are in luck! There are two experiments the Allen Brain Institute ran with Bdnf, identified by ExperimentIDs 79587720 and 75695642. The former was conducted on coronal slices in the brain, and the latter on sagittal slices. We will see why this is important later on. The URLs where you can download expression data is given in the final column. You can enter them in your internet browser and file should begin to download. If you don’t want to leave the wonderful world of R just to download (I don’t blame you), we can actually download and read the data within R itself.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;genedata1 = read.raw.gene(as.character(fge$URLs[1]),url = TRUE)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## Loading required package: bitops&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;It is generally better to download outside R and save the file, so you don’t have to keep downloading. Obtain the path to the file, and use it as as argument to read as follows:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;genedata1 = read.raw.gene(&amp;#39;/projects/egerek/matthijs/2015-07-Allen-Brain/Allen_Gene_Expression/raw_data/coronal/Bdnf_sid79587720/energy.raw&amp;#39;)&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;div id=&#34;visualizing-the-gene-expression&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Visualizing the gene expression&lt;/h2&gt;
+&lt;p&gt;The gene expression data is a 1D vector. It can easily be converted to a 3D array using the mincArray function (which we will do later). But there is an important note to talk about before going further. The 1D vector lists values going from X=Anterior-to-Posterior, Y=Superior-to-Inferior, and Z=Left-to-Right (dimensions written from fastest changing index to slowest). This is the ABI orientation. The RMINC vectors typically are 1D vectors going from X=Left-to-Right, Y=Posterior-to-Anterior, Z=Inferior-to-Superior (dimensions written from fastest changing index to slowest). This is the MNI orientation. You can make a choice as to which orientiation you want to analyze in but I will be choosing MNI orientation in this tutorial. Just make sure you are consistent with your orientations and you won’t have problems. The function below converts ABI orientation to MNI orientation:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;genedata1 = allenVectorTOmincVector(genedata1)
+# genedata1 = mincVectorTOallenVector(genedata1)  #This is the inverse function&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Now, we can visualize the gene expression. Below is a sagittal slice&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;image(mincArray(genedata1)[30,,], ylab=&amp;#39;Superior-Inferior&amp;#39; ,xlab=&amp;#39;Anterior-Posterior&amp;#39;)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/blog/blog/post/2018-02-23_gene-expression_files/figure-html/6-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;adding-an-anatomical-underlay&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Adding an anatomical underlay&lt;/h2&gt;
+&lt;p&gt;I am not a good mouse brain anatomist, and so I find it pretty difficult to tell from this expression heatmap where exactly the expression is in the brain. We will now overlay a background MRI template to tell us where the gene expression is and use RMINC to create slice series.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;anatfile=&amp;#39;/projects/egerek/matthijs/2015-07-Allen-Brain/allenCCFV3_to_dorr_registration/allenCCFV3/atlas_in_200um/Dorr_resampled_200um.mnc&amp;#39;
+mincPlotSliceSeries(
+  anatomy=mincArray(mincGetVolume(anatfile)),
+  statistics=mincArray(genedata1),
+  symmetric=FALSE,
+  col=colorRampPalette(c(&amp;quot;darkgreen&amp;quot;,&amp;quot;yellowgreen&amp;quot;))(255),
+  legend=&amp;quot;Bdnf Expression&amp;quot;,low=2,high=6.5)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/blog/blog/post/2018-02-23_gene-expression_files/figure-html/7-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Much better. I can tell there is high expression in the cortex and hippocampus.&lt;/p&gt;
+&lt;p&gt;Let us also look at the other Bdnf experiment (ID: 75695642).&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;genedata2 = read.raw.gene(as.character(fge$URLs[2]),url = TRUE)
+genedata2 = allenVectorTOmincVector(genedata2)
+mincPlotSliceSeries(
+  anatomy=mincArray(mincGetVolume(anatfile)),
+  statistics=mincArray(genedata2),
+  symmetric=FALSE,
+  col=colorRampPalette(c(&amp;quot;darkgreen&amp;quot;,&amp;quot;yellowgreen&amp;quot;))(255),
+  legend=&amp;quot;Bdnf Expression&amp;quot;,low=2,high=6.5)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/blog/blog/post/2018-02-23_gene-expression_files/figure-html/8-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;We see that the sagittal slices only span half the brain. This was a deliberate choice by the ABI and most of the gene experiments are like this. Furthermore, slices are sampled every 200 microns for the sagittal datasets and every 100 microns for the coronal datasets. That is why we prefer using the coronal slices any chance we get, but there are still tools that help us work with sagittal data. We can reflect data across the sagittal midplane to fill in the missing hemisphere as so:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;genedata2.reflected=midplane.reflect(genedata2,reflect.dim=3)
+mincPlotSliceSeries(
+  anatomy=mincArray(mincGetVolume(anatfile)),
+  statistics=mincArray(genedata2.reflected),
+  symmetric=FALSE,
+  col=colorRampPalette(c(&amp;quot;darkgreen&amp;quot;,&amp;quot;yellowgreen&amp;quot;))(255),
+  legend=&amp;quot;Bdnf Expression&amp;quot;,low=2,high=6.5)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/blog/blog/post/2018-02-23_gene-expression_files/figure-html/99-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;We can do better. Because there sagittal sections were only sampled every 200um, there is a lot of missing data due to slice misalignment. We can fill them in using nearest neighbour marching averages.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;labelfile=system.file(&amp;#39;extdata/gridAnnotation.raw&amp;#39;,package=&amp;quot;ABIgeneRMINC&amp;quot;)
+mask=allenVectorTOmincVector(read.raw.gene(labelfile,labels=TRUE)&amp;gt;0)
+interp.gene=interpolate.gene(genedata2.reflected,mask)
+
+mincPlotSliceSeries(
+  anatomy=mincArray(mincGetVolume(anatfile)),
+  statistics=mincArray(interp.gene),
+  symmetric=FALSE,
+  col=colorRampPalette(c(&amp;quot;darkgreen&amp;quot;,&amp;quot;yellowgreen&amp;quot;))(255),
+  legend=&amp;quot;Bdnf Expression&amp;quot;,low=2,high=6.5)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/blog/blog/post/2018-02-23_gene-expression_files/figure-html/9-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Even with interpolation, the expression map is not that good.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;expression-statistics&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Expression statistics&lt;/h2&gt;
+&lt;p&gt;Moving back to the coronal maps, let’s generate summary statistics for each structure in the ABI atlas.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;labels=read.raw.gene(labelfile,labels=TRUE)
+labels.to.sum=sort(unique(labels))
+labels.to.sum=labels.to.sum[labels.to.sum!=0]
+
+udf=unionize(grid.data=genedata1,             #vector to unionize
+           labels.to.sum=labels.to.sum,       #sum all labels
+           labels.grid=labels                 #the vector of labels
+           )
+udf=udf[order(udf$mean,decreasing=TRUE),]
+head(udf)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;##     labels        sum     mean     stdev
+## 167    287  19.641589 4.910397 12.018447
+## 474    875  48.372759 4.397524  6.287998
+## 261    483 123.968708 3.178685  3.827543
+## 171    292  34.930620 3.175511  6.002760
+## 162    279   6.248917 3.124459  3.977935
+## 22      50  12.193722 3.048430  1.094984&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Now let us read a csv with structure names in it that correspond to the label number and add that as a column in our data frame.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;labeldefs=read.csv(&amp;quot;/projects/egerek/matthijs/2015-07-Allen-Brain/Allen_Gene_Expression/labels/allen_gridlabels_structures.csv&amp;quot;) #this can be downloaded from ABI
+udf$structures=labeldefs[match(labeldefs$id,udf$labels),&amp;#39;name&amp;#39;]
+udf = udf[,c(&amp;#39;structures&amp;#39;,&amp;#39;labels&amp;#39;,&amp;#39;mean&amp;#39;,&amp;#39;sum&amp;#39;,&amp;#39;stdev&amp;#39;)]
+head(udf)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;##                                                                    structures
+## 167                                Main olfactory bulb, outer plexiform layer
+## 474 Bed nuclei of the stria terminalis, anterior division, anterolateral area
+## 261                                                   Visceral area, layer 6b
+## 171                                                Uvula (IX), granular layer
+## 162                       Retrosplenial area, lateral agranular part, layer 1
+## 22        Bed nuclei of the stria terminalis, anterior division, oval nucleus
+##     labels     mean        sum     stdev
+## 167    287 4.910397  19.641589 12.018447
+## 474    875 4.397524  48.372759  6.287998
+## 261    483 3.178685 123.968708  3.827543
+## 171    292 3.175511  34.930620  6.002760
+## 162    279 3.124459   6.248917  3.977935
+## 22      50 3.048430  12.193722  1.094984&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Voila, we can now tell which structures have high gene expression for the gene we are interested in.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;outro&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Outro&lt;/h2&gt;
+&lt;p&gt;I plan to do tutorials on more fancy gene expression analyses in the future, but this is the base from which future tutorials will be built. I hope this gets you started on using gene expression to explore neuroanatomical phenotypes and gives you an understanding of some of the caveats associated with spatial gene expression analysis.&lt;/p&gt;
+&lt;/div&gt;
+</description>
     </item>
     
     <item>
@@ -27,9 +151,102 @@ The Allen Brain Institute (ABI) has acquired and released genome-wide spatial ge
       <pubDate>Fri, 09 Feb 2018 00:00:00 +0000</pubDate>
       
       <guid>/blog/post/2018-02-08_peaks-intro/</guid>
-      <description>So, peaks. When producing a statistical map, it’s good to get a report of the peaks (i.e. most significant findings). RMINC has had this support for a while now, though it has remained somewhat hidden. Here’s a bit of an intro, then.
-I will walk through the example we used from the Mouse Imaging Summer School in 2017, which is data from this paper:
-de Guzman AE, Gazdzinski LM, Alsop RJ, Stewart JM, Jaffray DA, Wong CS, Nieman BJ.</description>
+      <description>&lt;script src=&#34;/blog/blog/rmarkdown-libs/htmlwidgets/htmlwidgets.js&#34;&gt;&lt;/script&gt;
+&lt;script src=&#34;/blog/blog/rmarkdown-libs/jquery/jquery.min.js&#34;&gt;&lt;/script&gt;
+&lt;link href=&#34;/blog/blog/rmarkdown-libs/datatables-css/datatables-crosstalk.css&#34; rel=&#34;stylesheet&#34; /&gt;
+&lt;script src=&#34;/blog/blog/rmarkdown-libs/datatables-binding/datatables.js&#34;&gt;&lt;/script&gt;
+&lt;link href=&#34;/blog/blog/rmarkdown-libs/dt-core/css/jquery.dataTables.min.css&#34; rel=&#34;stylesheet&#34; /&gt;
+&lt;link href=&#34;/blog/blog/rmarkdown-libs/dt-core/css/jquery.dataTables.extra.css&#34; rel=&#34;stylesheet&#34; /&gt;
+&lt;script src=&#34;/blog/blog/rmarkdown-libs/dt-core/js/jquery.dataTables.min.js&#34;&gt;&lt;/script&gt;
+&lt;link href=&#34;/blog/blog/rmarkdown-libs/crosstalk/css/crosstalk.css&#34; rel=&#34;stylesheet&#34; /&gt;
+&lt;script src=&#34;/blog/blog/rmarkdown-libs/crosstalk/js/crosstalk.min.js&#34;&gt;&lt;/script&gt;
+
+
+&lt;p&gt;So, peaks. When producing a statistical map, it’s good to get a report of the peaks (i.e. most significant findings). RMINC has had this support for a while now, though it has remained somewhat hidden. Here’s a bit of an intro, then.&lt;/p&gt;
+&lt;p&gt;I will walk through the example we used from the Mouse Imaging Summer School in 2017, which is data from this paper:&lt;/p&gt;
+&lt;p&gt;de Guzman AE, Gazdzinski LM, Alsop RJ, Stewart JM, Jaffray DA, Wong CS, Nieman BJ. Treatment age, dose and sex determine neuroanatomical outcome in irradiated juvenile mice. Radiat Res. 2015 May;183(5):541–9.&lt;/p&gt;
+&lt;p&gt;To keep it simple, however, I’ll only look at sex differences in that dataset for now.&lt;/p&gt;
+&lt;p&gt;Let’s start - load the libraries and read in the csv file that describes the data.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;suppressMessages(library(RMINC))
+gf &amp;lt;- read.csv(&amp;quot;/hpf/largeprojects/MICe/jason/MISS2017/intro-stats/fixed_datatable_IRdose.csv&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;And run a linear model relating the Jacobian determinants to sex and radiation dose. I’ll use the segmentations file as a mask; it’ll be needed later on anyway.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;labelFile &amp;lt;- &amp;quot;/hpf/largeprojects/MICe/jason/MISS2017/intro-stats/atlas-registration/pipeline-18-08-2017-at-07-08-48_processed/nlin-3/voted.mnc&amp;quot;
+vs &amp;lt;- mincLm(Jacobfile_scaled0.2 ~ Sex + Dose, gf, mask = labelFile)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## Method: lm
+## Number of volumes: 41
+## Volume sizes: 152 320 225
+## N: 41 P: 3
+## In slice 
+##  0  1  2  3  4  5  6  7  8  9  10  11  12  13  14  15  16  17  18  19  20  21  22  23  24  25  26  27  28  29  30  31  32  33  34  35  36  37  38  39  40  41  42  43  44  45  46  47  48  49  50  51  52  53  54  55  56  57  58  59  60  61  62  63  64  65  66  67  68  69  70  71  72  73  74  75  76  77  78  79  80  81  82  83  84  85  86  87  88  89  90  91  92  93  94  95  96  97  98  99  100  101  102  103  104  105  106  107  108  109  110  111  112  113  114  115  116  117  118  119  120  121  122  123  124  125  126  127  128  129  130  131  132  133  134  135  136  137  138  139  140  141  142  143  144  145  146  147  148  149  150  151 
+## Done&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Some more data preparation: read in the background anatomy file …&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;anatFile &amp;lt;- &amp;quot;/projects/moush/lbernas/Irradiation_behaviour_project/fixed_build_masked_23mar13_nlin/nlin-3.mnc&amp;quot;
+anatVol &amp;lt;- mincArray(mincGetVolume(anatFile))&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;… and show the results at a somewhat arbitrary threshold.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;mincPlotSliceSeries(anatVol, mincArray(vs, &amp;quot;tvalue-SexM&amp;quot;), anatLow=10, anatHigh=15, low=2, high=6, symmetric = T,
+                    begin=50, end=-50)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/blog/blog/post/2018-02-08_peaks-intro_files/figure-html/unnamed-chunk-4-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;At this point we’ve run a linear model and visually assessed the results. Now we can locate the peak findings, using the &lt;code&gt;mincFindPeaks&lt;/code&gt; command.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;peaks &amp;lt;- mincFindPeaks(vs, &amp;quot;tvalue-SexM&amp;quot;, minDistance = 1, threshold = 4)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## Writing column tvalue-SexM to file /tmp/Rtmpm8tCfQ/file65323a5d369f.mnc 
+## Range: 10.627142 -5.694668&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;code&gt;mincFindPeaks&lt;/code&gt; uses the &lt;code&gt;find_peaks&lt;/code&gt; command from the MINC toolkit under the hood. You pass in the output of one of the RMINC modelling commands (mincLm in this case, but can be anything), along with the column from that model you want to get peaks from. You can then set the minimum distance between peaks (in mm) - i.e. how far apart do two statistical peaks have to be to be included? - as well as the threshold to be considered a peak. Optionally thresholds can be different for positive and negative peaks; as always, see &lt;code&gt;?mincFindPeaks&lt;/code&gt; for more detail.&lt;/p&gt;
+&lt;p&gt;This is what we have at this point:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;peaks&lt;/code&gt;&lt;/pre&gt;
+&lt;div id=&#34;htmlwidget-1&#34; style=&#34;width:100%;height:auto;&#34; class=&#34;datatables html-widget&#34;&gt;&lt;/div&gt;
+&lt;script type=&#34;application/json&#34; data-for=&#34;htmlwidget-1&#34;&gt;{&#34;x&#34;:{&#34;filter&#34;:&#34;none&#34;,&#34;data&#34;:[[&#34;1&#34;,&#34;2&#34;,&#34;3&#34;,&#34;4&#34;,&#34;5&#34;,&#34;6&#34;,&#34;7&#34;,&#34;8&#34;,&#34;9&#34;,&#34;10&#34;,&#34;11&#34;,&#34;12&#34;,&#34;13&#34;,&#34;14&#34;,&#34;15&#34;,&#34;16&#34;,&#34;17&#34;,&#34;18&#34;,&#34;19&#34;,&#34;20&#34;,&#34;21&#34;,&#34;22&#34;,&#34;23&#34;,&#34;24&#34;,&#34;25&#34;,&#34;26&#34;,&#34;27&#34;,&#34;28&#34;,&#34;29&#34;,&#34;30&#34;,&#34;31&#34;,&#34;32&#34;,&#34;33&#34;,&#34;34&#34;,&#34;35&#34;,&#34;36&#34;,&#34;37&#34;],[75,154,104,124,94,176,158,102,74,131,122,67,78,105,107,51,110,60,138,85,148,38,56,104,120,143,29,107,30,168,159,32,122,70,89,175,107],[157,156,193,193,184,116,121,146,108,186,144,171,135,140,171,129,46,211,228,124,203,164,74,221,222,230,172,59,143,121,72,189,161,92,66,156,141],[50,52,56,52,75,83,83,105,96,75,108,41,52,67,107,62,45,114,136,63,132,58,60,80,125,105,96,116,65,47,91,76,131,61,34,127,46],[-2.126,2.298,-0.502,0.618,-1.062,3.53,2.522,-0.614,-2.182,1.01,0.506,-2.574,-1.958,-0.446,-0.334,-3.47,-0.165999999999999,-2.966,1.402,-1.566,1.962,-4.198,-3.19,-0.502,0.394,1.682,-4.702,-0.334,-4.646,3.082,2.578,-4.534,0.506,-2.406,-1.342,3.474,-0.334],[0.546000000000001,0.49,2.562,2.562,2.058,-1.75,-1.47,-0.0699999999999985,-2.198,2.17,-0.181999999999999,1.33,-0.685999999999999,-0.406,1.33,-1.022,-5.67,3.57,4.522,-1.302,3.122,0.938000000000001,-4.102,4.13,4.186,4.634,1.386,-4.942,-0.238,-1.47,-4.214,2.338,0.770000000000001,-3.094,-4.55,0.49,-0.35],[-1.456,-1.344,-1.12,-1.344,-0.056,0.392,0.392,1.624,1.12,-0.056,1.792,-1.96,-1.344,-0.504,1.736,-0.784,-1.736,2.128,3.36,-0.728,3.136,-1.008,-0.896,0.224,2.744,1.624,1.12,2.24,-0.616,-1.624,0.84,0,3.08,-0.84,-2.352,2.856,-1.68],[10.63,9.435,8.88,7.064,5.521,5.373,5.37,5.357,5.318,5.234,5.203,4.965,4.357,4.324,4.205,4.152,4.039,-5.695,-4.836,-4.832,-4.791,-4.711,-4.632,-4.612,-4.507,-4.506,-4.504,-4.439,-4.392,-4.345,-4.278,-4.209,-4.162,-4.142,-4.088,-4.054,-4.011]],&#34;container&#34;:&#34;&lt;table class=\&#34;display\&#34;&gt;\n  &lt;thead&gt;\n    &lt;tr&gt;\n      &lt;th&gt; &lt;\/th&gt;\n      &lt;th&gt;d1&lt;\/th&gt;\n      &lt;th&gt;d2&lt;\/th&gt;\n      &lt;th&gt;d3&lt;\/th&gt;\n      &lt;th&gt;x&lt;\/th&gt;\n      &lt;th&gt;y&lt;\/th&gt;\n      &lt;th&gt;z&lt;\/th&gt;\n      &lt;th&gt;value&lt;\/th&gt;\n    &lt;\/tr&gt;\n  &lt;\/thead&gt;\n&lt;\/table&gt;&#34;,&#34;options&#34;:{&#34;pageLength&#34;:5,&#34;columnDefs&#34;:[{&#34;className&#34;:&#34;dt-right&#34;,&#34;targets&#34;:[1,2,3,4,5,6,7]},{&#34;orderable&#34;:false,&#34;targets&#34;:0}],&#34;order&#34;:[],&#34;autoWidth&#34;:false,&#34;orderClasses&#34;:false,&#34;lengthMenu&#34;:[5,10,25,50,100]}},&#34;evals&#34;:[],&#34;jsHooks&#34;:[]}&lt;/script&gt;
+&lt;p&gt;There are 7 columns; the first three give the coordinates in voxel space, the next three the coordinates in world space, and then the peak value itself. There’s a further helpful command that labels the peaks with the atlas location within which the peak is located:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;defsFile &amp;lt;- &amp;quot;/hpf/largeprojects/MICe/tools/atlases/Dorr_2008_Steadman_2013_Ullmann_2013_Richards_2011_Qiu_2016_Egan_2015_40micron/mappings/DSURQE_40micron_R_mapping.csv&amp;quot;
+peaks &amp;lt;- mincLabelPeaks(peaks, labelFile, defsFile)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## Warning in peaks$label[i] &amp;lt;- mdefs$Structure[mdefs$value == peaks
+## $label[i]]: number of items to replace is not a multiple of replacement
+## length
+
+## Warning in peaks$label[i] &amp;lt;- mdefs$Structure[mdefs$value == peaks
+## $label[i]]: number of items to replace is not a multiple of replacement
+## length
+
+## Warning in peaks$label[i] &amp;lt;- mdefs$Structure[mdefs$value == peaks
+## $label[i]]: number of items to replace is not a multiple of replacement
+## length
+
+## Warning in peaks$label[i] &amp;lt;- mdefs$Structure[mdefs$value == peaks
+## $label[i]]: number of items to replace is not a multiple of replacement
+## length
+
+## Warning in peaks$label[i] &amp;lt;- mdefs$Structure[mdefs$value == peaks
+## $label[i]]: number of items to replace is not a multiple of replacement
+## length&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;This adds an extra column containing the name of the label for each peak:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;peaks&lt;/code&gt;&lt;/pre&gt;
+&lt;div id=&#34;htmlwidget-2&#34; style=&#34;width:100%;height:auto;&#34; class=&#34;datatables html-widget&#34;&gt;&lt;/div&gt;
+&lt;script type=&#34;application/json&#34; data-for=&#34;htmlwidget-2&#34;&gt;{&#34;x&#34;:{&#34;filter&#34;:&#34;none&#34;,&#34;data&#34;:[[&#34;1&#34;,&#34;2&#34;,&#34;3&#34;,&#34;4&#34;,&#34;5&#34;,&#34;6&#34;,&#34;7&#34;,&#34;8&#34;,&#34;9&#34;,&#34;10&#34;,&#34;11&#34;,&#34;12&#34;,&#34;13&#34;,&#34;14&#34;,&#34;15&#34;,&#34;16&#34;,&#34;17&#34;,&#34;18&#34;,&#34;19&#34;,&#34;20&#34;,&#34;21&#34;,&#34;22&#34;,&#34;23&#34;,&#34;24&#34;,&#34;25&#34;,&#34;26&#34;,&#34;27&#34;,&#34;28&#34;,&#34;29&#34;,&#34;30&#34;,&#34;31&#34;,&#34;32&#34;,&#34;33&#34;,&#34;34&#34;,&#34;35&#34;,&#34;36&#34;,&#34;37&#34;],[75,154,104,124,94,176,158,102,74,131,122,67,78,105,107,51,110,60,138,85,148,38,56,104,120,143,29,107,30,168,159,32,122,70,89,175,107],[157,156,193,193,184,116,121,146,108,186,144,171,135,140,171,129,46,211,228,124,203,164,74,221,222,230,172,59,143,121,72,189,161,92,66,156,141],[50,52,56,52,75,83,83,105,96,75,108,41,52,67,107,62,45,114,136,63,132,58,60,80,125,105,96,116,65,47,91,76,131,61,34,127,46],[-2.126,2.298,-0.502,0.618,-1.062,3.53,2.522,-0.614,-2.182,1.01,0.506,-2.574,-1.958,-0.446,-0.334,-3.47,-0.165999999999999,-2.966,1.402,-1.566,1.962,-4.198,-3.19,-0.502,0.394,1.682,-4.702,-0.334,-4.646,3.082,2.578,-4.534,0.506,-2.406,-1.342,3.474,-0.334],[0.546000000000001,0.49,2.562,2.562,2.058,-1.75,-1.47,-0.0699999999999985,-2.198,2.17,-0.181999999999999,1.33,-0.685999999999999,-0.406,1.33,-1.022,-5.67,3.57,4.522,-1.302,3.122,0.938000000000001,-4.102,4.13,4.186,4.634,1.386,-4.942,-0.238,-1.47,-4.214,2.338,0.770000000000001,-3.094,-4.55,0.49,-0.35],[-1.456,-1.344,-1.12,-1.344,-0.056,0.392,0.392,1.624,1.12,-0.056,1.792,-1.96,-1.344,-0.504,1.736,-0.784,-1.736,2.128,3.36,-0.728,3.136,-1.008,-0.896,0.224,2.744,1.624,1.12,2.24,-0.616,-1.624,0.84,0,3.08,-0.84,-2.352,2.856,-1.68],[10.63,9.435,8.88,7.064,5.521,5.373,5.37,5.357,5.318,5.234,5.203,4.965,4.357,4.324,4.205,4.152,4.039,-5.695,-4.836,-4.832,-4.791,-4.711,-4.632,-4.612,-4.507,-4.506,-4.504,-4.439,-4.392,-4.345,-4.278,-4.209,-4.162,-4.142,-4.088,-4.054,-4.011],[&#34;left Medial amygdala&#34;,&#34;right Medial amygdala&#34;,&#34;left hypothalamus&#34;,&#34;right hypothalamus&#34;,&#34;left bed nucleus of stria terminalis&#34;,&#34;right subiculum&#34;,&#34;right MoDG&#34;,&#34;left LMol&#34;,&#34;left pre-para subiculum&#34;,&#34;right bed nucleus of stria terminalis&#34;,&#34;right CA1Rad&#34;,&#34;left amygdala&#34;,&#34;left CA3Py Inner&#34;,&#34;left fasciculus retroflexus&#34;,&#34;left CA30r&#34;,&#34;left CA1Py&#34;,&#34; medulla&#34;,&#34;left Primary somatosensory cortex&#34;,&#34;right Frontal association cortex&#34;,&#34; midbrain&#34;,&#34;right Primary motor cortex&#34;,&#34;left Piriform cortex&#34;,&#34;left paramedian lobule (lobule 7)&#34;,&#34;left Dorsal tenia tecta&#34;,&#34;right Cingulate cortex: area 32&#34;,&#34;right Lateral orbital cortex&#34;,&#34;left Secondary somatosensory cortex&#34;,&#34; lobule 6: declive&#34;,&#34;left Dorsolateral entorhinal cortex&#34;,&#34;right Caudomedial entorhinal cortex&#34;,&#34;right crus 1: ansiform lobule (lobule 6)&#34;,&#34;left Insular region: not subdivided&#34;,&#34;right Cingulate cortex: area 24b&#39;&#34;,&#34; medulla&#34;,&#34; medulla&#34;,&#34;right Primary somatosensory cortex: barrel field&#34;,&#34;left mammillary bodies&#34;]],&#34;container&#34;:&#34;&lt;table class=\&#34;display\&#34;&gt;\n  &lt;thead&gt;\n    &lt;tr&gt;\n      &lt;th&gt; &lt;\/th&gt;\n      &lt;th&gt;d1&lt;\/th&gt;\n      &lt;th&gt;d2&lt;\/th&gt;\n      &lt;th&gt;d3&lt;\/th&gt;\n      &lt;th&gt;x&lt;\/th&gt;\n      &lt;th&gt;y&lt;\/th&gt;\n      &lt;th&gt;z&lt;\/th&gt;\n      &lt;th&gt;value&lt;\/th&gt;\n      &lt;th&gt;label&lt;\/th&gt;\n    &lt;\/tr&gt;\n  &lt;\/thead&gt;\n&lt;\/table&gt;&#34;,&#34;options&#34;:{&#34;pageLength&#34;:5,&#34;columnDefs&#34;:[{&#34;className&#34;:&#34;dt-right&#34;,&#34;targets&#34;:[1,2,3,4,5,6,7]},{&#34;orderable&#34;:false,&#34;targets&#34;:0}],&#34;order&#34;:[],&#34;autoWidth&#34;:false,&#34;orderClasses&#34;:false,&#34;lengthMenu&#34;:[5,10,25,50,100]}},&#34;evals&#34;:[],&#34;jsHooks&#34;:[]}&lt;/script&gt;
+&lt;p&gt;At this point you have all the info about the most significant peaks in the dataset. There is one additional useful command, a shortcut to plot each peak. Plotting the two most positive and the two most negative peaks, for example:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;opar &amp;lt;- par(mfrow=c(2,2), mar=c(0,0,0,0))
+nP &amp;lt;- nrow(peaks)
+for (i in c(1:2, nP:(nP-1))) {
+  mincPlotPeak(peaks[i,], anatVol, mincArray(vs, &amp;quot;tvalue-SexM&amp;quot;), anatLow=10, anatHigh=15, low=2, high=6, symmetric=T)
+}&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/blog/blog/post/2018-02-08_peaks-intro_files/figure-html/unnamed-chunk-11-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;par(opar)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;There is an additional argument to &lt;code&gt;mincPlotPeak&lt;/code&gt; - a function to create a plot of the peak. This is illustrated below:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# load ggplot2 for plotting
+library(ggplot2)
+# the plotting function; needs to take a single argument, the peak
+p &amp;lt;- function(peak) {
+  # read in the data for that particular peak
+  gf$voxel &amp;lt;- mincGetWorldVoxel(gf$Jacobfile_scaled0.2, peak[&amp;quot;x&amp;quot;], peak[&amp;quot;y&amp;quot;], peak[&amp;quot;z&amp;quot;])
+  # and create a box-plot; also read in info from the peak for a meaningful title
+  ggplot(gf) + aes(x=Sex, y=exp(voxel)) + geom_boxplot() + 
+    ggtitle(paste(&amp;quot;Peak:&amp;quot;, peak[&amp;quot;label&amp;quot;]), subtitle = paste(&amp;quot;T statistic:&amp;quot;, peak[&amp;quot;value&amp;quot;]))
+}
+# and plot the peak with its plot
+mincPlotPeak(peaks[1,], anatVol, mincArray(vs, &amp;quot;tvalue-SexM&amp;quot;), anatLow=10, anatHigh=15, low=2, high=6, 
+             symmetric=T, plotFunction = p)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## Don&amp;#39;t know how to automatically pick scale for object of type mincVoxel/vector. Defaulting to continuous.&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/blog/blog/post/2018-02-08_peaks-intro_files/figure-html/unnamed-chunk-12-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;And that’s it. A quick survey for how to extract peaks, view them in a table, and create figures of the most significant findings.&lt;/p&gt;
+</description>
     </item>
     
     <item>
@@ -38,11 +255,276 @@ de Guzman AE, Gazdzinski LM, Alsop RJ, Stewart JM, Jaffray DA, Wong CS, Nieman B
       <pubDate>Thu, 25 Jan 2018 00:00:00 +0000</pubDate>
       
       <guid>/blog/post/linearmodels/</guid>
-      <description>Preamble The purpose of this post is to elucidate some of the concepts associated with statistical linear models.
-Let’s start by loading some libraries.
-library(ggplot2) library(datasets)  Background Theory The basic idea is as follows:
-Given two variables, \(x\) and \(y\), for which we’ve measured a set of data points \(\{x_i, y_i\}\) with \(i = 1, ..., n\), we want to estimate a function, \(f(x)\), such that
-\[y_i = f(x_i) + \epsilon_i\]</description>
+      <description>&lt;div id=&#34;S1&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;Preamble&lt;/h1&gt;
+&lt;p&gt;The purpose of this post is to elucidate some of the concepts associated with statistical linear models.&lt;/p&gt;
+&lt;p&gt;Let’s start by loading some libraries.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;library(ggplot2)
+library(datasets)&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;div id=&#34;S2&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;Background Theory&lt;/h1&gt;
+&lt;p&gt;The basic idea is as follows:&lt;/p&gt;
+&lt;p&gt;Given two variables, &lt;span class=&#34;math inline&#34;&gt;\(x\)&lt;/span&gt; and &lt;span class=&#34;math inline&#34;&gt;\(y\)&lt;/span&gt;, for which we’ve measured a set of data points &lt;span class=&#34;math inline&#34;&gt;\(\{x_i, y_i\}\)&lt;/span&gt; with &lt;span class=&#34;math inline&#34;&gt;\(i = 1, ..., n\)&lt;/span&gt;, we want to estimate a function, &lt;span class=&#34;math inline&#34;&gt;\(f(x)\)&lt;/span&gt;, such that&lt;/p&gt;
+&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[y_i = f(x_i) + \epsilon_i\]&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;for each data point &lt;span class=&#34;math inline&#34;&gt;\((x_i,y_i)\)&lt;/span&gt;. Here &lt;span class=&#34;math inline&#34;&gt;\(\epsilon_i\)&lt;/span&gt; is the error in data point &lt;span class=&#34;math inline&#34;&gt;\(y_i\)&lt;/span&gt; compared to the predicted value &lt;span class=&#34;math inline&#34;&gt;\(f(x_i)\)&lt;/span&gt;. Specifically,&lt;/p&gt;
+&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[\epsilon_i = y_i - f(x_i)\]&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;We don’t know &lt;span class=&#34;math inline&#34;&gt;\(f(x)\)&lt;/span&gt;, but the simplest functional form that we can assume is that of a linear function:&lt;/p&gt;
+&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[f(x) = \beta_0 + \beta_1x \]&lt;/span&gt; where &lt;span class=&#34;math inline&#34;&gt;\(\beta_0\)&lt;/span&gt; is the intercept of the line and &lt;span class=&#34;math inline&#34;&gt;\(\beta_1\)&lt;/span&gt; is the slope associated with the variable &lt;span class=&#34;math inline&#34;&gt;\(x\)&lt;/span&gt;. Thus for each data point &lt;span class=&#34;math inline&#34;&gt;\(x_i\)&lt;/span&gt;, we predict a value &lt;span class=&#34;math inline&#34;&gt;\(\hat{y}_i = f(x_i)\)&lt;/span&gt; so that&lt;/p&gt;
+&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[\hat{y}_i = \beta_0 + \beta_1x_i\]&lt;/span&gt; This is known as &lt;strong&gt;simple linear regression&lt;/strong&gt;. Having specified the form of &lt;span class=&#34;math inline&#34;&gt;\(f(x)\)&lt;/span&gt;, the problem becomes one of optimizing the free parameters &lt;span class=&#34;math inline&#34;&gt;\(\beta_0\)&lt;/span&gt; and &lt;span class=&#34;math inline&#34;&gt;\(\beta_1\)&lt;/span&gt; so that the predicted or trend line best describes the real data &lt;span class=&#34;math inline&#34;&gt;\(\{x_i, y_i\}\)&lt;/span&gt;. This is usually accomplished using the “ordinary least-squares” method, in which we minimize the sum of squared errors with respect to the free parameters. Explicitly, if we write the sum of squared errors as&lt;/p&gt;
+&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[\chi^2 = \sum_{i=1}^n{\epsilon_i^2} = \sum_{i=1}^n{(y_i - \hat{y}_i)^2} = \sum_{i=1}^n{(y_i - \beta_0 - \beta_1x_i)^2}\]&lt;/span&gt; we want to determine &lt;span class=&#34;math inline&#34;&gt;\(\beta_0\)&lt;/span&gt; and &lt;span class=&#34;math inline&#34;&gt;\(\beta_1\)&lt;/span&gt; such that&lt;/p&gt;
+&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[\frac{\partial\chi^2}{\partial\beta_0} = 0\]&lt;/span&gt; and &lt;span class=&#34;math display&#34;&gt;\[\frac{\partial\chi^2}{\partial\beta_1} = 0\]&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;This can be solved analytically. In practice we let the computer do it for us.&lt;/p&gt;
+&lt;p&gt;Moving on , there’s no reason we need to restrict ourselves to one predictor for the response variable &lt;span class=&#34;math inline&#34;&gt;\(y\)&lt;/span&gt;, so we can include multiple variables &lt;span class=&#34;math inline&#34;&gt;\(\{x_1, x_2, ..., x_N\}\)&lt;/span&gt; in our model. Here &lt;span class=&#34;math inline&#34;&gt;\(N\)&lt;/span&gt; is the total number of regressors that are included. This is known as &lt;strong&gt;multiple linear regression&lt;/strong&gt;. The model then becomes&lt;/p&gt;
+&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[\hat{y} = \beta_0 + \sum_{a=1}^N{} \beta_ax_a\]&lt;/span&gt; where &lt;span class=&#34;math inline&#34;&gt;\(a\)&lt;/span&gt; is an index summing over the predictors (rather than over the data points themselves as in the expression for &lt;span class=&#34;math inline&#34;&gt;\(\chi^2\)&lt;/span&gt; above). Here I’ve expressed the model in terms of the variables, rather than individual data points. For an individual data point &lt;span class=&#34;math inline&#34;&gt;\(\{x_i,y_i\}\)&lt;/span&gt;, we could write this as&lt;/p&gt;
+&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[\hat{y}_i = \beta_0 + \sum_{a=1}^N{} \beta_ax_{a,i}\]&lt;/span&gt; where &lt;span class=&#34;math inline&#34;&gt;\(x_{a,i}\)&lt;/span&gt; is the &lt;span class=&#34;math inline&#34;&gt;\(i\)&lt;/span&gt;th data point of the &lt;span class=&#34;math inline&#34;&gt;\(a\)&lt;/span&gt;th variable (e.g. the height, which is the variable, of a specific person). The two are identical representations. The optimization process for multiple linear regression is the same as that for simple linear regression, only involving more derivatives.&lt;/p&gt;
+&lt;p&gt;Alright that should be enough background math. In the next Section, we’ll look at this in practice.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;S3&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;Simple Linear Regression in Practice&lt;/h1&gt;
+&lt;p&gt;We’ll be working with the &lt;code&gt;mtcars&lt;/code&gt; dataset.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;str(mtcars)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## &amp;#39;data.frame&amp;#39;:    32 obs. of  11 variables:
+##  $ mpg : num  21 21 22.8 21.4 18.7 18.1 14.3 24.4 22.8 19.2 ...
+##  $ cyl : num  6 6 4 6 8 6 8 4 4 6 ...
+##  $ disp: num  160 160 108 258 360 ...
+##  $ hp  : num  110 110 93 110 175 105 245 62 95 123 ...
+##  $ drat: num  3.9 3.9 3.85 3.08 3.15 2.76 3.21 3.69 3.92 3.92 ...
+##  $ wt  : num  2.62 2.88 2.32 3.21 3.44 ...
+##  $ qsec: num  16.5 17 18.6 19.4 17 ...
+##  $ vs  : num  0 0 1 1 0 1 0 1 1 1 ...
+##  $ am  : num  1 1 1 0 0 0 0 0 0 0 ...
+##  $ gear: num  4 4 4 3 3 3 3 4 4 4 ...
+##  $ carb: num  4 4 1 1 2 1 4 2 2 4 ...&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The description of these variables can be found &lt;a href=&#34;https://stat.ethz.ch/R-manual/R-devel/library/datasets/html/mtcars.html&#34;&gt;here&lt;/a&gt;. We’re going to start by looking at the relationship between two continuous variables. Specifically, I’ve chosen to examine the relationship between car weight, &lt;code&gt;wt&lt;/code&gt;, and fuel efficiency, &lt;code&gt;mpg&lt;/code&gt;. Let’s start by creating a scatter plot to look at how the fuel efficiency varies with car weight.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;p.mpg_vs_wt &amp;lt;- ggplot(mtcars, aes(x=wt,y=mpg)) + geom_point()
+p.mpg_vs_wt + 
+  labs(x = &amp;quot;Weight (1000 lbs)&amp;quot;,
+       y = &amp;quot;Miles per Gallon&amp;quot;,
+       title = &amp;quot;Scatter Plot of MPG vs. Weight&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/blog/blog/post/LinearModels_files/figure-html/unnamed-chunk-3-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;This is as we would expect, since less energy is needed to move lighter cars. Moreover we suspect that this data might be well suited to a simple linear model. As described above, the model we will be building is&lt;/p&gt;
+&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[y = \beta_0 + \beta_1x + \epsilon\]&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;or&lt;/p&gt;
+&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[\hat{y} = \beta_0 + \beta_1x\]&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;where &lt;span class=&#34;math inline&#34;&gt;\(y\)&lt;/span&gt; is the &lt;code&gt;mpg&lt;/code&gt; variable in this case and &lt;span class=&#34;math inline&#34;&gt;\(x\)&lt;/span&gt; is the &lt;code&gt;wt&lt;/code&gt; variable. In &lt;code&gt;R&lt;/code&gt; formula notation, we can express this as &lt;code&gt;mpg ~ wt&lt;/code&gt;, where &lt;code&gt;~&lt;/code&gt; means “is modelled by”. The way to build a linear model in &lt;code&gt;R&lt;/code&gt; is using the &lt;code&gt;lm()&lt;/code&gt; function, as follows:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;mpg_vs_wt &amp;lt;- summary(lm(mpg ~ wt,data=mtcars))
+print(mpg_vs_wt)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## 
+## Call:
+## lm(formula = mpg ~ wt, data = mtcars)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -4.5432 -2.3647 -0.1252  1.4096  6.8727 
+## 
+## Coefficients:
+##             Estimate Std. Error t value Pr(&amp;gt;|t|)    
+## (Intercept)  37.2851     1.8776  19.858  &amp;lt; 2e-16 ***
+## wt           -5.3445     0.5591  -9.559 1.29e-10 ***
+## ---
+## Signif. codes:  0 &amp;#39;***&amp;#39; 0.001 &amp;#39;**&amp;#39; 0.01 &amp;#39;*&amp;#39; 0.05 &amp;#39;.&amp;#39; 0.1 &amp;#39; &amp;#39; 1
+## 
+## Residual standard error: 3.046 on 30 degrees of freedom
+## Multiple R-squared:  0.7528, Adjusted R-squared:  0.7446 
+## F-statistic: 91.38 on 1 and 30 DF,  p-value: 1.294e-10&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The focus of this document will be on interpreting the &lt;code&gt;Estimate&lt;/code&gt; column of the &lt;code&gt;Coefficients&lt;/code&gt; table. Let’s pull this table from the output:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;print(mpg_vs_wt$coefficients)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;##              Estimate Std. Error   t value     Pr(&amp;gt;|t|)
+## (Intercept) 37.285126   1.877627 19.857575 8.241799e-19
+## wt          -5.344472   0.559101 -9.559044 1.293959e-10&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;This is fairly straightforward to interpret. Looking at the &lt;code&gt;Estimate&lt;/code&gt; column, the &lt;code&gt;(Intercept)&lt;/code&gt; value describes the value of &lt;span class=&#34;math inline&#34;&gt;\(\beta_0\)&lt;/span&gt; in our model, while the &lt;code&gt;wt&lt;/code&gt; value describes the slope associated with the &lt;code&gt;wt&lt;/code&gt; variable, i.e. &lt;span class=&#34;math inline&#34;&gt;\(\beta_1\)&lt;/span&gt;. Our fitted model looks like this:&lt;/p&gt;
+&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[\hat{y} = 37.3- 5.3x\]&lt;/span&gt; where &lt;span class=&#34;math inline&#34;&gt;\(x\)&lt;/span&gt; is the &lt;code&gt;wt&lt;/code&gt; variable and &lt;span class=&#34;math inline&#34;&gt;\(y\)&lt;/span&gt; is the &lt;code&gt;mpg&lt;/code&gt; variable, as mentioned above.&lt;/p&gt;
+&lt;p&gt;Let’s see how this looks.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;p.mpg_vs_wt + 
+  labs(x = &amp;quot;Weight (1000 lbs)&amp;quot;,
+       y = &amp;quot;Miles per Gallon&amp;quot;,
+       title = &amp;quot;Simple Linear Model: MPG vs. Weight&amp;quot;) + 
+  geom_abline(intercept = mpg_vs_wt$coefficients[&amp;quot;(Intercept)&amp;quot;,&amp;quot;Estimate&amp;quot;], 
+              slope = mpg_vs_wt$coefficients[&amp;quot;wt&amp;quot;, &amp;quot;Estimate&amp;quot;]) + 
+  coord_cartesian(xlim=c(0,6),ylim = c(5,40))&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/blog/blog/post/LinearModels_files/figure-html/unnamed-chunk-6-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;That looks pretty good. A second-order polynomial might better capture the data at the lower and higher &lt;code&gt;wt&lt;/code&gt; values, but we won’t go into that here.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;S4&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;Simple Linear Regression with Categorical Variables&lt;/h1&gt;
+&lt;p&gt;In the previous Section, we looked at how simple linear regression works when the predictor is a continuous variable, like &lt;code&gt;wt&lt;/code&gt;. Here we will examine what happens when we model categorical variables. Recall that a categorical variable is a variable that takes on discrete, usually non-numerical, values. For example, sex is a categorical variable, with the values being male or female.&lt;/p&gt;
+&lt;p&gt;In the &lt;code&gt;mtcars&lt;/code&gt; dataset, we’ll look at the &lt;code&gt;am&lt;/code&gt; variable, which describes whether the car has manual or automatic transmission. Let’s explicitly express this as a factor and display the unique values.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;mtcars$am &amp;lt;- as.factor(mtcars$am)
+unique(mtcars$am)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## [1] 1 0
+## Levels: 0 1&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;So &lt;code&gt;am&lt;/code&gt; has two possible values. Manual transmission is encoded as &lt;code&gt;am = 1&lt;/code&gt; while automatic transmission is encoded as &lt;code&gt;am = 0&lt;/code&gt; (refer to the &lt;a href=&#34;https://stat.ethz.ch/R-manual/R-devel/library/datasets/html/mtcars.html&#34;&gt;dataset description&lt;/a&gt;). As we did above, we can examine how &lt;code&gt;wt&lt;/code&gt; varies with the &lt;code&gt;am&lt;/code&gt; variable. Again we are fitting a model&lt;/p&gt;
+&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[\hat{y} = \beta_0 + \beta_1A\]&lt;/span&gt; where &lt;span class=&#34;math inline&#34;&gt;\(y\)&lt;/span&gt; is the &lt;code&gt;wt&lt;/code&gt; variable and &lt;span class=&#34;math inline&#34;&gt;\(A\)&lt;/span&gt; is the &lt;code&gt;am&lt;/code&gt; variable. Keep in mind that &lt;span class=&#34;math inline&#34;&gt;\(A\)&lt;/span&gt; is binary. In &lt;code&gt;R&lt;/code&gt;:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;mpg_vs_am &amp;lt;- summary(lm(mpg ~ am, data=mtcars ))
+print(mpg_vs_am$coefficients)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;##              Estimate Std. Error   t value     Pr(&amp;gt;|t|)
+## (Intercept) 17.147368   1.124603 15.247492 1.133983e-15
+## am1          7.244939   1.764422  4.106127 2.850207e-04&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Thus we see that &lt;span class=&#34;math inline&#34;&gt;\(\beta_0\)&lt;/span&gt; = 17.1 and &lt;span class=&#34;math inline&#34;&gt;\(\beta_1\)&lt;/span&gt; = 7.2. Note here that in the &lt;code&gt;Coefficients&lt;/code&gt; table, the slope estimate is associated with the label &lt;code&gt;am1&lt;/code&gt;. This means that it displays the slope going from &lt;code&gt;am = 0&lt;/code&gt; to &lt;code&gt;am = 1&lt;/code&gt;. This is perhaps expected in this case since 1 is greater than 0, but in general categorical variables will not have numerical values. Consider again a variable describing sex. The two instances are “Male” and “Female”. There is no specific order in which to compute the slope. When building a model with categorical variables such as these, &lt;code&gt;R&lt;/code&gt; will implicitly assign values of 0 and 1 to the levels of the variable. By default, &lt;code&gt;R&lt;/code&gt;, assigns the &lt;strong&gt;reference level&lt;/strong&gt;, i.e. a value of 0, to the value that is &lt;strong&gt;lowest in alphabetical order&lt;/strong&gt;. For the sex variable, “Female” would be associated with 0, and “Male” with 1. So when running &lt;code&gt;lm()&lt;/code&gt; on such a model and printing the output, the &lt;code&gt;Coefficients&lt;/code&gt; table will have a row with a name like &lt;code&gt;sexMale&lt;/code&gt;. The &lt;code&gt;Estimate&lt;/code&gt; value associated with this describes the slope of the model going from &lt;code&gt;sex=Female&lt;/code&gt; (which is implicitly defined as 0) to &lt;code&gt;sex=Male&lt;/code&gt; (which is implicitly defined as 1). This might seem unnecessary right now, but it becomes important when trying to interpret the output from more complex models, as we’ll see below.&lt;/p&gt;
+&lt;p&gt;As above, we can plot this data and model.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;ggplot(mtcars, aes(x=am,y=mpg)) + 
+  geom_jitter(width=0.1) + 
+  geom_smooth(method=&amp;quot;lm&amp;quot;, formula = y~x, aes(group=1), se=F) + 
+  labs(x = &amp;quot;Transmission (0 = automatic)&amp;quot;,
+       y = &amp;quot;Miles per Gallon&amp;quot;,
+       title = &amp;quot;Simple Linear Model: MPG vs. Transmission&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/blog/blog/post/LinearModels_files/figure-html/unnamed-chunk-9-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;S5&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;Multiple Linear Regression in Practice&lt;/h1&gt;
+&lt;p&gt;In this Section we will combine the models built in the two previous Sections using multiple linear regression. Specifically, we will model &lt;code&gt;mpg&lt;/code&gt; by &lt;code&gt;wt&lt;/code&gt; and &lt;code&gt;am&lt;/code&gt; together.&lt;/p&gt;
+&lt;p&gt;Let’s start by taking a look at the data.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;ggplot(mtcars, aes(x=wt, y=mpg, col=am)) + 
+  geom_point() +  
+   labs(x = &amp;quot;Weight (1000 lbs)&amp;quot;,
+       y = &amp;quot;Miles per Gallon&amp;quot;,
+       title = &amp;quot;Fuel Efficiency, Weight, and Transmission&amp;quot;,
+       colour=&amp;quot;Transmission&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/blog/blog/post/LinearModels_files/figure-html/unnamed-chunk-10-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Again, I’ve plotted &lt;code&gt;mpg&lt;/code&gt; against &lt;code&gt;wt&lt;/code&gt; using a scatter plot, but I’ve mapped the colour aesthetic to the &lt;code&gt;am&lt;/code&gt; variable to see the group variation.&lt;/p&gt;
+&lt;p&gt;Mathematically, the model we will use looks like&lt;/p&gt;
+&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[\hat{y} = \beta_0 + \beta_1x + \beta_2A\]&lt;/span&gt; where, as above, &lt;span class=&#34;math inline&#34;&gt;\(y\)&lt;/span&gt; is the &lt;code&gt;mpg&lt;/code&gt; variable, &lt;span class=&#34;math inline&#34;&gt;\(x\)&lt;/span&gt; is the &lt;code&gt;wt&lt;/code&gt; continuous variable, and &lt;code&gt;A&lt;/code&gt; is the categorical &lt;code&gt;am&lt;/code&gt; variable. &lt;span class=&#34;math inline&#34;&gt;\(\beta_1\)&lt;/span&gt; is the slope associated with &lt;span class=&#34;math inline&#34;&gt;\(x\)&lt;/span&gt; and &lt;span class=&#34;math inline&#34;&gt;\(\beta_2\)&lt;/span&gt; is the slope associated with &lt;span class=&#34;math inline&#34;&gt;\(A\)&lt;/span&gt;. Recall that &lt;span class=&#34;math inline&#34;&gt;\(A\)&lt;/span&gt; is only 0 or 1.&lt;/p&gt;
+&lt;p&gt;Let’s go ahead and build the model in &lt;code&gt;R&lt;/code&gt;.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;mpg_MLR &amp;lt;- summary(lm(mpg ~ wt + am, data=mtcars))
+print(mpg_MLR$coefficients)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;##                Estimate Std. Error     t value     Pr(&amp;gt;|t|)
+## (Intercept) 37.32155131  3.0546385 12.21799285 5.843477e-13
+## wt          -5.35281145  0.7882438 -6.79080719 1.867415e-07
+## am1         -0.02361522  1.5456453 -0.01527855 9.879146e-01&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Again, keeping in mind the mathematical formula, we see that &lt;code&gt;(Intercept)&lt;/code&gt; corresponds to &lt;span class=&#34;math inline&#34;&gt;\(\beta_0\)&lt;/span&gt; = 37.32, &lt;code&gt;wt&lt;/code&gt; corresponds to &lt;span class=&#34;math inline&#34;&gt;\(\beta_1\)&lt;/span&gt; = -5.35 and &lt;code&gt;am1&lt;/code&gt; corresponds to &lt;span class=&#34;math inline&#34;&gt;\(\beta_2\)&lt;/span&gt; = -0.02. So how do we interpret this? How could we sketch this model on a scatter plot of &lt;span class=&#34;math inline&#34;&gt;\(y\)&lt;/span&gt; vs &lt;span class=&#34;math inline&#34;&gt;\(x\)&lt;/span&gt; like the one above? The way to go about it is to examine the two cases for our categorical variables &lt;span class=&#34;math inline&#34;&gt;\(A\)&lt;/span&gt; = &lt;code&gt;am&lt;/code&gt;. Recall that, regardless of what our factor levels are (0/1, Female/Male), &lt;code&gt;R&lt;/code&gt; always encodes categorical variables as 0 and 1. Consequently we can always examine our mathematical model by setting the corresponding variable to 0 or 1. For &lt;span class=&#34;math inline&#34;&gt;\(A\)&lt;/span&gt; = &lt;code&gt;am&lt;/code&gt; = 0, we have&lt;/p&gt;
+&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[\hat{y} = \beta_0 + \beta_1x\]&lt;/span&gt; In this case, when &lt;span class=&#34;math inline&#34;&gt;\(A\)&lt;/span&gt; = 0, &lt;span class=&#34;math inline&#34;&gt;\(\beta_0\)&lt;/span&gt; is the intercept of the line relating &lt;span class=&#34;math inline&#34;&gt;\(x\)&lt;/span&gt; and &lt;span class=&#34;math inline&#34;&gt;\(y\)&lt;/span&gt;, and &lt;span class=&#34;math inline&#34;&gt;\(\beta_1\)&lt;/span&gt; is the slope associated with &lt;span class=&#34;math inline&#34;&gt;\(x\)&lt;/span&gt;. On the scatter plot, we would draw a line with this slope and intercept. What about when &lt;span class=&#34;math inline&#34;&gt;\(A = 1\)&lt;/span&gt;?&lt;/p&gt;
+&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[\hat{y} = \beta_0 + \beta_1x + \beta_2\]&lt;/span&gt; &lt;span class=&#34;math display&#34;&gt;\[= (\beta_0 + \beta_2) + \beta_1x\]&lt;/span&gt; &lt;span class=&#34;math display&#34;&gt;\[= \beta_0&amp;#39; + \beta_1x\]&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;We find that we actually have a new intercept value &lt;span class=&#34;math inline&#34;&gt;\(\beta_0&amp;#39; = \beta_0 + \beta_2\)&lt;/span&gt;, but the same slope &lt;span class=&#34;math inline&#34;&gt;\(\beta_1\)&lt;/span&gt;. Thus the trend line associated with &lt;span class=&#34;math inline&#34;&gt;\(A = 1\)&lt;/span&gt; has a different intercept than that associated with &lt;span class=&#34;math inline&#34;&gt;\(A = 0\)&lt;/span&gt;. What we’ve discovered is that the &lt;span class=&#34;math inline&#34;&gt;\(\beta_2\)&lt;/span&gt; parameter tells us the &lt;strong&gt;difference in the intercept values&lt;/strong&gt; between the &lt;code&gt;am = 0&lt;/code&gt; and &lt;code&gt;am = 1&lt;/code&gt; groups, i.e. &lt;span class=&#34;math inline&#34;&gt;\(\beta_2 = \beta_0&amp;#39; - \beta_0\)&lt;/span&gt;. The &lt;span class=&#34;math inline&#34;&gt;\(\beta_1\)&lt;/span&gt; parameter tells us the slope of the two lines.&lt;/p&gt;
+&lt;p&gt;Let’s see what this looks like.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;beta0 &amp;lt;- mpg_MLR$coefficients[&amp;quot;(Intercept)&amp;quot;,&amp;quot;Estimate&amp;quot;]
+beta1 &amp;lt;- mpg_MLR$coefficients[&amp;quot;wt&amp;quot;,&amp;quot;Estimate&amp;quot;]
+beta0_prime &amp;lt;- mpg_MLR$coefficients[&amp;quot;(Intercept)&amp;quot;,&amp;quot;Estimate&amp;quot;] + 
+                mpg_MLR$coefficients[&amp;quot;am1&amp;quot;,&amp;quot;Estimate&amp;quot;]
+
+ggplot(mtcars, aes(x = wt, y = mpg, col = am)) + 
+  geom_point() + 
+  geom_abline(intercept = beta0,
+         slope = beta1,
+         col=&amp;quot;red&amp;quot;,
+         alpha=0.5) + 
+  geom_abline(intercept = beta0_prime,
+              slope = beta1, 
+              col=&amp;quot;blue&amp;quot;,
+              alpha=0.5) + 
+  labs(x = &amp;quot;Weight (1000 lbs)&amp;quot;,
+       y = &amp;quot;Miles per Gallon&amp;quot;,
+       title = &amp;quot;Multiple Linear Model: MPG ~ Weight + Transmission&amp;quot;,
+       colour=&amp;quot;Transmission&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/blog/blog/post/LinearModels_files/figure-html/unnamed-chunk-12-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;There are actually two lines in this plot, a blue one and a red one. Given how small &lt;span class=&#34;math inline&#34;&gt;\(\beta_2\)&lt;/span&gt; is we can’t see much of a difference, but the blue trend line should be slightly lower than the red line. Their slopes are the same. Let’s zoom in to be sure.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;ggplot(mtcars, aes(x = wt, y = mpg, col = am)) + 
+  geom_point() + 
+  geom_abline(intercept = beta0,
+         slope = beta1,
+         col=&amp;quot;red&amp;quot;,
+         alpha=0.5) + 
+  geom_abline(intercept = beta0_prime,
+              slope = beta1, 
+              col=&amp;quot;blue&amp;quot;,
+              alpha=0.5) + 
+  coord_cartesian(xlim = c(3.4,3.5),ylim = c(17.5,19.5)) + 
+    labs(x = &amp;quot;Weight (1000 lbs)&amp;quot;,
+       y = &amp;quot;Miles per Gallon&amp;quot;,
+       title = &amp;quot;Multiple Linear Model: MPG ~ Weight + Transmission (Zoomed In)&amp;quot;,
+       colour=&amp;quot;Transmission&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/blog/blog/post/LinearModels_files/figure-html/unnamed-chunk-13-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;There we go. This is the effect of a multiple linear model with no interactions. In general the trend lines for the two groups don’t have to be so close together. It all depends on the data. In this case we see that, when we impose a fixed slope (using &lt;code&gt;mpg ~ wt + am&lt;/code&gt;), the trend lines describing the two groups are basically the same. Next, we’ll look at how adding interactions to our model results in slope variation.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;S6&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;Multiple Linear Regression with Interactions&lt;/h1&gt;
+&lt;p&gt;In the previous Section we examined the use of multiple linear regression to model a response variable in terms of continuous and categorical predictors. We can take this a step further by including an &lt;strong&gt;interaction&lt;/strong&gt; in our model. What does this mean? An interaction describes how a change in one predictor influences change in another predictor. In mathematics this is typically expressed by including a product or more complex term in an equation. A simple product of two variables is the simplest interaction term that we can write down. Consider once again our model of &lt;code&gt;mpg&lt;/code&gt; vs. &lt;code&gt;wt&lt;/code&gt; and &lt;code&gt;am&lt;/code&gt;. This time we will add an interaction:&lt;/p&gt;
+&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[\hat{y} = \beta_0 + \beta_1x + \beta_2A + \beta_3xA\]&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;The model is as above, with the exception of the new interaction term &lt;span class=&#34;math inline&#34;&gt;\(\beta_3xA\)&lt;/span&gt;. &lt;span class=&#34;math inline&#34;&gt;\(xA\)&lt;/span&gt; is the product interaction while &lt;span class=&#34;math inline&#34;&gt;\(\beta_3\)&lt;/span&gt; is the model parameter associated with this interaction.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;An important note&lt;/strong&gt;: In &lt;code&gt;R&lt;/code&gt; formula notation, interactions are expressed as &lt;code&gt;wt*am&lt;/code&gt;. This includes all terms in the model, i.e. &lt;code&gt;wt*am&lt;/code&gt; = &lt;code&gt;1 + wt + am + wt:am&lt;/code&gt; where &lt;code&gt;1&lt;/code&gt; stands in for the “variable” associated with the &lt;span class=&#34;math inline&#34;&gt;\(\beta_0\)&lt;/span&gt; parameter, and the &lt;strong&gt;colon denotes a product&lt;/strong&gt;. We can thus write our full interactive model as &lt;code&gt;mpg ~ wt*am&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;Let’s run this model through &lt;code&gt;lm()&lt;/code&gt; and see what happens.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;mpg_int &amp;lt;- summary(lm(mpg ~ wt*am,data=mtcars))
+print(mpg_int$coefficients)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;##              Estimate Std. Error   t value     Pr(&amp;gt;|t|)
+## (Intercept) 31.416055  3.0201093 10.402291 4.001043e-11
+## wt          -3.785908  0.7856478 -4.818836 4.551182e-05
+## am1         14.878423  4.2640422  3.489277 1.621034e-03
+## wt:am1      -5.298360  1.4446993 -3.667449 1.017148e-03&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;We have four rows for our four parameters. Again each row corresponds to one &lt;span class=&#34;math inline&#34;&gt;\(\beta\)&lt;/span&gt; parameter: &lt;code&gt;(Intercept)&lt;/code&gt; corresponds to &lt;span class=&#34;math inline&#34;&gt;\(\beta_0\)&lt;/span&gt; = 31.42, &lt;code&gt;wt&lt;/code&gt; corresponds to &lt;span class=&#34;math inline&#34;&gt;\(\beta_1\)&lt;/span&gt; = -3.79, &lt;code&gt;am1&lt;/code&gt; corresponds to &lt;span class=&#34;math inline&#34;&gt;\(\beta_2\)&lt;/span&gt; = 14.88 and &lt;code&gt;wt:am1&lt;/code&gt; corresponds to &lt;span class=&#34;math inline&#34;&gt;\(\beta_3\)&lt;/span&gt; = -5.3. Let’s interpret this, as we did in the previous Section, by examining the different values of the categorical variable &lt;code&gt;am&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;When &lt;span class=&#34;math inline&#34;&gt;\(A\)&lt;/span&gt; = &lt;code&gt;am&lt;/code&gt; = 0, we have&lt;/p&gt;
+&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[\hat{y} = \beta_0 + \beta_1x\]&lt;/span&gt; which is just our simple model. So &lt;span class=&#34;math inline&#34;&gt;\(\beta_0\)&lt;/span&gt; describes the intercept when &lt;span class=&#34;math inline&#34;&gt;\(A = 0\)&lt;/span&gt; and &lt;span class=&#34;math inline&#34;&gt;\(\beta_1\)&lt;/span&gt; describes the slope associated with &lt;span class=&#34;math inline&#34;&gt;\(x\)&lt;/span&gt; when &lt;span class=&#34;math inline&#34;&gt;\(A = 0\)&lt;/span&gt;. What happens when &lt;span class=&#34;math inline&#34;&gt;\(A = 1\)&lt;/span&gt;?&lt;/p&gt;
+&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[\hat{y} = \beta_0 + \beta_1x + \beta_2 + \beta_3x\]&lt;/span&gt; &lt;span class=&#34;math display&#34;&gt;\[= (\beta_0 + \beta_2) + (\beta_1 + \beta_3)x\]&lt;/span&gt; &lt;span class=&#34;math display&#34;&gt;\[= \beta_0&amp;#39; + \beta_1&amp;#39;x\]&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;So we actually have a new intercept and a new slope! The new intercept is the same as in the previous Section: &lt;span class=&#34;math inline&#34;&gt;\(\beta_0&amp;#39; = \beta_0 + \beta_2\)&lt;/span&gt;. The new slope is &lt;span class=&#34;math inline&#34;&gt;\(\beta_1&amp;#39; = \beta_1 + \beta_3\)&lt;/span&gt;. Therefore, a simple product interaction like this one causes the slope of &lt;span class=&#34;math inline&#34;&gt;\(y\)&lt;/span&gt; with &lt;span class=&#34;math inline&#34;&gt;\(x\)&lt;/span&gt; to change as we move from &lt;span class=&#34;math inline&#34;&gt;\(A = 0\)&lt;/span&gt; to &lt;span class=&#34;math inline&#34;&gt;\(A = 1\)&lt;/span&gt;. Displaying this on a scatter plot of &lt;span class=&#34;math inline&#34;&gt;\(y\)&lt;/span&gt; and &lt;span class=&#34;math inline&#34;&gt;\(x\)&lt;/span&gt;, we would have two lines with different intercepts and different slopes.&lt;/p&gt;
+&lt;p&gt;Let’s take a look.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;beta0 = mpg_int$coefficients[&amp;quot;(Intercept)&amp;quot;,&amp;quot;Estimate&amp;quot;]
+beta1 = mpg_int$coefficients[&amp;quot;wt&amp;quot;,&amp;quot;Estimate&amp;quot;]
+beta0_prime = mpg_int$coefficients[&amp;quot;(Intercept)&amp;quot;,&amp;quot;Estimate&amp;quot;] + 
+                mpg_int$coefficients[&amp;quot;am1&amp;quot;,&amp;quot;Estimate&amp;quot;]
+beta1_prime = mpg_int$coefficients[&amp;quot;wt&amp;quot;,&amp;quot;Estimate&amp;quot;] + 
+                mpg_int$coefficients[&amp;quot;wt:am1&amp;quot;,&amp;quot;Estimate&amp;quot;]
+
+ggplot(mtcars, aes(x = wt, y = mpg, col = am)) + 
+  geom_point() + 
+  geom_abline(intercept = beta0,
+         slope = beta1,
+         col=&amp;quot;red&amp;quot;,
+         alpha=0.5) + 
+  geom_abline(intercept = beta0_prime,
+              slope = beta1_prime, 
+              col=&amp;quot;blue&amp;quot;,
+              alpha=0.5) + 
+  coord_cartesian(xlim=c(0,6),
+                  ylim = c(0,50)) +
+  labs(x = &amp;quot;Weight (1000 lbs)&amp;quot;,
+       y = &amp;quot;Miles per Gallon&amp;quot;,
+       title = &amp;quot;Weight-Transmission Interaction&amp;quot;,
+       colour=&amp;quot;Transmission&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/blog/blog/post/LinearModels_files/figure-html/unnamed-chunk-15-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Perfect. Compared to the non-interactive model in the previous Section, we see that adding an interaction (and thus allowing the slope of &lt;span class=&#34;math inline&#34;&gt;\(y\)&lt;/span&gt; with &lt;span class=&#34;math inline&#34;&gt;\(x\)&lt;/span&gt; to vary between groups) better characterizes the data. If the data was truly not well characterized by an interaction, the equal-slope model of the previous Section would perform just as well as an interactive model of this kind. Of course this would have to be determined by examining the statistics associated with the models.&lt;/p&gt;
+&lt;p&gt;This concludes the majority of what I wanted to cover. In the next Section I’ll go into some of the heavier mathematical details regarding linear models. Read ahead at your own peril.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;S7&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;Mathematical Embellishments&lt;/h1&gt;
+&lt;p&gt;The previous analysis was focussed on examining linear models built with a continuous and categorical predictor. We’re by no means restricted to this however. We can build a linear model with as many variables as we’d like. As we saw above, the case of one continuous predictor and one categorical predictor can be visualized fairly easily using a scatter plot, where the continous data is mapped to the &lt;span class=&#34;math inline&#34;&gt;\(x\)&lt;/span&gt; and &lt;span class=&#34;math inline&#34;&gt;\(y\)&lt;/span&gt; axes and the categorical data is mapped to a colour/shape/style aesthetic. This becomes harder to do when we’re examining models that use multiple continuous predictors, e.g. something of the form&lt;/p&gt;
+&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[\hat{y} = \beta_0 + \beta_1x_1 + \beta_2x_2 + \beta_3x_1x_2\]&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;Here we have an interactive multiple linear regression with two continuous regressors &lt;span class=&#34;math inline&#34;&gt;\(x_1\)&lt;/span&gt; and &lt;span class=&#34;math inline&#34;&gt;\(x_2\)&lt;/span&gt;. A practical example of this would be modelling the &lt;code&gt;mpg&lt;/code&gt; variable in terms of the &lt;code&gt;wt&lt;/code&gt; and horsepower, &lt;code&gt;hp&lt;/code&gt;. Let’s plot this in the same way we did above, where the &lt;code&gt;hp&lt;/code&gt; variable is mapped to the colour aesthetic.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;ggplot(mtcars, aes(x=wt, y=mpg, col=hp)) + 
+  geom_point() +  
+   labs(x = &amp;quot;Weight (1000 lbs)&amp;quot;,
+       y = &amp;quot;Miles per Gallon&amp;quot;,
+       title = &amp;quot;Fuel Efficiency, Weight, and Horsepower&amp;quot;,
+       colour=&amp;quot;Transmission&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/blog/blog/post/LinearModels_files/figure-html/unnamed-chunk-16-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Given the continuous nature of the &lt;code&gt;hp&lt;/code&gt; variable, this is difficult to interpret by eye. That doesn’t invalidate the model however, and we can still estimate the optimal &lt;span class=&#34;math inline&#34;&gt;\(\beta\)&lt;/span&gt; parameters.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;mpg_hp &amp;lt;- summary(lm(mpg ~ wt*hp, data=mtcars))
+print(mpg_hp$coefficients)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;##                Estimate Std. Error   t value     Pr(&amp;gt;|t|)
+## (Intercept) 49.80842343 3.60515580 13.815887 5.005761e-14
+## wt          -8.21662430 1.26970814 -6.471270 5.199287e-07
+## hp          -0.12010209 0.02469835 -4.862758 4.036243e-05
+## wt:hp        0.02784815 0.00741958  3.753332 8.108307e-04&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The rows in this table still represent the &lt;span class=&#34;math inline&#34;&gt;\(\beta\)&lt;/span&gt; parameters in the model, as before, but it is much harder to interpret this result in the context of a scatter plot of &lt;code&gt;mpg&lt;/code&gt; vs. &lt;code&gt;wt&lt;/code&gt;. We can’t just set &lt;code&gt;hp = 0&lt;/code&gt; and &lt;code&gt;hp = 1&lt;/code&gt; as we did previously. The equivalent here would be setting &lt;code&gt;hp&lt;/code&gt; to an infinite number of incremental values. This isn’t the right way to think about this. This sort of brings us face to face with what the multiple linear model is actually saying. Consider again simple linear regression:&lt;/p&gt;
+&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[\hat{y} = \beta_0 + \beta_1x\]&lt;/span&gt; This is clearly the expression for a line. The variable &lt;span class=&#34;math inline&#34;&gt;\(y\)&lt;/span&gt; is modelled as a linear function of &lt;span class=&#34;math inline&#34;&gt;\(x\)&lt;/span&gt;. As we know, we can plot this easily on a two-dimensional space, where &lt;span class=&#34;math inline&#34;&gt;\(y\)&lt;/span&gt; and &lt;span class=&#34;math inline&#34;&gt;\(x\)&lt;/span&gt; form the axes. Moving to multiple regression, we have&lt;/p&gt;
+&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[\hat{y} = \beta_0 + \beta_1x_1 + \beta_2x_2\]&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;In Sections &lt;a href=&#34;#S5&#34;&gt;5&lt;/a&gt; and &lt;a href=&#34;#S6&#34;&gt;6&lt;/a&gt;, we interpreted this model &lt;strong&gt;within the context of the scatter plot of &lt;span class=&#34;math inline&#34;&gt;\(x_1\)&lt;/span&gt; and &lt;span class=&#34;math inline&#34;&gt;\(y\)&lt;/span&gt;&lt;/strong&gt;. With &lt;span class=&#34;math inline&#34;&gt;\(x_2\)&lt;/span&gt; as a categorical variable, this allowed us to interpret &lt;span class=&#34;math inline&#34;&gt;\(\beta_2\)&lt;/span&gt; as the difference in intercept values on this scatter plot. Mathematically, however, this expression describes a &lt;strong&gt;two-dimensional plane&lt;/strong&gt; characterised by the variables &lt;span class=&#34;math inline&#34;&gt;\(x_1\)&lt;/span&gt; and &lt;span class=&#34;math inline&#34;&gt;\(x_2\)&lt;/span&gt;. We see that the intercept of the plane is &lt;span class=&#34;math inline&#34;&gt;\(\beta_0\)&lt;/span&gt;, i.e. the value of &lt;span class=&#34;math inline&#34;&gt;\(y\)&lt;/span&gt; at which both the parametric variables are 0. Moreover, &lt;span class=&#34;math inline&#34;&gt;\(\beta_1\)&lt;/span&gt; is the slope of the plane with respect to &lt;span class=&#34;math inline&#34;&gt;\(x_1\)&lt;/span&gt;, and &lt;span class=&#34;math inline&#34;&gt;\(\beta_2\)&lt;/span&gt; is the slope of the plane with respect to &lt;span class=&#34;math inline&#34;&gt;\(x_2\)&lt;/span&gt;. Specifically,&lt;/p&gt;
+&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[\beta_1 = \frac{\partial\hat{y}}{\partial x_1}\]&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;and&lt;/p&gt;
+&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[\beta_2 = \frac{\partial\hat{y}}{\partial x_2}\]&lt;/span&gt; We can visualize this two-dimensional plane in a three-dimensional space, where the third axis is represented by the &lt;span class=&#34;math inline&#34;&gt;\(y\)&lt;/span&gt; variable. You can do this easily by grabbing a piece of paper, or preferably a rigid flat object, and orienting it in front of you in real space. You can imagine the &lt;span class=&#34;math inline&#34;&gt;\(y\)&lt;/span&gt; axis as the vertical axis, and the &lt;span class=&#34;math inline&#34;&gt;\(x_1\)&lt;/span&gt; and &lt;span class=&#34;math inline&#34;&gt;\(x_2\)&lt;/span&gt; axes as the horizontal axes. The idea of a flat plane in a multi-dimensional space extends to any number of predictors in our model, provided that the model is non-interactive. Given &lt;span class=&#34;math inline&#34;&gt;\(N\)&lt;/span&gt; predictors &lt;span class=&#34;math inline&#34;&gt;\(\{x_1, x_2, ..., x_N\}\)&lt;/span&gt;, a model of the form&lt;/p&gt;
+&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[\hat{y} = \beta_0 + \sum_{a=1}^N{\beta_ax_a}\]&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;describes a N-dimensional hyperplane embedded in a (N+1)-dimensional space. Crazy. This is undoubtedly true of continuous variables, but is a little bit more nuanced for a categorical variable. Going back to our model of &lt;code&gt;mpg&lt;/code&gt; vs. &lt;code&gt;wt&lt;/code&gt; and &lt;code&gt;am&lt;/code&gt;, we can still imagine this in a three-dimensional space. The axes of the space are &lt;code&gt;mpg&lt;/code&gt;,&lt;code&gt;wt&lt;/code&gt; and &lt;code&gt;am&lt;/code&gt;, but notice that we aren’t actually dealing with a plane in this case, since &lt;code&gt;am&lt;/code&gt; only takes on binary values. Rather we are dealing with two different lines embedded in this three-dimensional space. One line will occur at &lt;code&gt;am = 0&lt;/code&gt;, while the other occurs at &lt;code&gt;am = 1&lt;/code&gt;. Given this context, we can re-interpret the scatter plots from Section &lt;a href=&#34;#S5&#34;&gt;5&lt;/a&gt; and &lt;a href=&#34;#S6&#34;&gt;6&lt;/a&gt;. Here is the scatter plot and model from Section &lt;a href=&#34;$S6&#34;&gt;6&lt;/a&gt;:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;/blog/blog/post/LinearModels_files/figure-html/unnamed-chunk-18-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Within the proper context of a three-dimensional space, this two-dimensional plot is actually the &lt;strong&gt;projection of the binary &lt;code&gt;am&lt;/code&gt; axis onto &lt;code&gt;am = 0&lt;/code&gt;&lt;/strong&gt;. Imagine the red line existing in your computer screen and the blue line actually existing outside of your computer screen, closer to you. I’ve used the interactive model here since the plot is nicer than that for the non-interactive model, but this leads us into a discussion of interactions with continuous variables.&lt;/p&gt;
+&lt;p&gt;Examining the plot above, you might already guess where this is going. Let’s consider a model with a simple product interaction of two continuous variables, like the one at the beginning of this Section:&lt;/p&gt;
+&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[\hat{y} = \beta_0 + \beta_1x_1 + \beta_2x_2 + \beta_3x_1x_2\]&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;We saw that when &lt;span class=&#34;math inline&#34;&gt;\(\beta_3 = 0\)&lt;/span&gt;, the model describes a two-dimensional plane in three-dimensions. What does the interaction do to this plane? Notice that the product interaction is actually a second-order term in the expression for &lt;span class=&#34;math inline&#34;&gt;\(\hat{y}\)&lt;/span&gt;. From univariate calculus, we know that second order terms are responsible for the curvature of a function. The same is true in multivariate calculus. The result is that the plane is no longer a plane, but rather a &lt;strong&gt;curved&lt;/strong&gt; two-dimensional surface (or manifold, if you want to be fancy), embedded in a three-dimensional space. The nature of this curvature is unique as well, since it involves coupling between the two regressors, i.e. the surface changes in the &lt;span class=&#34;math inline&#34;&gt;\(x_1\)&lt;/span&gt; direction as we move along the &lt;span class=&#34;math inline&#34;&gt;\(x_2\)&lt;/span&gt; direction, and vice versa. This is apparent when looking at the partial derivatives:&lt;/p&gt;
+&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[\frac{\partial \hat{y}}{\partial x_1} = \beta_1 + \beta_3x_2 \]&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;and&lt;/p&gt;
+&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[\frac{\partial \hat{y}}{\partial x_2} = \beta_2 + \beta_3x_1 \]&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;We can further characterize the modelled surface if we’d like. For instance, since there aren’t any single-variable higher order terms, e.g. &lt;span class=&#34;math inline&#34;&gt;\(x_1^2\)&lt;/span&gt;, &lt;span class=&#34;math inline&#34;&gt;\(x_1^3\)&lt;/span&gt;, etc., we know that, for a given value of one of the predictors, the response variable varies linearly with the other predictor. You can verify this by setting one of the predictors to 0. Moreover since there are no terms of order higher than 2, we know that this surface has a constant curvature. This can be verified by computing the 2nd order partial derivatives. These steps maybe aren’t necessary, but they give us an idea as to how to interpret the effect of a simple product interaction.&lt;/p&gt;
+&lt;p&gt;In general, a multiple linear regression with &lt;span class=&#34;math inline&#34;&gt;\(N\)&lt;/span&gt; predictors and various interactions between those predictors will describe a curved surface or manifold in a (N+1)-dimensional space. The more complex the interactions between the predictors, the more elaborate the surface will be. In analogy to Section &lt;a href=&#34;#S2&#34;&gt;2&lt;/a&gt; such a surface will be characterized by a function, &lt;span class=&#34;math inline&#34;&gt;\(f\)&lt;/span&gt;, so that&lt;/p&gt;
+&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[y = f[\{x_a\}_{a=1}^N] + \epsilon\]&lt;/span&gt; for a response variable &lt;span class=&#34;math inline&#34;&gt;\(y\)&lt;/span&gt; and predictors &lt;span class=&#34;math inline&#34;&gt;\(x_a\)&lt;/span&gt;. Estimating complex surfaces such as these is the purpose of most statistical and machine learning techniques.&lt;/p&gt;
+&lt;/div&gt;
+</description>
     </item>
     
   </channel>

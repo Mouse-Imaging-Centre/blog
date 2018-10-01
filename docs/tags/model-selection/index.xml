@@ -16,84 +16,86 @@
       <pubDate>Wed, 31 Jan 2018 00:00:00 +0000</pubDate>
       
       <guid>/blog/post/2018-01-31_loo-intro/</guid>
-      <description>&lt;div id=&#34;pitch&#34; class=&#34;section level2&#34;&gt;
-&lt;h2&gt;Pitch&lt;/h2&gt;
-&lt;p&gt;In this post I’d like to provide an overview of Pareto-Smoothed Importance Sampling (PSIS-LOO) and how it can be used for bayesian model selection. Everything I discuss regarding this technique can be found in more detail in &lt;a href=&#34;https://arxiv.org/pdf/1507.04544.pdf&#34;&gt;Vehtari, Gelman, and Gabry (2016)&lt;/a&gt;. To lead up to PSIS-LOO I will introduce Akaike’s Information Criterion (AIC) to lay the foundation for model selection in general, then cover the expected log predictive density, the corner stone of bayesian model selection.&lt;/p&gt;
-&lt;/div&gt;
-&lt;div id=&#34;intro&#34; class=&#34;section level2&#34;&gt;
-&lt;h2&gt;Intro&lt;/h2&gt;
-&lt;p&gt;Early in my masters I was introduced to the idea of model selection. The idea stuck, and has been formative in how I think about science. Running against the grain of hypothesis testing, model selection seemed a more natural way to think about what we do in science.&lt;/p&gt;
-&lt;p&gt;Model selection stands apart from standard null hypothesis testing, where we have a single operating (null) model and seek data such that we can judge our model sufficiently unlikely.&lt;/p&gt;
-&lt;p&gt;Model selection on the other hand assumes that we have many potential models that could be generating our data, and provides tools to help us choose which are more likely.&lt;/p&gt;
-&lt;p&gt;Once we have decided to entertain the idea that there are many plausible models for our data, we have to decide how to compare our models.&lt;/p&gt;
-&lt;p&gt;In most cases the first tool for comparison you encounter is Akaike’s An Information Criterion (AIC, also called, Akaike’s Information Criterion). AIC balances the likelihood of the data given the model and the complexity of the model.&lt;/p&gt;
-&lt;/div&gt;
-&lt;div id=&#34;aic&#34; class=&#34;section level2&#34;&gt;
-&lt;h2&gt;AIC&lt;/h2&gt;
-&lt;p&gt;The normal formulation for Akaike’s Information Criterion is&lt;/p&gt;
-&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[ -2\ln[{p(y | \theta)}] + 2k \]&lt;/span&gt;&lt;/p&gt;
-&lt;p&gt;but we can pull out the distracting -2 out and get&lt;/p&gt;
-&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[ \ln[{p(y | \theta)}] - k \]&lt;/span&gt;&lt;/p&gt;
-&lt;p&gt;Where &lt;span class=&#34;math inline&#34;&gt;\(y\)&lt;/span&gt; is the data we have observed, &lt;span class=&#34;math inline&#34;&gt;\(\theta\)&lt;/span&gt; are our estimated parameters, and k is the number of parameters.&lt;/p&gt;
-&lt;p&gt;We can read the second version as the log likelihood minus the number of parameters. When doing AIC based model comparison you can choose the model that maximizes this quantity.&lt;/p&gt;
-&lt;p&gt;AIC is the sum of two components&lt;/p&gt;
-&lt;ol style=&#34;list-style-type: decimal&#34;&gt;
-&lt;li&gt;The log-likelihood (goodness of fit)&lt;/li&gt;
-&lt;li&gt;A penalty for model size.&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;The log-likelihood is a natural choice for goodness of fit. if the model fits the data well, the data will be considered likely, and the log-likelihood will be high relatively high.&lt;/p&gt;
-&lt;p&gt;The penalty term k is equivalent to adding an independent observation that the model gives a probability of &lt;span class=&#34;math inline&#34;&gt;\(1/e\)&lt;/span&gt; (about 1/3), for each parameter you add. Alternatively you can imagine the penalty as dividing your likelihood by &lt;span class=&#34;math inline&#34;&gt;\(e\)&lt;/span&gt; for every parameter you add.&lt;/p&gt;
-&lt;p&gt;The whole reason we need to penalize is because the future is uncertain, and there is a risk of overfitting our data. Models with fewer parameters tend to generalize better, but more satisfying would be to estimate how well the model will perform in the future and use that directly. For this we need to consider how our score function (the likelihood) behaves under a potential model for the future. This leads to the specification of the expected log predictive density (ELPD).&lt;/p&gt;
-&lt;/div&gt;
-&lt;div id=&#34;elpd&#34; class=&#34;section level2&#34;&gt;
-&lt;h2&gt;ELPD&lt;/h2&gt;
-&lt;p&gt;The expected log predictive density is defined as:&lt;/p&gt;
-&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[ \sum_i \int p_{t}(\tilde{y}_i) \ln{p(\tilde{y}_i | y)} d\tilde{y}_i \]&lt;/span&gt;&lt;/p&gt;
-&lt;p&gt;where &lt;span class=&#34;math inline&#34;&gt;\(p_{t}\)&lt;/span&gt; is the true density of future observations, &lt;span class=&#34;math inline&#34;&gt;\(\tilde{y}_i\)&lt;/span&gt; is a future data point. Since &lt;span class=&#34;math inline&#34;&gt;\(p_{t}\)&lt;/span&gt; is unknown, we’re going to need to double dip in our data to get a guess as to what future data are going to look like. This strategy is called &lt;span class=&#34;math inline&#34;&gt;\(\mathit{M}_{closed}\)&lt;/span&gt;.&lt;/p&gt;
-&lt;p&gt;Fortunately we have a strategy for producing fake new data and computing the likelihood at the same time. For this we’re going to reach for the standard machine learning approach of cross validation.&lt;/p&gt;
-&lt;p&gt;We’ll treat some of our data as observed, and we’ll treat the rest like new data. Taking this to the extreme where we leave out one data point we get leave-one-out (loo) cross validation.&lt;/p&gt;
-&lt;/div&gt;
-&lt;div id=&#34;loo&#34; class=&#34;section level2&#34;&gt;
-&lt;h2&gt;LOO&lt;/h2&gt;
-&lt;p&gt;So now we have a strategy for imagining &lt;span class=&#34;math inline&#34;&gt;\(p_{t}\)&lt;/span&gt; which is to pick an observation at random from our data set. Then we need the likelihood our model would assign that datum if it hadn’t been observed. The naive approach would be to refit our model to the held out data, but this is way too expensive computationally. Ideally we wouldn’t need to refit the model at all - if only we knew how to reweight the likelihood as though the datum were unobserved. But such powerful magic surely can’t exist.&lt;/p&gt;
-&lt;p&gt;But of course now I tell you that in fact it does!&lt;/p&gt;
-&lt;p&gt;The trick has been known since the 1990’s and it is called importance sampling, and it is one the most striking results I know of.&lt;/p&gt;
-&lt;/div&gt;
-&lt;div id=&#34;importance-sampling-loo&#34; class=&#34;section level2&#34;&gt;
-&lt;h2&gt;Importance Sampling LOO&lt;/h2&gt;
-&lt;p&gt;Since we’re bayesian, we have samples from the posterior distribution of our model. Each of these samples implies a likelihood for each of our data points. Above I promised you a way to approximate the likelihood our model would given a datum if we hadn’t observed that datum. So let’s try to compute this for a single data point. Take point one for example.&lt;/p&gt;
-&lt;p&gt;&lt;span class=&#34;math inline&#34;&gt;\(\int p(y_1 | \theta) d\theta\)&lt;/span&gt;&lt;/p&gt;
-&lt;p&gt;Since we’re working with samples we’re going to move from an integral to an average over samples.&lt;/p&gt;
-&lt;p&gt;&lt;span class=&#34;math inline&#34;&gt;\(\frac{1}{S} \sum_s{ p(y_1 | \theta_s) }\)&lt;/span&gt;&lt;/p&gt;
-&lt;p&gt;And now we want to reweight these posterior samples as though &lt;span class=&#34;math inline&#34;&gt;\(y_1\)&lt;/span&gt; hadn’t been observed.&lt;/p&gt;
-&lt;p&gt;&lt;span class=&#34;math inline&#34;&gt;\(\frac{1}{\sum_s{w_s}} \sum_s{ w_s p(y_1 | \theta_s) }\)&lt;/span&gt;&lt;/p&gt;
-&lt;p&gt;So we want to give weights to each posterior draw such that the weighting adjusts the posterior to what it would have been if &lt;span class=&#34;math inline&#34;&gt;\(y_1\)&lt;/span&gt; hadn’t been observed.&lt;/p&gt;
-&lt;p&gt;So what should this weighting be? Take a moment and try to guess.&lt;/p&gt;
-&lt;p&gt;Here’s a hint, if &lt;span class=&#34;math inline&#34;&gt;\(y_1\)&lt;/span&gt; wasn’t observed do you think it would be assigned as high a probability?&lt;/p&gt;
-&lt;p&gt;Well, obviously not you say. So what should the weighting be?&lt;/p&gt;
-&lt;p&gt;It’s &lt;span class=&#34;math inline&#34;&gt;\(\frac{1}{p(y_1 | \theta_s)}\)&lt;/span&gt; !!!&lt;/p&gt;
-&lt;p&gt;The sample weight is just the inverse of the probability that &lt;em&gt;that&lt;/em&gt; posterior draw gave to the held out point.&lt;/p&gt;
-&lt;p&gt;When I first read this my brain made a little popping noise, probably audible to my coworkers, as it exploded.&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;/blog/img/brain-exploding-psis.png&#34; width=&#34;500px&#34; /&gt;&lt;/p&gt;
-&lt;/div&gt;
-&lt;div id=&#34;the-pareto-part&#34; class=&#34;section level2&#34;&gt;
-&lt;h2&gt;The Pareto Part&lt;/h2&gt;
-&lt;p&gt;So we’re not quite done: there’s the pareto smoothing part of this. Importance sampling has a well know draw back, in that it is very noisy. The sampling weights we get are very heavy tailed, and it isn’t uncommon to get a single posterior sample where the held out datum was assigned very low probability dominating the IS adjusted posterior. So we need to smooth out the tails.&lt;/p&gt;
-&lt;p&gt;It turns out that the upper tail of the the importance weights fit a generalized Pareto distribution nicely. This lends itself to smoothing.&lt;/p&gt;
-&lt;p&gt;So to Pareto smooth our weights, we can fit a generalized pareto distribution to, say, the upper 20% of our importance weights. Then we can use the quantile of each weight to predict a smoothed approximation for that weight from the fitted distribution. We can then replace the upper tail weights with their smoothed weight and we’re done.&lt;/p&gt;
-&lt;/div&gt;
-&lt;div id=&#34;all-together-now&#34; class=&#34;section level2&#34;&gt;
-&lt;h2&gt;All Together Now&lt;/h2&gt;
-&lt;p&gt;Now we have the likelihood of each datum in the counterfactual world where it wasn’t observe. We can now average over all the smoother re-weighted posterior draws to get the loo ELPD&lt;/p&gt;
-&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[ \sum_i \ln \left( \frac{1}{\sum_s w_s^i} \sum_s w_s^i p(y_i | \theta_s) \right)\]&lt;/span&gt;&lt;/p&gt;
-&lt;p&gt;With the loo ELPD in hand, we can compute the difference between models. The model with the highest ELPD is the best.&lt;/p&gt;
-&lt;p&gt;And there you have it, bayesian model selection using the leave-one-out expected log predictive density. But of course, the story doesn’t end there. With ELPDs computed we &lt;em&gt;could&lt;/em&gt; just pick the best model, but maybe we’d like to do inference over all the model weighted somehow by their score. But these are ideas for another post.&lt;/p&gt;
-&lt;p&gt;Well I hoped you enjoyed learning about Pareto-Smoothed Importance Sampling. Code for doing this is all implemented in the wonderful &lt;a href=&#34;https://cran.r-project.org/web/packages/loo/index.html&#34;&gt;loo package&lt;/a&gt; for R. Happy model selecting!&lt;/p&gt;
-&lt;hr /&gt;
-&lt;p&gt;I’d like to thank Dulcie Vousden and Ben Darwin for reading and commenting on an earlier version of this post.&lt;/p&gt;
-&lt;p&gt;I’d like to thank Aki Vehtari for correctimg error in an earlier version of this post. I had mistakenly claimed the generalized pareto distribution was fit to the data &lt;em&gt;not&lt;/em&gt; in the upper tail of weights.&lt;/p&gt;
-&lt;/div&gt;
-</description>
+      <description><![CDATA[
+      <div id="pitch" class="section level2">
+<h2>Pitch</h2>
+<p>In this post I’d like to provide an overview of Pareto-Smoothed Importance Sampling (PSIS-LOO) and how it can be used for bayesian model selection. Everything I discuss regarding this technique can be found in more detail in <a href="https://arxiv.org/pdf/1507.04544.pdf">Vehtari, Gelman, and Gabry (2016)</a>. To lead up to PSIS-LOO I will introduce Akaike’s Information Criterion (AIC) to lay the foundation for model selection in general, then cover the expected log predictive density, the corner stone of bayesian model selection.</p>
+</div>
+<div id="intro" class="section level2">
+<h2>Intro</h2>
+<p>Early in my masters I was introduced to the idea of model selection. The idea stuck, and has been formative in how I think about science. Running against the grain of hypothesis testing, model selection seemed a more natural way to think about what we do in science.</p>
+<p>Model selection stands apart from standard null hypothesis testing, where we have a single operating (null) model and seek data such that we can judge our model sufficiently unlikely.</p>
+<p>Model selection on the other hand assumes that we have many potential models that could be generating our data, and provides tools to help us choose which are more likely.</p>
+<p>Once we have decided to entertain the idea that there are many plausible models for our data, we have to decide how to compare our models.</p>
+<p>In most cases the first tool for comparison you encounter is Akaike’s An Information Criterion (AIC, also called, Akaike’s Information Criterion). AIC balances the likelihood of the data given the model and the complexity of the model.</p>
+</div>
+<div id="aic" class="section level2">
+<h2>AIC</h2>
+<p>The normal formulation for Akaike’s Information Criterion is</p>
+<p><span class="math display">\[ -2\ln[{p(y | \theta)}] + 2k \]</span></p>
+<p>but we can pull out the distracting -2 out and get</p>
+<p><span class="math display">\[ \ln[{p(y | \theta)}] - k \]</span></p>
+<p>Where <span class="math inline">\(y\)</span> is the data we have observed, <span class="math inline">\(\theta\)</span> are our estimated parameters, and k is the number of parameters.</p>
+<p>We can read the second version as the log likelihood minus the number of parameters. When doing AIC based model comparison you can choose the model that maximizes this quantity.</p>
+<p>AIC is the sum of two components</p>
+<ol style="list-style-type: decimal">
+<li>The log-likelihood (goodness of fit)</li>
+<li>A penalty for model size.</li>
+</ol>
+<p>The log-likelihood is a natural choice for goodness of fit. if the model fits the data well, the data will be considered likely, and the log-likelihood will be high relatively high.</p>
+<p>The penalty term k is equivalent to adding an independent observation that the model gives a probability of <span class="math inline">\(1/e\)</span> (about 1/3), for each parameter you add. Alternatively you can imagine the penalty as dividing your likelihood by <span class="math inline">\(e\)</span> for every parameter you add.</p>
+<p>The whole reason we need to penalize is because the future is uncertain, and there is a risk of overfitting our data. Models with fewer parameters tend to generalize better, but more satisfying would be to estimate how well the model will perform in the future and use that directly. For this we need to consider how our score function (the likelihood) behaves under a potential model for the future. This leads to the specification of the expected log predictive density (ELPD).</p>
+</div>
+<div id="elpd" class="section level2">
+<h2>ELPD</h2>
+<p>The expected log predictive density is defined as:</p>
+<p><span class="math display">\[ \sum_i \int p_{t}(\tilde{y}_i) \ln{p(\tilde{y}_i | y)} d\tilde{y}_i \]</span></p>
+<p>where <span class="math inline">\(p_{t}\)</span> is the true density of future observations, <span class="math inline">\(\tilde{y}_i\)</span> is a future data point. Since <span class="math inline">\(p_{t}\)</span> is unknown, we’re going to need to double dip in our data to get a guess as to what future data are going to look like. This strategy is called <span class="math inline">\(\mathit{M}_{closed}\)</span>.</p>
+<p>Fortunately we have a strategy for producing fake new data and computing the likelihood at the same time. For this we’re going to reach for the standard machine learning approach of cross validation.</p>
+<p>We’ll treat some of our data as observed, and we’ll treat the rest like new data. Taking this to the extreme where we leave out one data point we get leave-one-out (loo) cross validation.</p>
+</div>
+<div id="loo" class="section level2">
+<h2>LOO</h2>
+<p>So now we have a strategy for imagining <span class="math inline">\(p_{t}\)</span> which is to pick an observation at random from our data set. Then we need the likelihood our model would assign that datum if it hadn’t been observed. The naive approach would be to refit our model to the held out data, but this is way too expensive computationally. Ideally we wouldn’t need to refit the model at all - if only we knew how to reweight the likelihood as though the datum were unobserved. But such powerful magic surely can’t exist.</p>
+<p>But of course now I tell you that in fact it does!</p>
+<p>The trick has been known since the 1990’s and it is called importance sampling, and it is one the most striking results I know of.</p>
+</div>
+<div id="importance-sampling-loo" class="section level2">
+<h2>Importance Sampling LOO</h2>
+<p>Since we’re bayesian, we have samples from the posterior distribution of our model. Each of these samples implies a likelihood for each of our data points. Above I promised you a way to approximate the likelihood our model would given a datum if we hadn’t observed that datum. So let’s try to compute this for a single data point. Take point one for example.</p>
+<p><span class="math inline">\(\int p(y_1 | \theta) d\theta\)</span></p>
+<p>Since we’re working with samples we’re going to move from an integral to an average over samples.</p>
+<p><span class="math inline">\(\frac{1}{S} \sum_s{ p(y_1 | \theta_s) }\)</span></p>
+<p>And now we want to reweight these posterior samples as though <span class="math inline">\(y_1\)</span> hadn’t been observed.</p>
+<p><span class="math inline">\(\frac{1}{\sum_s{w_s}} \sum_s{ w_s p(y_1 | \theta_s) }\)</span></p>
+<p>So we want to give weights to each posterior draw such that the weighting adjusts the posterior to what it would have been if <span class="math inline">\(y_1\)</span> hadn’t been observed.</p>
+<p>So what should this weighting be? Take a moment and try to guess.</p>
+<p>Here’s a hint, if <span class="math inline">\(y_1\)</span> wasn’t observed do you think it would be assigned as high a probability?</p>
+<p>Well, obviously not you say. So what should the weighting be?</p>
+<p>It’s <span class="math inline">\(\frac{1}{p(y_1 | \theta_s)}\)</span> !!!</p>
+<p>The sample weight is just the inverse of the probability that <em>that</em> posterior draw gave to the held out point.</p>
+<p>When I first read this my brain made a little popping noise, probably audible to my coworkers, as it exploded.</p>
+<p><img src="/img/brain-exploding-psis.png" width="500px" /></p>
+</div>
+<div id="the-pareto-part" class="section level2">
+<h2>The Pareto Part</h2>
+<p>So we’re not quite done: there’s the pareto smoothing part of this. Importance sampling has a well know draw back, in that it is very noisy. The sampling weights we get are very heavy tailed, and it isn’t uncommon to get a single posterior sample where the held out datum was assigned very low probability dominating the IS adjusted posterior. So we need to smooth out the tails.</p>
+<p>It turns out that the upper tail of the the importance weights fit a generalized Pareto distribution nicely. This lends itself to smoothing.</p>
+<p>So to Pareto smooth our weights, we can fit a generalized pareto distribution to, say, the upper 20% of our importance weights. Then we can use the quantile of each weight to predict a smoothed approximation for that weight from the fitted distribution. We can then replace the upper tail weights with their smoothed weight and we’re done.</p>
+</div>
+<div id="all-together-now" class="section level2">
+<h2>All Together Now</h2>
+<p>Now we have the likelihood of each datum in the counterfactual world where it wasn’t observe. We can now average over all the smoother re-weighted posterior draws to get the loo ELPD</p>
+<p><span class="math display">\[ \sum_i \ln \left( \frac{1}{\sum_s w_s^i} \sum_s w_s^i p(y_i | \theta_s) \right)\]</span></p>
+<p>With the loo ELPD in hand, we can compute the difference between models. The model with the highest ELPD is the best.</p>
+<p>And there you have it, bayesian model selection using the leave-one-out expected log predictive density. But of course, the story doesn’t end there. With ELPDs computed we <em>could</em> just pick the best model, but maybe we’d like to do inference over all the model weighted somehow by their score. But these are ideas for another post.</p>
+<p>Well I hoped you enjoyed learning about Pareto-Smoothed Importance Sampling. Code for doing this is all implemented in the wonderful <a href="https://cran.r-project.org/web/packages/loo/index.html">loo package</a> for R. Happy model selecting!</p>
+<hr />
+<p>I’d like to thank Dulcie Vousden and Ben Darwin for reading and commenting on an earlier version of this post.</p>
+<p>I’d like to thank Aki Vehtari for correctimg error in an earlier version of this post. I had mistakenly claimed the generalized pareto distribution was fit to the data <em>not</em> in the upper tail of weights.</p>
+</div>
+]]>
+      </description>
     </item>
     
   </channel>

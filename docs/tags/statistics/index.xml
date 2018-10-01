@@ -16,53 +16,54 @@
       <pubDate>Fri, 06 Jul 2018 00:00:00 +0000</pubDate>
       
       <guid>/blog/post/2018-07-06_linearmodelserrors/</guid>
-      <description>&lt;div id=&#34;introduction&#34; class=&#34;section level1&#34;&gt;
-&lt;h1&gt;Introduction&lt;/h1&gt;
-&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;library(tidyverse)
+      <description><![CDATA[
+      <div id="introduction" class="section level1">
+<h1>Introduction</h1>
+<pre class="r"><code>library(tidyverse)
 library(matlib)
 library(knitr)
-library(RColorBrewer)&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The purpose of this document is to understand the parameter and residuals error estimates in a basic linear regression model when working with &lt;strong&gt;binary categorical variables&lt;/strong&gt;. Recall the general model definition:&lt;/p&gt;
-&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[ \mathbf{y} = \mathbf{X}\mathbf{\beta} + \mathbf{e}\]&lt;/span&gt;&lt;/p&gt;
-&lt;p&gt;where &lt;span class=&#34;math inline&#34;&gt;\(\mathbf{X}\)&lt;/span&gt; is the &lt;strong&gt;design matrix&lt;/strong&gt; and &lt;span class=&#34;math inline&#34;&gt;\(\mathbf{\beta}\)&lt;/span&gt; is a &lt;span class=&#34;math inline&#34;&gt;\((p+1)\)&lt;/span&gt;-vector of coefficients/parameters, including the intercept parameter. The errors are normally distributed around 0 with variance &lt;span class=&#34;math inline&#34;&gt;\(\sigma^2\)&lt;/span&gt;:&lt;/p&gt;
-&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[e \sim N(0,\sigma^2) \quad .\]&lt;/span&gt;&lt;/p&gt;
-&lt;p&gt;Upon fitting the model to data, we obtain estimates for the coefficients, &lt;span class=&#34;math inline&#34;&gt;\(\hat{\beta}\)&lt;/span&gt;. These estimates have an associated covariance matrix &lt;span class=&#34;math inline&#34;&gt;\(\sigma^2_\beta\)&lt;/span&gt;, which is used for statistical inference. The covariance matrix of the parameters is calculated from the estimate for the residual standard error in the following way:&lt;/p&gt;
-&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[\mathbf{\sigma}^2_\beta = (\mathbf{X}&amp;#39;\mathbf{X})^{-1}\hat{\sigma}^2 \quad .\]&lt;/span&gt;&lt;/p&gt;
-&lt;p&gt;The focus of this document will be on understanding the details of this covariance matrix, specifically of the parameter standard errors and the residual standard error, &lt;span class=&#34;math inline&#34;&gt;\(\hat{\sigma}\)&lt;/span&gt;. The squared parameter standard errors (i.e. parameter variances) are the diagonal terms in the covariance matrix, and so the two measures of variability are related to one another in the following way:&lt;/p&gt;
-&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[\text{diag}[\mathbf{\sigma}^2_\beta] = \text{diag}[(\mathbf{X}&amp;#39;\mathbf{X})^{-1}]\hat{\sigma}^2 \quad .\]&lt;/span&gt;&lt;/p&gt;
-&lt;p&gt;The standard errors can then be obtained by taking the square root of the variances. This transformation between the residual standard error and the parameter standard errors is not trivial and depends on the number of parameters and type of variables. Recall that the estimate for &lt;span class=&#34;math inline&#34;&gt;\(\sigma\)&lt;/span&gt; is given by&lt;/p&gt;
-&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[\hat{\sigma}^2 = \frac{1}{n-p-1} \sum_{i = 1}^n e^2_i \quad .\]&lt;/span&gt;&lt;/p&gt;
-&lt;p&gt;If the data includes observations of categorical variables such that it can be pooled into &lt;strong&gt;balanced groups&lt;/strong&gt; with potentially different group sample standard deviations of &lt;span class=&#34;math inline&#34;&gt;\(\sigma_g\)&lt;/span&gt;, it can be shown straightforwardly that if &lt;span class=&#34;math inline&#34;&gt;\(n \gg p\)&lt;/span&gt;, i.e. in the regime of low-dimensional data,&lt;/p&gt;
-&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[\hat{\sigma}^2 = \text{Ave}[\sigma^2_g] \quad .\]&lt;/span&gt;&lt;/p&gt;
-&lt;p&gt;If the sample standard deviations of the groups are identical, then &lt;span class=&#34;math inline&#34;&gt;\(\hat{\sigma} = \sigma_g\)&lt;/span&gt;. What this tells us is that the residual standard error is an estimate on the standard deviation of the groups defined by the model.&lt;/p&gt;
-&lt;p&gt;We will get a sense of how these estimates vary by generating some simulated data and playing with different linear models of the data. In particular, we will simulate a &lt;strong&gt;balanced experimental design&lt;/strong&gt; consisting of independent binary categorical variables and a continuous response. We will consider three binary variables: &lt;code&gt;Genotype&lt;/code&gt;, &lt;code&gt;Anxiety&lt;/code&gt;, and &lt;code&gt;Treatment&lt;/code&gt;. The use of binary variables in linear models has the effect of pooling the data across different groups. Since there are 3 binary variables, there will be 8 separate groups, i.e. &lt;span class=&#34;math inline&#34;&gt;\(2^3\)&lt;/span&gt;. To operate well within the low-dimensitonality regime, we will use a large sample size. The data will be simulated by first generating a scaffold data frame containing the observations for the different categorical variables. The scaffold data frame will then be used to generate the response variable stochastically. We will start by generating the scaffold data frame.&lt;/p&gt;
-&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;#Define variables related to the experimental design. 
+library(RColorBrewer)</code></pre>
+<p>The purpose of this document is to understand the parameter and residuals error estimates in a basic linear regression model when working with <strong>binary categorical variables</strong>. Recall the general model definition:</p>
+<p><span class="math display">\[ \mathbf{y} = \mathbf{X}\mathbf{\beta} + \mathbf{e}\]</span></p>
+<p>where <span class="math inline">\(\mathbf{X}\)</span> is the <strong>design matrix</strong> and <span class="math inline">\(\mathbf{\beta}\)</span> is a <span class="math inline">\((p+1)\)</span>-vector of coefficients/parameters, including the intercept parameter. The errors are normally distributed around 0 with variance <span class="math inline">\(\sigma^2\)</span>:</p>
+<p><span class="math display">\[e \sim N(0,\sigma^2) \quad .\]</span></p>
+<p>Upon fitting the model to data, we obtain estimates for the coefficients, <span class="math inline">\(\hat{\beta}\)</span>. These estimates have an associated covariance matrix <span class="math inline">\(\sigma^2_\beta\)</span>, which is used for statistical inference. The covariance matrix of the parameters is calculated from the estimate for the residual standard error in the following way:</p>
+<p><span class="math display">\[\mathbf{\sigma}^2_\beta = (\mathbf{X}&#39;\mathbf{X})^{-1}\hat{\sigma}^2 \quad .\]</span></p>
+<p>The focus of this document will be on understanding the details of this covariance matrix, specifically of the parameter standard errors and the residual standard error, <span class="math inline">\(\hat{\sigma}\)</span>. The squared parameter standard errors (i.e. parameter variances) are the diagonal terms in the covariance matrix, and so the two measures of variability are related to one another in the following way:</p>
+<p><span class="math display">\[\text{diag}[\mathbf{\sigma}^2_\beta] = \text{diag}[(\mathbf{X}&#39;\mathbf{X})^{-1}]\hat{\sigma}^2 \quad .\]</span></p>
+<p>The standard errors can then be obtained by taking the square root of the variances. This transformation between the residual standard error and the parameter standard errors is not trivial and depends on the number of parameters and type of variables. Recall that the estimate for <span class="math inline">\(\sigma\)</span> is given by</p>
+<p><span class="math display">\[\hat{\sigma}^2 = \frac{1}{n-p-1} \sum_{i = 1}^n e^2_i \quad .\]</span></p>
+<p>If the data includes observations of categorical variables such that it can be pooled into <strong>balanced groups</strong> with potentially different group sample standard deviations of <span class="math inline">\(\sigma_g\)</span>, it can be shown straightforwardly that if <span class="math inline">\(n \gg p\)</span>, i.e. in the regime of low-dimensional data,</p>
+<p><span class="math display">\[\hat{\sigma}^2 = \text{Ave}[\sigma^2_g] \quad .\]</span></p>
+<p>If the sample standard deviations of the groups are identical, then <span class="math inline">\(\hat{\sigma} = \sigma_g\)</span>. What this tells us is that the residual standard error is an estimate on the standard deviation of the groups defined by the model.</p>
+<p>We will get a sense of how these estimates vary by generating some simulated data and playing with different linear models of the data. In particular, we will simulate a <strong>balanced experimental design</strong> consisting of independent binary categorical variables and a continuous response. We will consider three binary variables: <code>Genotype</code>, <code>Anxiety</code>, and <code>Treatment</code>. The use of binary variables in linear models has the effect of pooling the data across different groups. Since there are 3 binary variables, there will be 8 separate groups, i.e. <span class="math inline">\(2^3\)</span>. To operate well within the low-dimensitonality regime, we will use a large sample size. The data will be simulated by first generating a scaffold data frame containing the observations for the different categorical variables. The scaffold data frame will then be used to generate the response variable stochastically. We will start by generating the scaffold data frame.</p>
+<pre class="r"><code>#Define variables related to the experimental design. 
 # Sample size
-nSample &amp;lt;- 100
+nSample &lt;- 100
 # Number of binary variables
-nBinVar &amp;lt;- 3
+nBinVar &lt;- 3
 # Number of distinct groups
-nGroups &amp;lt;- 2^nBinVar
+nGroups &lt;- 2^nBinVar
 #Total number of observations
-nObs &amp;lt;- nSample*nGroups
+nObs &lt;- nSample*nGroups
 
 #Generate data frame (handy trick uisng expand.grid() and map_df())
-dfGrid &amp;lt;- expand.grid(Genotype = c(&amp;quot;WT&amp;quot;,&amp;quot;MUT&amp;quot;), 
-                      Anxiety = c(&amp;quot;No&amp;quot;,&amp;quot;Yes&amp;quot;), 
-                      Treatment = c(&amp;quot;Placebo&amp;quot;, &amp;quot;Drug&amp;quot;))
-dfSimple &amp;lt;- map_df(seq_len(nSample), ~dfGrid) %&amp;gt;% 
-  mutate(Genotype = factor(Genotype, levels = c(&amp;quot;WT&amp;quot;,&amp;quot;MUT&amp;quot;)),
-         Anxiety = factor(Anxiety, levels = c(&amp;quot;No&amp;quot;,&amp;quot;Yes&amp;quot;)),
-         Treatment = factor(Treatment, levels = c(&amp;quot;Placebo&amp;quot;,&amp;quot;Drug&amp;quot;)))
+dfGrid &lt;- expand.grid(Genotype = c(&quot;WT&quot;,&quot;MUT&quot;), 
+                      Anxiety = c(&quot;No&quot;,&quot;Yes&quot;), 
+                      Treatment = c(&quot;Placebo&quot;, &quot;Drug&quot;))
+dfSimple &lt;- map_df(seq_len(nSample), ~dfGrid) %&gt;% 
+  mutate(Genotype = factor(Genotype, levels = c(&quot;WT&quot;,&quot;MUT&quot;)),
+         Anxiety = factor(Anxiety, levels = c(&quot;No&quot;,&quot;Yes&quot;)),
+         Treatment = factor(Treatment, levels = c(&quot;Placebo&quot;,&quot;Drug&quot;)))
 
 #Verify that this worked
-dfSimple %&amp;gt;% 
-  group_by(Genotype, Anxiety, Treatment) %&amp;gt;% 
-  count&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;## # A tibble: 8 x 4
+dfSimple %&gt;% 
+  group_by(Genotype, Anxiety, Treatment) %&gt;% 
+  count</code></pre>
+<pre><code>## # A tibble: 8 x 4
 ## # Groups:   Genotype, Anxiety, Treatment [8]
 ##   Genotype Anxiety Treatment     n
-##   &amp;lt;fct&amp;gt;    &amp;lt;fct&amp;gt;   &amp;lt;fct&amp;gt;     &amp;lt;int&amp;gt;
+##   &lt;fct&gt;    &lt;fct&gt;   &lt;fct&gt;     &lt;int&gt;
 ## 1 WT       No      Placebo     100
 ## 2 WT       No      Drug        100
 ## 3 WT       Yes     Placebo     100
@@ -70,18 +71,18 @@ dfSimple %&amp;gt;%
 ## 5 MUT      No      Placebo     100
 ## 6 MUT      No      Drug        100
 ## 7 MUT      Yes     Placebo     100
-## 8 MUT      Yes     Drug        100&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Now we create the distribution of the response based on the independent variables. We will generate data in which &lt;strong&gt;there are no interactions between any of the predictor variables&lt;/strong&gt;. The response will be generated using standardized units so that it can stand in for any physical variable. The main effects of the predictors on the response are taken to be &lt;span class=&#34;math inline&#34;&gt;\(2\sigma\)&lt;/span&gt;, where &lt;span class=&#34;math inline&#34;&gt;\(\sigma\)&lt;/span&gt; is the standard deviation of the normal distribution used to generate observations of the response.&lt;/p&gt;
-&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;#Simulation parameters
-meanRef &amp;lt;- 0
-sigma &amp;lt;- 1
-effectGenotype &amp;lt;- 2*sigma
-effectAnxiety &amp;lt;- 2*sigma
-effectTreatment &amp;lt;- 2*sigma
+## 8 MUT      Yes     Drug        100</code></pre>
+<p>Now we create the distribution of the response based on the independent variables. We will generate data in which <strong>there are no interactions between any of the predictor variables</strong>. The response will be generated using standardized units so that it can stand in for any physical variable. The main effects of the predictors on the response are taken to be <span class="math inline">\(2\sigma\)</span>, where <span class="math inline">\(\sigma\)</span> is the standard deviation of the normal distribution used to generate observations of the response.</p>
+<pre class="r"><code>#Simulation parameters
+meanRef &lt;- 0
+sigma &lt;- 1
+effectGenotype &lt;- 2*sigma
+effectAnxiety &lt;- 2*sigma
+effectTreatment &lt;- 2*sigma
 
 #Generate data based on experimental design. 
 #In this case, no interaction between variables.
-dfSimple$Response &amp;lt;- meanRef +
+dfSimple$Response &lt;- meanRef +
   effectGenotype*(as.numeric(dfSimple$Genotype)-1) +
   effectAnxiety*(as.numeric(dfSimple$Anxiety)-1) +
   effectTreatment*(as.numeric(dfSimple$Treatment)-1) +
@@ -90,25 +91,25 @@ dfSimple$Response &amp;lt;- meanRef +
 ggplot(dfSimple, aes(x = Genotype, y = Response, col = Anxiety)) + 
   geom_jitter(width = 0.2) + 
   facet_grid(.~Treatment) + 
-  scale_color_brewer(palette = &amp;quot;Set1&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;/blog/post/2018-07-06_LinearModelsErrors_files/figure-html/unnamed-chunk-2-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;With the data generated we can start considering different linear models to understand the error/variance estimates. In the following Sections we will consider models with and without interactions to examine how the error estimates change. The general process will be to run a given model on the simulated data and examine the details of the transformation from &lt;span class=&#34;math inline&#34;&gt;\(\sigma\)&lt;/span&gt; to &lt;span class=&#34;math inline&#34;&gt;\(\sigma_\beta\)&lt;/span&gt; for that model. In doing so we will see that a number of patterns emerge.&lt;/p&gt;
-&lt;/div&gt;
-&lt;div id=&#34;non-interactive-models&#34; class=&#34;section level1&#34;&gt;
-&lt;h1&gt;Non-interactive Models&lt;/h1&gt;
-&lt;div id=&#34;model-1-intercept-term-only&#34; class=&#34;section level2&#34;&gt;
-&lt;h2&gt;Model 1: Intercept Term Only&lt;/h2&gt;
-&lt;p&gt;The first model is one where the only parameter is the intercept. The &lt;span class=&#34;math inline&#34;&gt;\(\beta\)&lt;/span&gt; estimate returned will be the mean of the data pooled across all groups. The distribution of the pooled response observations is as follows:&lt;/p&gt;
-&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;ggplot(dfSimple, aes(x = Response)) + 
+  scale_color_brewer(palette = &quot;Set1&quot;)</code></pre>
+<p><img src="/blog/post/2018-07-06_LinearModelsErrors_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
+<p>With the data generated we can start considering different linear models to understand the error/variance estimates. In the following Sections we will consider models with and without interactions to examine how the error estimates change. The general process will be to run a given model on the simulated data and examine the details of the transformation from <span class="math inline">\(\sigma\)</span> to <span class="math inline">\(\sigma_\beta\)</span> for that model. In doing so we will see that a number of patterns emerge.</p>
+</div>
+<div id="non-interactive-models" class="section level1">
+<h1>Non-interactive Models</h1>
+<div id="model-1-intercept-term-only" class="section level2">
+<h2>Model 1: Intercept Term Only</h2>
+<p>The first model is one where the only parameter is the intercept. The <span class="math inline">\(\beta\)</span> estimate returned will be the mean of the data pooled across all groups. The distribution of the pooled response observations is as follows:</p>
+<pre class="r"><code>ggplot(dfSimple, aes(x = Response)) + 
   geom_histogram(binwidth = 1,
                  alpha = 0.7,
-                 col = &amp;quot;black&amp;quot;,
-                 fill = brewer.pal(3,&amp;quot;Set1&amp;quot;)[2])&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;/blog/post/2018-07-06_LinearModelsErrors_files/figure-html/unnamed-chunk-3-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;The model is written as&lt;/p&gt;
-&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;linMod1 &amp;lt;- lm(Response ~ 1, data = dfSimple)
-summary(linMod1)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;## 
+                 col = &quot;black&quot;,
+                 fill = brewer.pal(3,&quot;Set1&quot;)[2])</code></pre>
+<p><img src="/blog/post/2018-07-06_LinearModelsErrors_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
+<p>The model is written as</p>
+<pre class="r"><code>linMod1 &lt;- lm(Response ~ 1, data = dfSimple)
+summary(linMod1)</code></pre>
+<pre><code>## 
 ## Call:
 ## lm(formula = Response ~ 1, data = dfSimple)
 ## 
@@ -117,33 +118,33 @@ summary(linMod1)&lt;/code&gt;&lt;/pre&gt;
 ## -4.9321 -1.4254  0.0717  1.3874  5.6359 
 ## 
 ## Coefficients:
-##             Estimate Std. Error t value Pr(&amp;gt;|t|)    
-## (Intercept)  3.04683    0.07026   43.36   &amp;lt;2e-16 ***
+##             Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)  3.04683    0.07026   43.36   &lt;2e-16 ***
 ## ---
-## Signif. codes:  0 &amp;#39;***&amp;#39; 0.001 &amp;#39;**&amp;#39; 0.01 &amp;#39;*&amp;#39; 0.05 &amp;#39;.&amp;#39; 0.1 &amp;#39; &amp;#39; 1
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 ## 
-## Residual standard error: 1.987 on 799 degrees of freedom&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;In this simple case, the residual standard error is simply the standard deviation of the full data:&lt;/p&gt;
-&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;dfSimple %&amp;gt;% 
-  summarise(sd(Response))&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;##   sd(Response)
-## 1     1.987383&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;What about the standard error of the intercept?&lt;/p&gt;
-&lt;p&gt;Since there is only one parameter for the intercept, the design matrix will just be a vector of ones. The transformation &lt;span class=&#34;math inline&#34;&gt;\(\mathbf{X}&amp;#39;\mathbf{X}\)&lt;/span&gt; is then just the squared norm of the vector and will be equal to the number of observations in the data set, i.e. &lt;span class=&#34;math inline&#34;&gt;\(\sum_{i=1}^n 1 = n\)&lt;/span&gt;. The inverse operation is just that for a scalar value and we get &lt;span class=&#34;math inline&#34;&gt;\(\sigma_\beta = \frac{\sigma}{\sqrt{n}}\)&lt;/span&gt;. Multiplying the standard error estimate by &lt;span class=&#34;math inline&#34;&gt;\(\sqrt{n}\)&lt;/span&gt; should return the value of the residual standard error:&lt;/p&gt;
-&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;summary(linMod1)$coefficients[[&amp;quot;(Intercept)&amp;quot;,&amp;quot;Std. Error&amp;quot;]]*sqrt(nObs)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;## [1] 1.987383&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
-&lt;div id=&#34;model-2-one-binary-predictor&#34; class=&#34;section level2&#34;&gt;
-&lt;h2&gt;Model 2: One Binary Predictor&lt;/h2&gt;
-&lt;p&gt;Next we add one of the binary variables as a predictor in the model. This will have the effect of pooling the data according to the different levels of that predictor.&lt;/p&gt;
-&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;ggplot(dfSimple, aes(x = Genotype, y = Response)) +
+## Residual standard error: 1.987 on 799 degrees of freedom</code></pre>
+<p>In this simple case, the residual standard error is simply the standard deviation of the full data:</p>
+<pre class="r"><code>dfSimple %&gt;% 
+  summarise(sd(Response))</code></pre>
+<pre><code>##   sd(Response)
+## 1     1.987383</code></pre>
+<p>What about the standard error of the intercept?</p>
+<p>Since there is only one parameter for the intercept, the design matrix will just be a vector of ones. The transformation <span class="math inline">\(\mathbf{X}&#39;\mathbf{X}\)</span> is then just the squared norm of the vector and will be equal to the number of observations in the data set, i.e. <span class="math inline">\(\sum_{i=1}^n 1 = n\)</span>. The inverse operation is just that for a scalar value and we get <span class="math inline">\(\sigma_\beta = \frac{\sigma}{\sqrt{n}}\)</span>. Multiplying the standard error estimate by <span class="math inline">\(\sqrt{n}\)</span> should return the value of the residual standard error:</p>
+<pre class="r"><code>summary(linMod1)$coefficients[[&quot;(Intercept)&quot;,&quot;Std. Error&quot;]]*sqrt(nObs)</code></pre>
+<pre><code>## [1] 1.987383</code></pre>
+</div>
+<div id="model-2-one-binary-predictor" class="section level2">
+<h2>Model 2: One Binary Predictor</h2>
+<p>Next we add one of the binary variables as a predictor in the model. This will have the effect of pooling the data according to the different levels of that predictor.</p>
+<pre class="r"><code>ggplot(dfSimple, aes(x = Genotype, y = Response)) +
   geom_jitter(width = 0.2,
-              col = brewer.pal(3,&amp;quot;Set1&amp;quot;)[2])&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;/blog/post/2018-07-06_LinearModelsErrors_files/figure-html/unnamed-chunk-7-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;In this case the intercept estimate will indicate the pooled mean of the wildtype group (or whatever the reference level is for the chosen predictor) and the slope estimate will indicate the difference between the wildtype mean and the pooled mean of the mutant group.&lt;/p&gt;
-&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;linMod2 &amp;lt;- lm(Response ~ Genotype, data = dfSimple)
-summary(linMod2)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;## 
+              col = brewer.pal(3,&quot;Set1&quot;)[2])</code></pre>
+<p><img src="/blog/post/2018-07-06_LinearModelsErrors_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
+<p>In this case the intercept estimate will indicate the pooled mean of the wildtype group (or whatever the reference level is for the chosen predictor) and the slope estimate will indicate the difference between the wildtype mean and the pooled mean of the mutant group.</p>
+<pre class="r"><code>linMod2 &lt;- lm(Response ~ Genotype, data = dfSimple)
+summary(linMod2)</code></pre>
+<pre><code>## 
 ## Call:
 ## lm(formula = Response ~ Genotype, data = dfSimple)
 ## 
@@ -152,56 +153,56 @@ summary(linMod2)&lt;/code&gt;&lt;/pre&gt;
 ## -4.933 -1.212 -0.024  1.215  5.291 
 ## 
 ## Coefficients:
-##             Estimate Std. Error t value Pr(&amp;gt;|t|)    
-## (Intercept)  2.04567    0.08588   23.82   &amp;lt;2e-16 ***
-## GenotypeMUT  2.00231    0.12145   16.49   &amp;lt;2e-16 ***
+##             Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)  2.04567    0.08588   23.82   &lt;2e-16 ***
+## GenotypeMUT  2.00231    0.12145   16.49   &lt;2e-16 ***
 ## ---
-## Signif. codes:  0 &amp;#39;***&amp;#39; 0.001 &amp;#39;**&amp;#39; 0.01 &amp;#39;*&amp;#39; 0.05 &amp;#39;.&amp;#39; 0.1 &amp;#39; &amp;#39; 1
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 ## 
 ## Residual standard error: 1.718 on 798 degrees of freedom
 ## Multiple R-squared:  0.2541, Adjusted R-squared:  0.2532 
-## F-statistic: 271.8 on 1 and 798 DF,  p-value: &amp;lt; 2.2e-16&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;What do the variance estimates represent? Remember that the residual standard error is an estimate of the variability across all of the data. As mentioned in the introduction, the residual standard error will be the square root of the average of the sample variances of the two groups. The group variances and the resulting standard error estimate are:&lt;/p&gt;
-&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;dfSimple %&amp;gt;% 
-  group_by(Genotype) %&amp;gt;% 
-  summarise(varPerGroup = var(Response)) %&amp;gt;% 
-  ungroup() %&amp;gt;% 
-  mutate(sigma = sqrt(mean(varPerGroup)))&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;## # A tibble: 2 x 3
+## F-statistic: 271.8 on 1 and 798 DF,  p-value: &lt; 2.2e-16</code></pre>
+<p>What do the variance estimates represent? Remember that the residual standard error is an estimate of the variability across all of the data. As mentioned in the introduction, the residual standard error will be the square root of the average of the sample variances of the two groups. The group variances and the resulting standard error estimate are:</p>
+<pre class="r"><code>dfSimple %&gt;% 
+  group_by(Genotype) %&gt;% 
+  summarise(varPerGroup = var(Response)) %&gt;% 
+  ungroup() %&gt;% 
+  mutate(sigma = sqrt(mean(varPerGroup)))</code></pre>
+<pre><code>## # A tibble: 2 x 3
 ##   Genotype varPerGroup sigma
-##   &amp;lt;fct&amp;gt;          &amp;lt;dbl&amp;gt; &amp;lt;dbl&amp;gt;
+##   &lt;fct&gt;          &lt;dbl&gt; &lt;dbl&gt;
 ## 1 WT              3.01  1.72
-## 2 MUT             2.89  1.72&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Which is equal to the estimate for the residuals standard error.&lt;/p&gt;
-&lt;p&gt;How do the standard errors of the parameters relate to the residual standard error for this model? Let’s compute the transformation explicitly using the design matrix. First we compute &lt;span class=&#34;math inline&#34;&gt;\(\mathbf{X&amp;#39;X}\)&lt;/span&gt;:&lt;/p&gt;
-&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;xMat &amp;lt;- model.matrix(linMod2)
-t(xMat)%*%xMat&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;##             (Intercept) GenotypeMUT
+## 2 MUT             2.89  1.72</code></pre>
+<p>Which is equal to the estimate for the residuals standard error.</p>
+<p>How do the standard errors of the parameters relate to the residual standard error for this model? Let’s compute the transformation explicitly using the design matrix. First we compute <span class="math inline">\(\mathbf{X&#39;X}\)</span>:</p>
+<pre class="r"><code>xMat &lt;- model.matrix(linMod2)
+t(xMat)%*%xMat</code></pre>
+<pre><code>##             (Intercept) GenotypeMUT
 ## (Intercept)         800         400
-## GenotypeMUT         400         400&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Indicating the number of observations explicitly, we can see that this matrix is of the form:&lt;/p&gt;
-&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[\mathbf{X}&amp;#39;\mathbf{X} = n \cdot \begin{bmatrix} 1 &amp;amp; \frac{1}{2} \\ \frac{1}{2} &amp;amp; \frac{1}{2} \end{bmatrix}\]&lt;/span&gt;&lt;/p&gt;
-&lt;p&gt;Taking the inverse (which is a straightforward process for a 2x2 matrix such as this) and multiplying by &lt;span class=&#34;math inline&#34;&gt;\(\sigma\)&lt;/span&gt;, we find that the covariance matrix is&lt;/p&gt;
-&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[\sigma^2_\beta = \frac{\sigma^2}{n} \cdot \begin{bmatrix} 2 &amp;amp; -2 \\ -2 &amp;amp; 4 \end{bmatrix}\]&lt;/span&gt;&lt;/p&gt;
-&lt;p&gt;Specifically, the standard errors of the estimates are given by the square roots of the diagonal terms in this matrix (note that this isn’t a proper matrix operation but think of this as extracting the diagonal elements and then taking the square root of each of them):&lt;/p&gt;
-&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[\sigma_\beta = \frac{\sigma}{\sqrt{n}}\begin{bmatrix} \sqrt{2} &amp;amp; \sqrt{4} \end{bmatrix}\]&lt;/span&gt;&lt;/p&gt;
-&lt;p&gt;A point of interest here is that the parameter errors are related to this quantity &lt;span class=&#34;math inline&#34;&gt;\(\frac{\sigma}{\sqrt{n}}\)&lt;/span&gt; but are scaled by some multiplicative factor. Notably, the slope parameter is more uncertain than the intercept. Multiplying the parameter standard errors by the appropriate multiplicative factors, we should recover the residual standard error:&lt;/p&gt;
-&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;vec &amp;lt;- c(sqrt(nObs/2), sqrt(nObs/4))
-summary(linMod2)$coefficients[,&amp;quot;Std. Error&amp;quot;]*vec&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;## (Intercept) GenotypeMUT 
-##    1.717502    1.717502&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
-&lt;div id=&#34;model-3-two-binary-predictors&#34; class=&#34;section level2&#34;&gt;
-&lt;h2&gt;Model 3: Two Binary Predictors&lt;/h2&gt;
-&lt;p&gt;In our third model, we consider the effects of two binary predictors without an interaction. This will pool the data into the &lt;span class=&#34;math inline&#34;&gt;\(2^2=4\)&lt;/span&gt; groups defined by these predictors:&lt;/p&gt;
-&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;ggplot(dfSimple, aes(x = Genotype, y = Response, col = Anxiety)) +
+## GenotypeMUT         400         400</code></pre>
+<p>Indicating the number of observations explicitly, we can see that this matrix is of the form:</p>
+<p><span class="math display">\[\mathbf{X}&#39;\mathbf{X} = n \cdot \begin{bmatrix} 1 &amp; \frac{1}{2} \\ \frac{1}{2} &amp; \frac{1}{2} \end{bmatrix}\]</span></p>
+<p>Taking the inverse (which is a straightforward process for a 2x2 matrix such as this) and multiplying by <span class="math inline">\(\sigma\)</span>, we find that the covariance matrix is</p>
+<p><span class="math display">\[\sigma^2_\beta = \frac{\sigma^2}{n} \cdot \begin{bmatrix} 2 &amp; -2 \\ -2 &amp; 4 \end{bmatrix}\]</span></p>
+<p>Specifically, the standard errors of the estimates are given by the square roots of the diagonal terms in this matrix (note that this isn’t a proper matrix operation but think of this as extracting the diagonal elements and then taking the square root of each of them):</p>
+<p><span class="math display">\[\sigma_\beta = \frac{\sigma}{\sqrt{n}}\begin{bmatrix} \sqrt{2} &amp; \sqrt{4} \end{bmatrix}\]</span></p>
+<p>A point of interest here is that the parameter errors are related to this quantity <span class="math inline">\(\frac{\sigma}{\sqrt{n}}\)</span> but are scaled by some multiplicative factor. Notably, the slope parameter is more uncertain than the intercept. Multiplying the parameter standard errors by the appropriate multiplicative factors, we should recover the residual standard error:</p>
+<pre class="r"><code>vec &lt;- c(sqrt(nObs/2), sqrt(nObs/4))
+summary(linMod2)$coefficients[,&quot;Std. Error&quot;]*vec</code></pre>
+<pre><code>## (Intercept) GenotypeMUT 
+##    1.717502    1.717502</code></pre>
+</div>
+<div id="model-3-two-binary-predictors" class="section level2">
+<h2>Model 3: Two Binary Predictors</h2>
+<p>In our third model, we consider the effects of two binary predictors without an interaction. This will pool the data into the <span class="math inline">\(2^2=4\)</span> groups defined by these predictors:</p>
+<pre class="r"><code>ggplot(dfSimple, aes(x = Genotype, y = Response, col = Anxiety)) +
   geom_jitter(width = 0.2) + 
-  scale_color_brewer(palette = &amp;quot;Set1&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;/blog/post/2018-07-06_LinearModelsErrors_files/figure-html/unnamed-chunk-12-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;The model is as followed:&lt;/p&gt;
-&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;linMod3 &amp;lt;- lm(Response ~ Genotype + Anxiety, data = dfSimple)
-summary(linMod3)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;## 
+  scale_color_brewer(palette = &quot;Set1&quot;)</code></pre>
+<p><img src="/blog/post/2018-07-06_LinearModelsErrors_files/figure-html/unnamed-chunk-12-1.png" width="672" /></p>
+<p>The model is as followed:</p>
+<pre class="r"><code>linMod3 &lt;- lm(Response ~ Genotype + Anxiety, data = dfSimple)
+summary(linMod3)</code></pre>
+<pre><code>## 
 ## Call:
 ## lm(formula = Response ~ Genotype + Anxiety, data = dfSimple)
 ## 
@@ -210,60 +211,60 @@ summary(linMod3)&lt;/code&gt;&lt;/pre&gt;
 ## -3.940 -1.058  0.046  1.026  4.298 
 ## 
 ## Coefficients:
-##             Estimate Std. Error t value Pr(&amp;gt;|t|)    
-## (Intercept)  1.05280    0.08582   12.27   &amp;lt;2e-16 ***
-## GenotypeMUT  2.00231    0.09910   20.21   &amp;lt;2e-16 ***
-## AnxietyYes   1.98574    0.09910   20.04   &amp;lt;2e-16 ***
+##             Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)  1.05280    0.08582   12.27   &lt;2e-16 ***
+## GenotypeMUT  2.00231    0.09910   20.21   &lt;2e-16 ***
+## AnxietyYes   1.98574    0.09910   20.04   &lt;2e-16 ***
 ## ---
-## Signif. codes:  0 &amp;#39;***&amp;#39; 0.001 &amp;#39;**&amp;#39; 0.01 &amp;#39;*&amp;#39; 0.05 &amp;#39;.&amp;#39; 0.1 &amp;#39; &amp;#39; 1
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 ## 
 ## Residual standard error: 1.401 on 797 degrees of freedom
 ## Multiple R-squared:  0.504,  Adjusted R-squared:  0.5027 
-## F-statistic: 404.9 on 2 and 797 DF,  p-value: &amp;lt; 2.2e-16&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;We expect that the residual standard error should be approximately equal to the average of the group standard deviations. Note that with the addition of new predictors, we will move slowly out of the regime where &lt;span class=&#34;math inline&#34;&gt;\(n \gg p\)&lt;/span&gt; holds.&lt;/p&gt;
-&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;dfSimple %&amp;gt;% 
-  group_by(Genotype, Anxiety) %&amp;gt;%
-  summarise(varPerGroup = var(Response)) %&amp;gt;%
-  ungroup() %&amp;gt;%
-  mutate(sigma = sqrt(mean(varPerGroup)))&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;## # A tibble: 4 x 4
+## F-statistic: 404.9 on 2 and 797 DF,  p-value: &lt; 2.2e-16</code></pre>
+<p>We expect that the residual standard error should be approximately equal to the average of the group standard deviations. Note that with the addition of new predictors, we will move slowly out of the regime where <span class="math inline">\(n \gg p\)</span> holds.</p>
+<pre class="r"><code>dfSimple %&gt;% 
+  group_by(Genotype, Anxiety) %&gt;%
+  summarise(varPerGroup = var(Response)) %&gt;%
+  ungroup() %&gt;%
+  mutate(sigma = sqrt(mean(varPerGroup)))</code></pre>
+<pre><code>## # A tibble: 4 x 4
 ##   Genotype Anxiety varPerGroup sigma
-##   &amp;lt;fct&amp;gt;    &amp;lt;fct&amp;gt;         &amp;lt;dbl&amp;gt; &amp;lt;dbl&amp;gt;
+##   &lt;fct&gt;    &lt;fct&gt;         &lt;dbl&gt; &lt;dbl&gt;
 ## 1 WT       No             1.70  1.40
 ## 2 WT       Yes            2.05  1.40
 ## 3 MUT      No             2.05  1.40
-## 4 MUT      Yes            2.04  1.40&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;How do the errors of the parameter estimates relate back to this?&lt;/p&gt;
-&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;xMat &amp;lt;- model.matrix(linMod3)
-t(xMat) %*% xMat&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;##             (Intercept) GenotypeMUT AnxietyYes
+## 4 MUT      Yes            2.04  1.40</code></pre>
+<p>How do the errors of the parameter estimates relate back to this?</p>
+<pre class="r"><code>xMat &lt;- model.matrix(linMod3)
+t(xMat) %*% xMat</code></pre>
+<pre><code>##             (Intercept) GenotypeMUT AnxietyYes
 ## (Intercept)         800         400        400
 ## GenotypeMUT         400         400        200
-## AnxietyYes          400         200        400&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Explicitly indicating the number of observations, we have:&lt;/p&gt;
-&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[ \mathbf{X&amp;#39;X} = n \cdot \begin{bmatrix} 1 &amp;amp; \frac{1}{2} &amp;amp; \frac{1}{2} \\ \frac{1}{2} &amp;amp; \frac{1}{2} &amp;amp; \frac{1}{4} \\ \frac{1}{2} &amp;amp; \frac{1}{4} &amp;amp; \frac{1}{2} \end{bmatrix}\]&lt;/span&gt;&lt;/p&gt;
-&lt;p&gt;Taking the inverse (which is a tedious process for any matrix of dimension greater than 2), the covariance matrix is&lt;/p&gt;
-&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[\sigma^2_\beta = \frac{\sigma^2}{n}\cdot\begin{bmatrix} 3 &amp;amp; -2 &amp;amp; -2 \\ -2 &amp;amp; 4 &amp;amp; 0 \\ -2 &amp;amp; 0 &amp;amp; 4 \end{bmatrix}\]&lt;/span&gt;&lt;/p&gt;
-&lt;p&gt;And the standard errors are given by:&lt;/p&gt;
-&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[\sigma_\beta = \frac{\sigma}{\sqrt{n}}\begin{bmatrix} \sqrt{3} &amp;amp; \sqrt{4} &amp;amp; \sqrt{4} \end{bmatrix}\]&lt;/span&gt;&lt;/p&gt;
-&lt;p&gt;Notice that this is similar to the mapping from the previous model, except that the intercept error is now estimated using &lt;span class=&#34;math inline&#34;&gt;\(\sqrt{3}\)&lt;/span&gt; rather than &lt;span class=&#34;math inline&#34;&gt;\(\sqrt{2}\)&lt;/span&gt;. Interestingly including an additional predictor does not change the conversion factors for the slope parameters. Applying the appropriate multiplicative factors to the error estimates, we should recover the residual standard error:&lt;/p&gt;
-&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;vec &amp;lt;- c(sqrt(nObs/3), sqrt(nObs/4), sqrt(nObs/4))
-summary(linMod3)$coefficients[,&amp;quot;Std. Error&amp;quot;]*vec&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;## (Intercept) GenotypeMUT  AnxietyYes 
-##    1.401431    1.401431    1.401431&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
-&lt;div id=&#34;model-4-three-binary-predictors&#34; class=&#34;section level2&#34;&gt;
-&lt;h2&gt;Model 4: Three Binary Predictors&lt;/h2&gt;
-&lt;p&gt;In order to get a clearer sense of the trend in the error estimates with regards to binary predictors, we will add the third main effect into the model. In this case the model will utilize the full 8 groups in the data.&lt;/p&gt;
-&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;ggplot(dfSimple, aes(x = Genotype, y = Response, col = Anxiety)) +
+## AnxietyYes          400         200        400</code></pre>
+<p>Explicitly indicating the number of observations, we have:</p>
+<p><span class="math display">\[ \mathbf{X&#39;X} = n \cdot \begin{bmatrix} 1 &amp; \frac{1}{2} &amp; \frac{1}{2} \\ \frac{1}{2} &amp; \frac{1}{2} &amp; \frac{1}{4} \\ \frac{1}{2} &amp; \frac{1}{4} &amp; \frac{1}{2} \end{bmatrix}\]</span></p>
+<p>Taking the inverse (which is a tedious process for any matrix of dimension greater than 2), the covariance matrix is</p>
+<p><span class="math display">\[\sigma^2_\beta = \frac{\sigma^2}{n}\cdot\begin{bmatrix} 3 &amp; -2 &amp; -2 \\ -2 &amp; 4 &amp; 0 \\ -2 &amp; 0 &amp; 4 \end{bmatrix}\]</span></p>
+<p>And the standard errors are given by:</p>
+<p><span class="math display">\[\sigma_\beta = \frac{\sigma}{\sqrt{n}}\begin{bmatrix} \sqrt{3} &amp; \sqrt{4} &amp; \sqrt{4} \end{bmatrix}\]</span></p>
+<p>Notice that this is similar to the mapping from the previous model, except that the intercept error is now estimated using <span class="math inline">\(\sqrt{3}\)</span> rather than <span class="math inline">\(\sqrt{2}\)</span>. Interestingly including an additional predictor does not change the conversion factors for the slope parameters. Applying the appropriate multiplicative factors to the error estimates, we should recover the residual standard error:</p>
+<pre class="r"><code>vec &lt;- c(sqrt(nObs/3), sqrt(nObs/4), sqrt(nObs/4))
+summary(linMod3)$coefficients[,&quot;Std. Error&quot;]*vec</code></pre>
+<pre><code>## (Intercept) GenotypeMUT  AnxietyYes 
+##    1.401431    1.401431    1.401431</code></pre>
+</div>
+<div id="model-4-three-binary-predictors" class="section level2">
+<h2>Model 4: Three Binary Predictors</h2>
+<p>In order to get a clearer sense of the trend in the error estimates with regards to binary predictors, we will add the third main effect into the model. In this case the model will utilize the full 8 groups in the data.</p>
+<pre class="r"><code>ggplot(dfSimple, aes(x = Genotype, y = Response, col = Anxiety)) +
   geom_jitter(width = 0.2) + 
   facet_grid(.~Treatment) +
-  scale_color_brewer(palette = &amp;quot;Set1&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;/blog/post/2018-07-06_LinearModelsErrors_files/figure-html/unnamed-chunk-17-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;Here is the model:&lt;/p&gt;
-&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;linMod4 &amp;lt;- lm(Response ~ Genotype + Anxiety + Treatment, data = dfSimple)
-summary(linMod4)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;## 
+  scale_color_brewer(palette = &quot;Set1&quot;)</code></pre>
+<p><img src="/blog/post/2018-07-06_LinearModelsErrors_files/figure-html/unnamed-chunk-17-1.png" width="672" /></p>
+<p>Here is the model:</p>
+<pre class="r"><code>linMod4 &lt;- lm(Response ~ Genotype + Anxiety + Treatment, data = dfSimple)
+summary(linMod4)</code></pre>
+<pre><code>## 
 ## Call:
 ## lm(formula = Response ~ Genotype + Anxiety + Treatment, data = dfSimple)
 ## 
@@ -272,26 +273,26 @@ summary(linMod4)&lt;/code&gt;&lt;/pre&gt;
 ## -2.9908 -0.6887 -0.0230  0.6759  3.3164 
 ## 
 ## Coefficients:
-##               Estimate Std. Error t value Pr(&amp;gt;|t|)    
+##               Estimate Std. Error t value Pr(&gt;|t|)    
 ## (Intercept)    0.07123    0.07065   1.008    0.314    
-## GenotypeMUT    2.00231    0.07065  28.343   &amp;lt;2e-16 ***
-## AnxietyYes     1.98574    0.07065  28.109   &amp;lt;2e-16 ***
-## TreatmentDrug  1.96314    0.07065  27.789   &amp;lt;2e-16 ***
+## GenotypeMUT    2.00231    0.07065  28.343   &lt;2e-16 ***
+## AnxietyYes     1.98574    0.07065  28.109   &lt;2e-16 ***
+## TreatmentDrug  1.96314    0.07065  27.789   &lt;2e-16 ***
 ## ---
-## Signif. codes:  0 &amp;#39;***&amp;#39; 0.001 &amp;#39;**&amp;#39; 0.01 &amp;#39;*&amp;#39; 0.05 &amp;#39;.&amp;#39; 0.1 &amp;#39; &amp;#39; 1
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 ## 
 ## Residual standard error: 0.9991 on 796 degrees of freedom
 ## Multiple R-squared:  0.7482, Adjusted R-squared:  0.7473 
-## F-statistic: 788.5 on 3 and 796 DF,  p-value: &amp;lt; 2.2e-16&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Note that this is the proper model to describe the data based on how we’ve simulated it. In this case the intercept should describe the mean of the reference group, i.e. untreated wildtypes with no anxiety, while the slope parameters should estimate the inputs that we put into the model. The residuals standard error should describe the standard deviation of the response within the 8 different groups, which in this case amounts to the value of &lt;span class=&#34;math inline&#34;&gt;\(\sigma\)&lt;/span&gt; that we specified when simulating the data. The group standard deviations and their average are:&lt;/p&gt;
-&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;dfSimple %&amp;gt;% 
-  group_by(Genotype, Anxiety, Treatment) %&amp;gt;% 
-  summarise(varPerGroup = var(Response)) %&amp;gt;%
-  ungroup %&amp;gt;%
-  mutate(sigma = sqrt(mean(varPerGroup)))&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;## # A tibble: 8 x 5
+## F-statistic: 788.5 on 3 and 796 DF,  p-value: &lt; 2.2e-16</code></pre>
+<p>Note that this is the proper model to describe the data based on how we’ve simulated it. In this case the intercept should describe the mean of the reference group, i.e. untreated wildtypes with no anxiety, while the slope parameters should estimate the inputs that we put into the model. The residuals standard error should describe the standard deviation of the response within the 8 different groups, which in this case amounts to the value of <span class="math inline">\(\sigma\)</span> that we specified when simulating the data. The group standard deviations and their average are:</p>
+<pre class="r"><code>dfSimple %&gt;% 
+  group_by(Genotype, Anxiety, Treatment) %&gt;% 
+  summarise(varPerGroup = var(Response)) %&gt;%
+  ungroup %&gt;%
+  mutate(sigma = sqrt(mean(varPerGroup)))</code></pre>
+<pre><code>## # A tibble: 8 x 5
 ##   Genotype Anxiety Treatment varPerGroup sigma
-##   &amp;lt;fct&amp;gt;    &amp;lt;fct&amp;gt;   &amp;lt;fct&amp;gt;           &amp;lt;dbl&amp;gt; &amp;lt;dbl&amp;gt;
+##   &lt;fct&gt;    &lt;fct&gt;   &lt;fct&gt;           &lt;dbl&gt; &lt;dbl&gt;
 ## 1 WT       No      Placebo         1.01  0.996
 ## 2 WT       No      Drug            0.857 0.996
 ## 3 WT       Yes     Placebo         1.04  0.996
@@ -299,133 +300,133 @@ summary(linMod4)&lt;/code&gt;&lt;/pre&gt;
 ## 5 MUT      No      Placebo         0.995 0.996
 ## 6 MUT      No      Drug            0.748 0.996
 ## 7 MUT      Yes     Placebo         1.14  0.996
-## 8 MUT      Yes     Drug            1.04  0.996&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;As expected the residual standard error is approximately the average of the group standard deviations.&lt;/p&gt;
-&lt;p&gt;What about the parameter errors?&lt;/p&gt;
-&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;xMat &amp;lt;- model.matrix(linMod4)
-t(xMat) %*% xMat&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;##               (Intercept) GenotypeMUT AnxietyYes TreatmentDrug
+## 8 MUT      Yes     Drug            1.04  0.996</code></pre>
+<p>As expected the residual standard error is approximately the average of the group standard deviations.</p>
+<p>What about the parameter errors?</p>
+<pre class="r"><code>xMat &lt;- model.matrix(linMod4)
+t(xMat) %*% xMat</code></pre>
+<pre><code>##               (Intercept) GenotypeMUT AnxietyYes TreatmentDrug
 ## (Intercept)           800         400        400           400
 ## GenotypeMUT           400         400        200           200
 ## AnxietyYes            400         200        400           200
-## TreatmentDrug         400         200        200           400&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Which gives&lt;/p&gt;
-&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[\mathbf{X&amp;#39;X} = n \cdot \begin{bmatrix} 1 &amp;amp; \frac{1}{2} &amp;amp; \frac{1}{2} &amp;amp; \frac{1}{2} \\ \frac{1}{2} &amp;amp; \frac{1}{2} &amp;amp; \frac{1}{4} &amp;amp; \frac{1}{4} \\ \frac{1}{2} &amp;amp; \frac{1}{4} &amp;amp; \frac{1}{2} &amp;amp; \frac{1}{4} \\ \frac{1}{2} &amp;amp; \frac{1}{4} &amp;amp; \frac{1}{4} &amp;amp; \frac{1}{2}  \end{bmatrix}\]&lt;/span&gt;&lt;/p&gt;
-&lt;p&gt;The full covariance matrix is then:&lt;/p&gt;
-&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[\sigma^2_\beta = \frac{\sigma^2}{n}\cdot\begin{bmatrix} 4 &amp;amp; -2 &amp;amp; -2 &amp;amp; -2 \\ -2 &amp;amp; 4 &amp;amp; 0 &amp;amp; 0 \\ -2 &amp;amp; 0 &amp;amp; 4 &amp;amp; 0 \\ -2 &amp;amp; 0 &amp;amp; 0 &amp;amp; 4 \end{bmatrix}\]&lt;/span&gt;&lt;/p&gt;
-&lt;p&gt;And the standard errors are:&lt;/p&gt;
-&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[\sigma_\beta = \frac{\sigma}{\sqrt{n}}\begin{bmatrix} \sqrt{4} &amp;amp; \sqrt{4} &amp;amp; \sqrt{4} &amp;amp; \sqrt{4} \end{bmatrix}\]&lt;/span&gt;&lt;/p&gt;
-&lt;p&gt;As we can see, the trend from the previous Section continues. The conversion factor for the intercept term is related to the number of parameters in the model, while the values related to the slope parameters are still simply &lt;span class=&#34;math inline&#34;&gt;\(\sqrt{4}\)&lt;/span&gt;. We can expect that, as we continue to add binary predictors, the intercept term will be related to the number of parameters, while the slope parameters will have a conversion of &lt;span class=&#34;math inline&#34;&gt;\(\sqrt{4}\)&lt;/span&gt;. As in the previous Sections, we can recover the residual standard error by multiplying by the appropriate factors:&lt;/p&gt;
-&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;vec &amp;lt;- c(sqrt(nObs/4), sqrt(nObs/4), sqrt(nObs/4), sqrt(nObs/4))
-summary(linMod4)$coefficients[,&amp;quot;Std. Error&amp;quot;]*vec&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;##   (Intercept)   GenotypeMUT    AnxietyYes TreatmentDrug 
-##     0.9990751     0.9990751     0.9990751     0.9990751&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
-&lt;div id=&#34;recap&#34; class=&#34;section level2&#34;&gt;
-&lt;h2&gt;Recap&lt;/h2&gt;
-&lt;p&gt;At this stage let’s compare the conversion factors from &lt;span class=&#34;math inline&#34;&gt;\(\sigma\)&lt;/span&gt; to &lt;span class=&#34;math inline&#34;&gt;\(\sigma_\beta\)&lt;/span&gt; for all non-interactive models.&lt;/p&gt;
-&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;data.frame(Beta0 = c(1/sqrt(nObs), sqrt(2/nObs), sqrt(3/nObs), sqrt(nObs/4)),
+## TreatmentDrug         400         200        200           400</code></pre>
+<p>Which gives</p>
+<p><span class="math display">\[\mathbf{X&#39;X} = n \cdot \begin{bmatrix} 1 &amp; \frac{1}{2} &amp; \frac{1}{2} &amp; \frac{1}{2} \\ \frac{1}{2} &amp; \frac{1}{2} &amp; \frac{1}{4} &amp; \frac{1}{4} \\ \frac{1}{2} &amp; \frac{1}{4} &amp; \frac{1}{2} &amp; \frac{1}{4} \\ \frac{1}{2} &amp; \frac{1}{4} &amp; \frac{1}{4} &amp; \frac{1}{2}  \end{bmatrix}\]</span></p>
+<p>The full covariance matrix is then:</p>
+<p><span class="math display">\[\sigma^2_\beta = \frac{\sigma^2}{n}\cdot\begin{bmatrix} 4 &amp; -2 &amp; -2 &amp; -2 \\ -2 &amp; 4 &amp; 0 &amp; 0 \\ -2 &amp; 0 &amp; 4 &amp; 0 \\ -2 &amp; 0 &amp; 0 &amp; 4 \end{bmatrix}\]</span></p>
+<p>And the standard errors are:</p>
+<p><span class="math display">\[\sigma_\beta = \frac{\sigma}{\sqrt{n}}\begin{bmatrix} \sqrt{4} &amp; \sqrt{4} &amp; \sqrt{4} &amp; \sqrt{4} \end{bmatrix}\]</span></p>
+<p>As we can see, the trend from the previous Section continues. The conversion factor for the intercept term is related to the number of parameters in the model, while the values related to the slope parameters are still simply <span class="math inline">\(\sqrt{4}\)</span>. We can expect that, as we continue to add binary predictors, the intercept term will be related to the number of parameters, while the slope parameters will have a conversion of <span class="math inline">\(\sqrt{4}\)</span>. As in the previous Sections, we can recover the residual standard error by multiplying by the appropriate factors:</p>
+<pre class="r"><code>vec &lt;- c(sqrt(nObs/4), sqrt(nObs/4), sqrt(nObs/4), sqrt(nObs/4))
+summary(linMod4)$coefficients[,&quot;Std. Error&quot;]*vec</code></pre>
+<pre><code>##   (Intercept)   GenotypeMUT    AnxietyYes TreatmentDrug 
+##     0.9990751     0.9990751     0.9990751     0.9990751</code></pre>
+</div>
+<div id="recap" class="section level2">
+<h2>Recap</h2>
+<p>At this stage let’s compare the conversion factors from <span class="math inline">\(\sigma\)</span> to <span class="math inline">\(\sigma_\beta\)</span> for all non-interactive models.</p>
+<pre class="r"><code>data.frame(Beta0 = c(1/sqrt(nObs), sqrt(2/nObs), sqrt(3/nObs), sqrt(nObs/4)),
            Beta1 = c(NA, sqrt(4/nObs), sqrt(4/nObs), sqrt(4/nObs)),
            Beta2 = c(NA, NA, sqrt(4/nObs), sqrt(4/nObs)),
            Beta3 = c(NA, NA, NA, sqrt(4/nObs)),
-           row.names = c(&amp;quot;Model 1&amp;quot;, &amp;quot;Model 2&amp;quot;, &amp;quot;Model 3&amp;quot;, &amp;quot;Model 4&amp;quot;)) %&amp;gt;% kable()&lt;/code&gt;&lt;/pre&gt;
-&lt;table&gt;
-&lt;thead&gt;
-&lt;tr class=&#34;header&#34;&gt;
-&lt;th align=&#34;left&#34;&gt;&lt;/th&gt;
-&lt;th align=&#34;right&#34;&gt;Beta0&lt;/th&gt;
-&lt;th align=&#34;right&#34;&gt;Beta1&lt;/th&gt;
-&lt;th align=&#34;right&#34;&gt;Beta2&lt;/th&gt;
-&lt;th align=&#34;right&#34;&gt;Beta3&lt;/th&gt;
-&lt;/tr&gt;
-&lt;/thead&gt;
-&lt;tbody&gt;
-&lt;tr class=&#34;odd&#34;&gt;
-&lt;td align=&#34;left&#34;&gt;Model 1&lt;/td&gt;
-&lt;td align=&#34;right&#34;&gt;0.0353553&lt;/td&gt;
-&lt;td align=&#34;right&#34;&gt;NA&lt;/td&gt;
-&lt;td align=&#34;right&#34;&gt;NA&lt;/td&gt;
-&lt;td align=&#34;right&#34;&gt;NA&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr class=&#34;even&#34;&gt;
-&lt;td align=&#34;left&#34;&gt;Model 2&lt;/td&gt;
-&lt;td align=&#34;right&#34;&gt;0.0500000&lt;/td&gt;
-&lt;td align=&#34;right&#34;&gt;0.0707107&lt;/td&gt;
-&lt;td align=&#34;right&#34;&gt;NA&lt;/td&gt;
-&lt;td align=&#34;right&#34;&gt;NA&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr class=&#34;odd&#34;&gt;
-&lt;td align=&#34;left&#34;&gt;Model 3&lt;/td&gt;
-&lt;td align=&#34;right&#34;&gt;0.0612372&lt;/td&gt;
-&lt;td align=&#34;right&#34;&gt;0.0707107&lt;/td&gt;
-&lt;td align=&#34;right&#34;&gt;0.0707107&lt;/td&gt;
-&lt;td align=&#34;right&#34;&gt;NA&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr class=&#34;even&#34;&gt;
-&lt;td align=&#34;left&#34;&gt;Model 4&lt;/td&gt;
-&lt;td align=&#34;right&#34;&gt;14.1421356&lt;/td&gt;
-&lt;td align=&#34;right&#34;&gt;0.0707107&lt;/td&gt;
-&lt;td align=&#34;right&#34;&gt;0.0707107&lt;/td&gt;
-&lt;td align=&#34;right&#34;&gt;0.0707107&lt;/td&gt;
-&lt;/tr&gt;
-&lt;/tbody&gt;
-&lt;/table&gt;
-&lt;p&gt;As one might expect, we do see some pattern. Specifically, using the total number of observations, we can express this table as:&lt;/p&gt;
-&lt;table&gt;
-&lt;thead&gt;
-&lt;tr class=&#34;header&#34;&gt;
-&lt;th align=&#34;left&#34;&gt;&lt;/th&gt;
-&lt;th align=&#34;left&#34;&gt;Beta0&lt;/th&gt;
-&lt;th align=&#34;left&#34;&gt;Beta1&lt;/th&gt;
-&lt;th align=&#34;left&#34;&gt;Beta2&lt;/th&gt;
-&lt;th align=&#34;left&#34;&gt;Beta3&lt;/th&gt;
-&lt;/tr&gt;
-&lt;/thead&gt;
-&lt;tbody&gt;
-&lt;tr class=&#34;odd&#34;&gt;
-&lt;td align=&#34;left&#34;&gt;Model 1&lt;/td&gt;
-&lt;td align=&#34;left&#34;&gt;&lt;span class=&#34;math inline&#34;&gt;\(\sqrt{\frac{1}{n}}\)&lt;/span&gt;&lt;/td&gt;
-&lt;td align=&#34;left&#34;&gt;NA&lt;/td&gt;
-&lt;td align=&#34;left&#34;&gt;NA&lt;/td&gt;
-&lt;td align=&#34;left&#34;&gt;NA&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr class=&#34;even&#34;&gt;
-&lt;td align=&#34;left&#34;&gt;Model 2&lt;/td&gt;
-&lt;td align=&#34;left&#34;&gt;&lt;span class=&#34;math inline&#34;&gt;\(\sqrt{\frac{2}{n}}\)&lt;/span&gt;&lt;/td&gt;
-&lt;td align=&#34;left&#34;&gt;&lt;span class=&#34;math inline&#34;&gt;\(\sqrt{\frac{4}{n}}\)&lt;/span&gt;&lt;/td&gt;
-&lt;td align=&#34;left&#34;&gt;NA&lt;/td&gt;
-&lt;td align=&#34;left&#34;&gt;NA&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr class=&#34;odd&#34;&gt;
-&lt;td align=&#34;left&#34;&gt;Model 3&lt;/td&gt;
-&lt;td align=&#34;left&#34;&gt;&lt;span class=&#34;math inline&#34;&gt;\(\sqrt{\frac{3}{n}}\)&lt;/span&gt;&lt;/td&gt;
-&lt;td align=&#34;left&#34;&gt;&lt;span class=&#34;math inline&#34;&gt;\(\sqrt{\frac{4}{n}}\)&lt;/span&gt;&lt;/td&gt;
-&lt;td align=&#34;left&#34;&gt;&lt;span class=&#34;math inline&#34;&gt;\(\sqrt{\frac{4}{n}}\)&lt;/span&gt;&lt;/td&gt;
-&lt;td align=&#34;left&#34;&gt;NA&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr class=&#34;even&#34;&gt;
-&lt;td align=&#34;left&#34;&gt;Model 4&lt;/td&gt;
-&lt;td align=&#34;left&#34;&gt;&lt;span class=&#34;math inline&#34;&gt;\(\sqrt{\frac{4}{n}}\)&lt;/span&gt;&lt;/td&gt;
-&lt;td align=&#34;left&#34;&gt;&lt;span class=&#34;math inline&#34;&gt;\(\sqrt{\frac{4}{n}}\)&lt;/span&gt;&lt;/td&gt;
-&lt;td align=&#34;left&#34;&gt;&lt;span class=&#34;math inline&#34;&gt;\(\sqrt{\frac{4}{n}}\)&lt;/span&gt;&lt;/td&gt;
-&lt;td align=&#34;left&#34;&gt;&lt;span class=&#34;math inline&#34;&gt;\(\sqrt{\frac{4}{n}}\)&lt;/span&gt;&lt;/td&gt;
-&lt;/tr&gt;
-&lt;/tbody&gt;
-&lt;/table&gt;
-&lt;p&gt;As mentioned previously, the multiplicative factor for the intercept error involves the square root of the number of coefficients in the model. Moreover, for the rest of the models, the multiplicative factor is only ever &lt;span class=&#34;math inline&#34;&gt;\(\sqrt{\frac{4}{n}}\)&lt;/span&gt;, i.e. the mappings don’t change as we add more binary variables. This makes sense given that all of the variables are independent in these models. Note that there is no pattern when expressing these conversion factors in terms of the number of data points per group, whic we will denote &lt;span class=&#34;math inline&#34;&gt;\(N\)&lt;/span&gt;:&lt;/p&gt;
-&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[\begin{bmatrix} \sqrt{\frac{1}{N}} &amp;amp; &amp;amp; &amp;amp; \\ \sqrt{\frac{1}{N}}&amp;amp; \sqrt{\frac{2}{N}} &amp;amp; &amp;amp; \\ \sqrt{\frac{3}{4N}} &amp;amp; \sqrt{\frac{1}{N}} &amp;amp; \sqrt{\frac{1}{N}} &amp;amp; \\ \sqrt{\frac{1}{2N}} &amp;amp; \sqrt{\frac{1}{2N}} &amp;amp; \sqrt{\frac{1}{2N}} &amp;amp; \sqrt{\frac{1}{2N}} \end{bmatrix}\]&lt;/span&gt;&lt;/p&gt;
-&lt;p&gt;Recall that &lt;span class=&#34;math inline&#34;&gt;\(N\)&lt;/span&gt; here is different for each row, since the different models pool the data in different ways, and takes on values &lt;span class=&#34;math inline&#34;&gt;\(\{n, \frac{n}{2}, \frac{n}{4}, \frac{n}{8}\}\)&lt;/span&gt;.&lt;/p&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id=&#34;interactive-models&#34; class=&#34;section level1&#34;&gt;
-&lt;h1&gt;Interactive Models&lt;/h1&gt;
-&lt;p&gt;In this Section we explore the influence of interactions on the parameter error estimates and the mapping from the residual standard error.&lt;/p&gt;
-&lt;div id=&#34;two-binary-predictors-with-interaction&#34; class=&#34;section level2&#34;&gt;
-&lt;h2&gt;Two Binary Predictors with Interaction&lt;/h2&gt;
-&lt;p&gt;In this case we consider the interaction between two of the variables, &lt;code&gt;Genotype&lt;/code&gt; and &lt;code&gt;Anxiety&lt;/code&gt;.&lt;/p&gt;
-&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;linModInt &amp;lt;- lm(Response ~ Genotype*Anxiety, data = dfSimple)
-summary(linModInt)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;## 
+           row.names = c(&quot;Model 1&quot;, &quot;Model 2&quot;, &quot;Model 3&quot;, &quot;Model 4&quot;)) %&gt;% kable()</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="right">Beta0</th>
+<th align="right">Beta1</th>
+<th align="right">Beta2</th>
+<th align="right">Beta3</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Model 1</td>
+<td align="right">0.0353553</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+</tr>
+<tr class="even">
+<td align="left">Model 2</td>
+<td align="right">0.0500000</td>
+<td align="right">0.0707107</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+</tr>
+<tr class="odd">
+<td align="left">Model 3</td>
+<td align="right">0.0612372</td>
+<td align="right">0.0707107</td>
+<td align="right">0.0707107</td>
+<td align="right">NA</td>
+</tr>
+<tr class="even">
+<td align="left">Model 4</td>
+<td align="right">14.1421356</td>
+<td align="right">0.0707107</td>
+<td align="right">0.0707107</td>
+<td align="right">0.0707107</td>
+</tr>
+</tbody>
+</table>
+<p>As one might expect, we do see some pattern. Specifically, using the total number of observations, we can express this table as:</p>
+<table>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="left">Beta0</th>
+<th align="left">Beta1</th>
+<th align="left">Beta2</th>
+<th align="left">Beta3</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Model 1</td>
+<td align="left"><span class="math inline">\(\sqrt{\frac{1}{n}}\)</span></td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+</tr>
+<tr class="even">
+<td align="left">Model 2</td>
+<td align="left"><span class="math inline">\(\sqrt{\frac{2}{n}}\)</span></td>
+<td align="left"><span class="math inline">\(\sqrt{\frac{4}{n}}\)</span></td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+</tr>
+<tr class="odd">
+<td align="left">Model 3</td>
+<td align="left"><span class="math inline">\(\sqrt{\frac{3}{n}}\)</span></td>
+<td align="left"><span class="math inline">\(\sqrt{\frac{4}{n}}\)</span></td>
+<td align="left"><span class="math inline">\(\sqrt{\frac{4}{n}}\)</span></td>
+<td align="left">NA</td>
+</tr>
+<tr class="even">
+<td align="left">Model 4</td>
+<td align="left"><span class="math inline">\(\sqrt{\frac{4}{n}}\)</span></td>
+<td align="left"><span class="math inline">\(\sqrt{\frac{4}{n}}\)</span></td>
+<td align="left"><span class="math inline">\(\sqrt{\frac{4}{n}}\)</span></td>
+<td align="left"><span class="math inline">\(\sqrt{\frac{4}{n}}\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>As mentioned previously, the multiplicative factor for the intercept error involves the square root of the number of coefficients in the model. Moreover, for the rest of the models, the multiplicative factor is only ever <span class="math inline">\(\sqrt{\frac{4}{n}}\)</span>, i.e. the mappings don’t change as we add more binary variables. This makes sense given that all of the variables are independent in these models. Note that there is no pattern when expressing these conversion factors in terms of the number of data points per group, whic we will denote <span class="math inline">\(N\)</span>:</p>
+<p><span class="math display">\[\begin{bmatrix} \sqrt{\frac{1}{N}} &amp; &amp; &amp; \\ \sqrt{\frac{1}{N}}&amp; \sqrt{\frac{2}{N}} &amp; &amp; \\ \sqrt{\frac{3}{4N}} &amp; \sqrt{\frac{1}{N}} &amp; \sqrt{\frac{1}{N}} &amp; \\ \sqrt{\frac{1}{2N}} &amp; \sqrt{\frac{1}{2N}} &amp; \sqrt{\frac{1}{2N}} &amp; \sqrt{\frac{1}{2N}} \end{bmatrix}\]</span></p>
+<p>Recall that <span class="math inline">\(N\)</span> here is different for each row, since the different models pool the data in different ways, and takes on values <span class="math inline">\(\{n, \frac{n}{2}, \frac{n}{4}, \frac{n}{8}\}\)</span>.</p>
+</div>
+</div>
+<div id="interactive-models" class="section level1">
+<h1>Interactive Models</h1>
+<p>In this Section we explore the influence of interactions on the parameter error estimates and the mapping from the residual standard error.</p>
+<div id="two-binary-predictors-with-interaction" class="section level2">
+<h2>Two Binary Predictors with Interaction</h2>
+<p>In this case we consider the interaction between two of the variables, <code>Genotype</code> and <code>Anxiety</code>.</p>
+<pre class="r"><code>linModInt &lt;- lm(Response ~ Genotype*Anxiety, data = dfSimple)
+summary(linModInt)</code></pre>
+<pre><code>## 
 ## Call:
 ## lm(formula = Response ~ Genotype * Anxiety, data = dfSimple)
 ## 
@@ -434,22 +435,22 @@ summary(linModInt)&lt;/code&gt;&lt;/pre&gt;
 ## -4.0109 -1.0434  0.0248  1.0528  4.2269 
 ## 
 ## Coefficients:
-##                        Estimate Std. Error t value Pr(&amp;gt;|t|)    
-## (Intercept)             0.98172    0.09903   9.913   &amp;lt;2e-16 ***
-## GenotypeMUT             2.14447    0.14005  15.312   &amp;lt;2e-16 ***
-## AnxietyYes              2.12790    0.14005  15.194   &amp;lt;2e-16 ***
+##                        Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)             0.98172    0.09903   9.913   &lt;2e-16 ***
+## GenotypeMUT             2.14447    0.14005  15.312   &lt;2e-16 ***
+## AnxietyYes              2.12790    0.14005  15.194   &lt;2e-16 ***
 ## GenotypeMUT:AnxietyYes -0.28431    0.19806  -1.435    0.152    
 ## ---
-## Signif. codes:  0 &amp;#39;***&amp;#39; 0.001 &amp;#39;**&amp;#39; 0.01 &amp;#39;*&amp;#39; 0.05 &amp;#39;.&amp;#39; 0.1 &amp;#39; &amp;#39; 1
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 ## 
 ## Residual standard error: 1.4 on 796 degrees of freedom
 ## Multiple R-squared:  0.5053, Adjusted R-squared:  0.5034 
-## F-statistic:   271 on 3 and 796 DF,  p-value: &amp;lt; 2.2e-16&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Note that though we have added a new predictor, there are still only 4 groups, as in Model 3. The difference is that the mean values of these groups may be more accurately estimated. In the present case we don’t expect this model to out-perform the model without an interaction, since there is no real interaction in the data, making the interaction parameter superfluous. This means that the estimate for the residual standard error should be similar to that from the non-interactive model. If the situation were reversed however and the data truly contained an interaction, then this model would more appropriately recapitulate the group means and lead to a more accurate estimation of &lt;span class=&#34;math inline&#34;&gt;\(\sigma\)&lt;/span&gt;.&lt;/p&gt;
-&lt;p&gt;The design matrix will be different either way however due to the additional interaction predictor.&lt;/p&gt;
-&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;xMat &amp;lt;- model.matrix(linModInt)
-t(xMat) %*% xMat&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;##                        (Intercept) GenotypeMUT AnxietyYes
+## F-statistic:   271 on 3 and 796 DF,  p-value: &lt; 2.2e-16</code></pre>
+<p>Note that though we have added a new predictor, there are still only 4 groups, as in Model 3. The difference is that the mean values of these groups may be more accurately estimated. In the present case we don’t expect this model to out-perform the model without an interaction, since there is no real interaction in the data, making the interaction parameter superfluous. This means that the estimate for the residual standard error should be similar to that from the non-interactive model. If the situation were reversed however and the data truly contained an interaction, then this model would more appropriately recapitulate the group means and lead to a more accurate estimation of <span class="math inline">\(\sigma\)</span>.</p>
+<p>The design matrix will be different either way however due to the additional interaction predictor.</p>
+<pre class="r"><code>xMat &lt;- model.matrix(linModInt)
+t(xMat) %*% xMat</code></pre>
+<pre><code>##                        (Intercept) GenotypeMUT AnxietyYes
 ## (Intercept)                    800         400        400
 ## GenotypeMUT                    400         400        200
 ## AnxietyYes                     400         200        400
@@ -458,31 +459,31 @@ t(xMat) %*% xMat&lt;/code&gt;&lt;/pre&gt;
 ## (Intercept)                               200
 ## GenotypeMUT                               200
 ## AnxietyYes                                200
-## GenotypeMUT:AnxietyYes                    200&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Explicitly using the observation number, we have:&lt;/p&gt;
-&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[n \cdot \begin{bmatrix} 1 &amp;amp; \frac{1}{2} &amp;amp; \frac{1}{2} &amp;amp; \frac{1}{4} \\ \frac{1}{2} &amp;amp; \frac{1}{2} &amp;amp; \frac{1}{4} &amp;amp; \frac{1}{4} \\ \frac{1}{2} &amp;amp; \frac{1}{4} &amp;amp; \frac{1}{2} &amp;amp; \frac{1}{4} \\ \frac{1}{4} &amp;amp; \frac{1}{4} &amp;amp; \frac{1}{4} &amp;amp; \frac{1}{4}  \end{bmatrix}\]&lt;/span&gt;&lt;/p&gt;
-&lt;p&gt;The covariance matrix is:&lt;/p&gt;
-&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[\sigma^2_\beta = \frac{\sigma^2}{n}\cdot\begin{bmatrix} 4 &amp;amp; -4 &amp;amp; -4 &amp;amp; 4 \\ -4 &amp;amp; 8 &amp;amp; 4 &amp;amp; -8 \\ -4 &amp;amp; 4 &amp;amp; 8 &amp;amp; -8 \\ 4 &amp;amp; -8 &amp;amp; -8 &amp;amp; 16 \end{bmatrix}\]&lt;/span&gt;&lt;/p&gt;
-&lt;p&gt;with parameter standard errors of&lt;/p&gt;
-&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[\sigma_\beta = \frac{\sigma}{\sqrt{n}}\begin{bmatrix} \sqrt{4} &amp;amp; \sqrt{8} &amp;amp; \sqrt{8} &amp;amp; \sqrt{16} \end{bmatrix}\]&lt;/span&gt;&lt;/p&gt;
-&lt;p&gt;Here we see a pattern change from the models without an interaction. The intercept mapping still involves a scaling factor that uses the number of parameters in the model, but the standard errors for the main effects parameters are now larger by a factor of &lt;span class=&#34;math inline&#34;&gt;\(\sqrt{2}\)&lt;/span&gt; compared to the model without an interaction. The parameter error for the interaction is also larger than that for the main effects. These considerations will have a slight impact on the inferential side of linear modelling. Specifically, an interaction effect will always be less powerful than a main effect, and a main effect in a model with an interaction will always be less powerful than a main effect in a model without an interaction. The reason for this is that the &lt;span class=&#34;math inline&#34;&gt;\(t\)&lt;/span&gt;-statistic is computed as &lt;span class=&#34;math inline&#34;&gt;\(t = \hat{\beta}/\sigma_\beta\)&lt;/span&gt;. Of course this depends on what model accurately describes the data. The aforementioned power of a non-interactive model will be thrown off on data with an interaction, since the estimate for &lt;span class=&#34;math inline&#34;&gt;\(\sigma\)&lt;/span&gt; will be larger due to the interaction in the data. These are things to keep in mind when considering which model to use.&lt;/p&gt;
-&lt;p&gt;Applying the mappings to the parameter standard errors, we recover the residual standard error:&lt;/p&gt;
-&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;vec &amp;lt;- c(sqrt(nObs/4), sqrt(nObs/8), sqrt(nObs/8), sqrt(nObs/16))
-summary(linModInt)$coefficients[,&amp;quot;Std. Error&amp;quot;]*vec&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;##            (Intercept)            GenotypeMUT             AnxietyYes 
+## GenotypeMUT:AnxietyYes                    200</code></pre>
+<p>Explicitly using the observation number, we have:</p>
+<p><span class="math display">\[n \cdot \begin{bmatrix} 1 &amp; \frac{1}{2} &amp; \frac{1}{2} &amp; \frac{1}{4} \\ \frac{1}{2} &amp; \frac{1}{2} &amp; \frac{1}{4} &amp; \frac{1}{4} \\ \frac{1}{2} &amp; \frac{1}{4} &amp; \frac{1}{2} &amp; \frac{1}{4} \\ \frac{1}{4} &amp; \frac{1}{4} &amp; \frac{1}{4} &amp; \frac{1}{4}  \end{bmatrix}\]</span></p>
+<p>The covariance matrix is:</p>
+<p><span class="math display">\[\sigma^2_\beta = \frac{\sigma^2}{n}\cdot\begin{bmatrix} 4 &amp; -4 &amp; -4 &amp; 4 \\ -4 &amp; 8 &amp; 4 &amp; -8 \\ -4 &amp; 4 &amp; 8 &amp; -8 \\ 4 &amp; -8 &amp; -8 &amp; 16 \end{bmatrix}\]</span></p>
+<p>with parameter standard errors of</p>
+<p><span class="math display">\[\sigma_\beta = \frac{\sigma}{\sqrt{n}}\begin{bmatrix} \sqrt{4} &amp; \sqrt{8} &amp; \sqrt{8} &amp; \sqrt{16} \end{bmatrix}\]</span></p>
+<p>Here we see a pattern change from the models without an interaction. The intercept mapping still involves a scaling factor that uses the number of parameters in the model, but the standard errors for the main effects parameters are now larger by a factor of <span class="math inline">\(\sqrt{2}\)</span> compared to the model without an interaction. The parameter error for the interaction is also larger than that for the main effects. These considerations will have a slight impact on the inferential side of linear modelling. Specifically, an interaction effect will always be less powerful than a main effect, and a main effect in a model with an interaction will always be less powerful than a main effect in a model without an interaction. The reason for this is that the <span class="math inline">\(t\)</span>-statistic is computed as <span class="math inline">\(t = \hat{\beta}/\sigma_\beta\)</span>. Of course this depends on what model accurately describes the data. The aforementioned power of a non-interactive model will be thrown off on data with an interaction, since the estimate for <span class="math inline">\(\sigma\)</span> will be larger due to the interaction in the data. These are things to keep in mind when considering which model to use.</p>
+<p>Applying the mappings to the parameter standard errors, we recover the residual standard error:</p>
+<pre class="r"><code>vec &lt;- c(sqrt(nObs/4), sqrt(nObs/8), sqrt(nObs/8), sqrt(nObs/16))
+summary(linModInt)$coefficients[,&quot;Std. Error&quot;]*vec</code></pre>
+<pre><code>##            (Intercept)            GenotypeMUT             AnxietyYes 
 ##               1.400499               1.400499               1.400499 
 ## GenotypeMUT:AnxietyYes 
-##               1.400499&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
-&lt;div id=&#34;interaction-without-main-effect&#34; class=&#34;section level2&#34;&gt;
-&lt;h2&gt;Interaction without Main Effect&lt;/h2&gt;
-&lt;p&gt;In this final Section I examine the interesting case of a model with a second order interaction but without the main effect for one of the predictors. What this model does is that it describes data in which the reference group for one of the binary variables (e.g. Wildtypes) is not influenced by observations of another variable (e.g. Anxiety). In order to get the &lt;code&gt;lm()&lt;/code&gt; function to do this properly, we have to create an explicit dummy encoding of the variable with a main effect.&lt;/p&gt;
-&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;dfSimple &amp;lt;- dfSimple %&amp;gt;% 
-  mutate(GenotypeDummy = case_when(Genotype == &amp;quot;WT&amp;quot; ~ 0,
-                                                          Genotype == &amp;quot;MUT&amp;quot; ~ 1))
-linModInt2 &amp;lt;- lm(Response ~ GenotypeDummy + GenotypeDummy:Anxiety, data = dfSimple)
-summary(linModInt2)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;## 
+##               1.400499</code></pre>
+</div>
+<div id="interaction-without-main-effect" class="section level2">
+<h2>Interaction without Main Effect</h2>
+<p>In this final Section I examine the interesting case of a model with a second order interaction but without the main effect for one of the predictors. What this model does is that it describes data in which the reference group for one of the binary variables (e.g. Wildtypes) is not influenced by observations of another variable (e.g. Anxiety). In order to get the <code>lm()</code> function to do this properly, we have to create an explicit dummy encoding of the variable with a main effect.</p>
+<pre class="r"><code>dfSimple &lt;- dfSimple %&gt;% 
+  mutate(GenotypeDummy = case_when(Genotype == &quot;WT&quot; ~ 0,
+                                                          Genotype == &quot;MUT&quot; ~ 1))
+linModInt2 &lt;- lm(Response ~ GenotypeDummy + GenotypeDummy:Anxiety, data = dfSimple)
+summary(linModInt2)</code></pre>
+<pre><code>## 
 ## Call:
 ## lm(formula = Response ~ GenotypeDummy + GenotypeDummy:Anxiety, 
 ##     data = dfSimple)
@@ -492,56 +493,56 @@ summary(linModInt2)&lt;/code&gt;&lt;/pre&gt;
 ## -4.0109 -1.1560  0.0171  1.1692  5.2909 
 ## 
 ## Coefficients:
-##                          Estimate Std. Error t value Pr(&amp;gt;|t|)    
-## (Intercept)               2.04567    0.07948  25.737  &amp;lt; 2e-16 ***
+##                          Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)               2.04567    0.07948  25.737  &lt; 2e-16 ***
 ## GenotypeDummy             1.08052    0.13767   7.849 1.35e-14 ***
-## GenotypeDummy:AnxietyYes  1.84359    0.15897  11.597  &amp;lt; 2e-16 ***
+## GenotypeDummy:AnxietyYes  1.84359    0.15897  11.597  &lt; 2e-16 ***
 ## ---
-## Signif. codes:  0 &amp;#39;***&amp;#39; 0.001 &amp;#39;**&amp;#39; 0.01 &amp;#39;*&amp;#39; 0.05 &amp;#39;.&amp;#39; 0.1 &amp;#39; &amp;#39; 1
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 ## 
 ## Residual standard error: 1.59 on 797 degrees of freedom
 ## Multiple R-squared:  0.3618, Adjusted R-squared:  0.3602 
-## F-statistic: 225.9 on 2 and 797 DF,  p-value: &amp;lt; 2.2e-16&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Note that, in comparison to the fully interactive model presented in the previous Section, the residual standard error estimate is different. This is because the model has pooled the anxiety “yes” and “no” groups for the wildtypes. Since the data we generated included a main effect of anxiety, the variance of this wildtype group will be larger than that of the other two groups (mutant-no-anxiety and mutant-yes-anxiety). Additionally, the residual standard error is no longer just the average of the group standard deviations. This is due mainly to the fact that the wildtype group in this model is twice as large as the other two groups. To demonstrate this, let’s compute the naive average of group standard deviations:&lt;/p&gt;
-&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;(dfTemp &amp;lt;- dfSimple %&amp;gt;% 
-  mutate(NewGroups = case_when(Genotype == &amp;quot;WT&amp;quot; ~ &amp;quot;WT&amp;quot;,
-                               Genotype == &amp;quot;MUT&amp;quot; &amp;amp; Anxiety == &amp;quot;No&amp;quot; ~ &amp;quot;NoMUT&amp;quot;,
-                               Genotype == &amp;quot;MUT&amp;quot; &amp;amp; Anxiety == &amp;quot;Yes&amp;quot; ~ &amp;quot;YesMUT&amp;quot;)) %&amp;gt;% 
-  group_by(NewGroups) %&amp;gt;%
-  summarise(varPerGroup = var(Response)) %&amp;gt;% 
-  ungroup %&amp;gt;% 
-  mutate(sigma = sqrt(mean(varPerGroup))))&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;## # A tibble: 3 x 3
+## F-statistic: 225.9 on 2 and 797 DF,  p-value: &lt; 2.2e-16</code></pre>
+<p>Note that, in comparison to the fully interactive model presented in the previous Section, the residual standard error estimate is different. This is because the model has pooled the anxiety “yes” and “no” groups for the wildtypes. Since the data we generated included a main effect of anxiety, the variance of this wildtype group will be larger than that of the other two groups (mutant-no-anxiety and mutant-yes-anxiety). Additionally, the residual standard error is no longer just the average of the group standard deviations. This is due mainly to the fact that the wildtype group in this model is twice as large as the other two groups. To demonstrate this, let’s compute the naive average of group standard deviations:</p>
+<pre class="r"><code>(dfTemp &lt;- dfSimple %&gt;% 
+  mutate(NewGroups = case_when(Genotype == &quot;WT&quot; ~ &quot;WT&quot;,
+                               Genotype == &quot;MUT&quot; &amp; Anxiety == &quot;No&quot; ~ &quot;NoMUT&quot;,
+                               Genotype == &quot;MUT&quot; &amp; Anxiety == &quot;Yes&quot; ~ &quot;YesMUT&quot;)) %&gt;% 
+  group_by(NewGroups) %&gt;%
+  summarise(varPerGroup = var(Response)) %&gt;% 
+  ungroup %&gt;% 
+  mutate(sigma = sqrt(mean(varPerGroup))))</code></pre>
+<pre><code>## # A tibble: 3 x 3
 ##   NewGroups varPerGroup sigma
-##   &amp;lt;chr&amp;gt;           &amp;lt;dbl&amp;gt; &amp;lt;dbl&amp;gt;
+##   &lt;chr&gt;           &lt;dbl&gt; &lt;dbl&gt;
 ## 1 NoMUT            2.05  1.54
 ## 2 WT               3.01  1.54
-## 3 YesMUT           2.04  1.54&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Observe that the wildtype standard deviation is larger than that for the other groups. The average is not equal to the residual standard error. It can be shown mathematically that in this case the residual standard error can be estimated approximately as&lt;/p&gt;
-&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;sqrt((1/4)*(dfTemp$varPerGroup[1] + dfTemp$varPerGroup[3] + 2*dfTemp$varPerGroup[2]))&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;## [1] 1.589483&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;An important point is that for the present data, this model is not homoscedastic, which is one of the assumptions underlying inferential statistics using linear models. To move forward we will generate a new data set in which there is no main anxiety effect, only an interaction. This makes it so that the group standard deviations will be approximately the same and put us back in the regime of homoscedasticity. Thus even though the wildtype group will have double the number of observations, the residual standard error will be approximately the average of the group standard deviations. We will ignore the presence of &lt;code&gt;Treatment&lt;/code&gt;.&lt;/p&gt;
-&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;meanRef &amp;lt;- 0
-sigma &amp;lt;- 1
-effectGenotype &amp;lt;- 2
-effectAnxiety &amp;lt;- 2
+## 3 YesMUT           2.04  1.54</code></pre>
+<p>Observe that the wildtype standard deviation is larger than that for the other groups. The average is not equal to the residual standard error. It can be shown mathematically that in this case the residual standard error can be estimated approximately as</p>
+<pre class="r"><code>sqrt((1/4)*(dfTemp$varPerGroup[1] + dfTemp$varPerGroup[3] + 2*dfTemp$varPerGroup[2]))</code></pre>
+<pre><code>## [1] 1.589483</code></pre>
+<p>An important point is that for the present data, this model is not homoscedastic, which is one of the assumptions underlying inferential statistics using linear models. To move forward we will generate a new data set in which there is no main anxiety effect, only an interaction. This makes it so that the group standard deviations will be approximately the same and put us back in the regime of homoscedasticity. Thus even though the wildtype group will have double the number of observations, the residual standard error will be approximately the average of the group standard deviations. We will ignore the presence of <code>Treatment</code>.</p>
+<pre class="r"><code>meanRef &lt;- 0
+sigma &lt;- 1
+effectGenotype &lt;- 2
+effectAnxiety &lt;- 2
 
-dfSimple &amp;lt;- dfSimple %&amp;gt;%
-  mutate(Response = case_when(Genotype == &amp;quot;WT&amp;quot; ~ rnorm(nrow(.),meanRef,sigma),
-                              Genotype == &amp;quot;MUT&amp;quot; &amp;amp; Anxiety == &amp;quot;No&amp;quot; ~ rnorm(nrow(.),meanRef + effectGenotype, sigma),
-                              Genotype == &amp;quot;MUT&amp;quot; &amp;amp; Anxiety == &amp;quot;Yes&amp;quot; ~ rnorm(nrow(.), meanRef + effectGenotype + effectAnxiety, sigma)))
+dfSimple &lt;- dfSimple %&gt;%
+  mutate(Response = case_when(Genotype == &quot;WT&quot; ~ rnorm(nrow(.),meanRef,sigma),
+                              Genotype == &quot;MUT&quot; &amp; Anxiety == &quot;No&quot; ~ rnorm(nrow(.),meanRef + effectGenotype, sigma),
+                              Genotype == &quot;MUT&quot; &amp; Anxiety == &quot;Yes&quot; ~ rnorm(nrow(.), meanRef + effectGenotype + effectAnxiety, sigma)))
 
 
 ggplot(dfSimple, aes(x = Genotype, y = Response, col = Anxiety)) + 
   geom_jitter(width = 0.2) +
-  scale_color_brewer(palette = &amp;quot;Set1&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;/blog/post/2018-07-06_LinearModelsErrors_files/figure-html/unnamed-chunk-30-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;Re-running the model on this new data, we find:&lt;/p&gt;
-&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;dfSimple &amp;lt;- dfSimple %&amp;gt;% mutate(GenotypeDummy = case_when(Genotype == &amp;quot;WT&amp;quot; ~ 0,
-                                                          Genotype == &amp;quot;MUT&amp;quot; ~ 1))
-linModInt2 &amp;lt;- lm(Response ~ GenotypeDummy + GenotypeDummy:Anxiety, data = dfSimple)
-summary(linModInt2)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;## 
+  scale_color_brewer(palette = &quot;Set1&quot;)</code></pre>
+<p><img src="/blog/post/2018-07-06_LinearModelsErrors_files/figure-html/unnamed-chunk-30-1.png" width="672" /></p>
+<p>Re-running the model on this new data, we find:</p>
+<pre class="r"><code>dfSimple &lt;- dfSimple %&gt;% mutate(GenotypeDummy = case_when(Genotype == &quot;WT&quot; ~ 0,
+                                                          Genotype == &quot;MUT&quot; ~ 1))
+linModInt2 &lt;- lm(Response ~ GenotypeDummy + GenotypeDummy:Anxiety, data = dfSimple)
+summary(linModInt2)</code></pre>
+<pre><code>## 
 ## Call:
 ## lm(formula = Response ~ GenotypeDummy + GenotypeDummy:Anxiety, 
 ##     data = dfSimple)
@@ -551,176 +552,177 @@ summary(linModInt2)&lt;/code&gt;&lt;/pre&gt;
 ## -2.96592 -0.65534  0.00185  0.65837  3.05810 
 ## 
 ## Coefficients:
-##                          Estimate Std. Error t value Pr(&amp;gt;|t|)    
+##                          Estimate Std. Error t value Pr(&gt;|t|)    
 ## (Intercept)              -0.02255    0.04830  -0.467    0.641    
-## GenotypeDummy             2.00184    0.08366  23.927   &amp;lt;2e-16 ***
-## GenotypeDummy:AnxietyYes  1.98251    0.09661  20.522   &amp;lt;2e-16 ***
+## GenotypeDummy             2.00184    0.08366  23.927   &lt;2e-16 ***
+## GenotypeDummy:AnxietyYes  1.98251    0.09661  20.522   &lt;2e-16 ***
 ## ---
-## Signif. codes:  0 &amp;#39;***&amp;#39; 0.001 &amp;#39;**&amp;#39; 0.01 &amp;#39;*&amp;#39; 0.05 &amp;#39;.&amp;#39; 0.1 &amp;#39; &amp;#39; 1
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 ## 
 ## Residual standard error: 0.9661 on 797 degrees of freedom
 ## Multiple R-squared:  0.746,  Adjusted R-squared:  0.7454 
-## F-statistic:  1170 on 2 and 797 DF,  p-value: &amp;lt; 2.2e-16&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Note that the parameter estimates recapitulate what we put into the model. Moreover the residual standard error is now approximately equal to the input value of &lt;span class=&#34;math inline&#34;&gt;\(\sigma\)&lt;/span&gt;. We can compute the group standard deviations to see how this relates to the residual standard error:&lt;/p&gt;
-&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;dfSimple %&amp;gt;% 
-  mutate(NewGroups = case_when(Genotype == &amp;quot;WT&amp;quot; ~ &amp;quot;WT&amp;quot;,
-                               Genotype == &amp;quot;MUT&amp;quot; &amp;amp; Anxiety == &amp;quot;No&amp;quot; ~ &amp;quot;NoMUT&amp;quot;,
-                               Genotype == &amp;quot;MUT&amp;quot; &amp;amp; Anxiety == &amp;quot;Yes&amp;quot; ~ &amp;quot;YesMUT&amp;quot;)) %&amp;gt;% 
-  group_by(NewGroups) %&amp;gt;%
-  summarise(varPerGroup = var(Response)) %&amp;gt;% 
-  ungroup %&amp;gt;% 
-  mutate(sigma = sqrt(mean(varPerGroup)))&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;## # A tibble: 3 x 3
+## F-statistic:  1170 on 2 and 797 DF,  p-value: &lt; 2.2e-16</code></pre>
+<p>Note that the parameter estimates recapitulate what we put into the model. Moreover the residual standard error is now approximately equal to the input value of <span class="math inline">\(\sigma\)</span>. We can compute the group standard deviations to see how this relates to the residual standard error:</p>
+<pre class="r"><code>dfSimple %&gt;% 
+  mutate(NewGroups = case_when(Genotype == &quot;WT&quot; ~ &quot;WT&quot;,
+                               Genotype == &quot;MUT&quot; &amp; Anxiety == &quot;No&quot; ~ &quot;NoMUT&quot;,
+                               Genotype == &quot;MUT&quot; &amp; Anxiety == &quot;Yes&quot; ~ &quot;YesMUT&quot;)) %&gt;% 
+  group_by(NewGroups) %&gt;%
+  summarise(varPerGroup = var(Response)) %&gt;% 
+  ungroup %&gt;% 
+  mutate(sigma = sqrt(mean(varPerGroup)))</code></pre>
+<pre><code>## # A tibble: 3 x 3
 ##   NewGroups varPerGroup sigma
-##   &amp;lt;chr&amp;gt;           &amp;lt;dbl&amp;gt; &amp;lt;dbl&amp;gt;
+##   &lt;chr&gt;           &lt;dbl&gt; &lt;dbl&gt;
 ## 1 NoMUT           0.846 0.963
 ## 2 WT              0.953 0.963
-## 3 YesMUT          0.980 0.963&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;In this case the average is closer to the residual standard error estimate.&lt;/p&gt;
-&lt;p&gt;Next we examine the mapping from &lt;span class=&#34;math inline&#34;&gt;\(\sigma\)&lt;/span&gt; to &lt;span class=&#34;math inline&#34;&gt;\(\sigma_\beta\)&lt;/span&gt; to see how it compares to the model with a main anxiety effect.&lt;/p&gt;
-&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;xMat &amp;lt;- model.matrix(linModInt2)
-t(xMat) %*% xMat&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;##                          (Intercept) GenotypeDummy
+## 3 YesMUT          0.980 0.963</code></pre>
+<p>In this case the average is closer to the residual standard error estimate.</p>
+<p>Next we examine the mapping from <span class="math inline">\(\sigma\)</span> to <span class="math inline">\(\sigma_\beta\)</span> to see how it compares to the model with a main anxiety effect.</p>
+<pre class="r"><code>xMat &lt;- model.matrix(linModInt2)
+t(xMat) %*% xMat</code></pre>
+<pre><code>##                          (Intercept) GenotypeDummy
 ## (Intercept)                      800           400
 ## GenotypeDummy                    400           400
 ## GenotypeDummy:AnxietyYes         200           200
 ##                          GenotypeDummy:AnxietyYes
 ## (Intercept)                                   200
 ## GenotypeDummy                                 200
-## GenotypeDummy:AnxietyYes                      200&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[ n \cdot \begin{bmatrix} 1 &amp;amp; \frac{1}{2} &amp;amp; \frac{1}{4} \\ \frac{1}{2} &amp;amp; \frac{1}{2} &amp;amp; \frac{1}{4} \\ \frac{1}{4} &amp;amp; \frac{1}{4} &amp;amp; \frac{1}{4} \end{bmatrix}\]&lt;/span&gt;&lt;/p&gt;
-&lt;p&gt;The covariance matrix is&lt;/p&gt;
-&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[\frac{\sigma^2}{n}\cdot\begin{bmatrix} 2 &amp;amp; -2 &amp;amp; 0 \\ -2 &amp;amp; 6 &amp;amp; -4 \\ 0 &amp;amp; -4 &amp;amp; 8 \end{bmatrix}\]&lt;/span&gt;&lt;/p&gt;
-&lt;p&gt;which leads to standard errors of&lt;/p&gt;
-&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[\sigma_\beta = \frac{\sigma}{\sqrt{n}}\begin{bmatrix} \sqrt{2} &amp;amp; \sqrt{6} &amp;amp; \sqrt{8} \end{bmatrix}\]&lt;/span&gt;&lt;/p&gt;
-&lt;p&gt;Now, comparing this model to the previous model with both main effects:&lt;/p&gt;
-&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;data.frame(Intercept = c(sqrt(4/nObs),sqrt(2/nObs)),
+## GenotypeDummy:AnxietyYes                      200</code></pre>
+<p><span class="math display">\[ n \cdot \begin{bmatrix} 1 &amp; \frac{1}{2} &amp; \frac{1}{4} \\ \frac{1}{2} &amp; \frac{1}{2} &amp; \frac{1}{4} \\ \frac{1}{4} &amp; \frac{1}{4} &amp; \frac{1}{4} \end{bmatrix}\]</span></p>
+<p>The covariance matrix is</p>
+<p><span class="math display">\[\frac{\sigma^2}{n}\cdot\begin{bmatrix} 2 &amp; -2 &amp; 0 \\ -2 &amp; 6 &amp; -4 \\ 0 &amp; -4 &amp; 8 \end{bmatrix}\]</span></p>
+<p>which leads to standard errors of</p>
+<p><span class="math display">\[\sigma_\beta = \frac{\sigma}{\sqrt{n}}\begin{bmatrix} \sqrt{2} &amp; \sqrt{6} &amp; \sqrt{8} \end{bmatrix}\]</span></p>
+<p>Now, comparing this model to the previous model with both main effects:</p>
+<pre class="r"><code>data.frame(Intercept = c(sqrt(4/nObs),sqrt(2/nObs)),
            Genotype = c(sqrt(8/nObs), sqrt(6/nObs)),
            Anxiety = c(sqrt(8/nObs), NA),
            GenotypeAnxiety = c(sqrt(16/nObs), sqrt(8/nObs)), 
-           row.names = c(&amp;quot;With Main Effect&amp;quot;, &amp;quot;Without Main Effect&amp;quot;))&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;##                      Intercept   Genotype Anxiety GenotypeAnxiety
+           row.names = c(&quot;With Main Effect&quot;, &quot;Without Main Effect&quot;))</code></pre>
+<pre><code>##                      Intercept   Genotype Anxiety GenotypeAnxiety
 ## With Main Effect    0.07071068 0.10000000     0.1       0.1414214
-## Without Main Effect 0.05000000 0.08660254      NA       0.1000000&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Using the number of observations &lt;span class=&#34;math inline&#34;&gt;\(n\)&lt;/span&gt; we find:&lt;/p&gt;
-&lt;table&gt;
-&lt;thead&gt;
-&lt;tr class=&#34;header&#34;&gt;
-&lt;th align=&#34;left&#34;&gt;&lt;/th&gt;
-&lt;th align=&#34;left&#34;&gt;Intercept&lt;/th&gt;
-&lt;th align=&#34;left&#34;&gt;Genotype&lt;/th&gt;
-&lt;th align=&#34;left&#34;&gt;Anxiety&lt;/th&gt;
-&lt;th align=&#34;left&#34;&gt;GenotypeAnxiety&lt;/th&gt;
-&lt;/tr&gt;
-&lt;/thead&gt;
-&lt;tbody&gt;
-&lt;tr class=&#34;odd&#34;&gt;
-&lt;td align=&#34;left&#34;&gt;With Main Effect&lt;/td&gt;
-&lt;td align=&#34;left&#34;&gt;&lt;span class=&#34;math inline&#34;&gt;\(\sqrt{\frac{4}{n}}\)&lt;/span&gt;&lt;/td&gt;
-&lt;td align=&#34;left&#34;&gt;&lt;span class=&#34;math inline&#34;&gt;\(\sqrt{\frac{8}{n}}\)&lt;/span&gt;&lt;/td&gt;
-&lt;td align=&#34;left&#34;&gt;&lt;span class=&#34;math inline&#34;&gt;\(\sqrt{\frac{8}{n}}\)&lt;/span&gt;&lt;/td&gt;
-&lt;td align=&#34;left&#34;&gt;&lt;span class=&#34;math inline&#34;&gt;\(\sqrt{\frac{16}{n}}\)&lt;/span&gt;&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr class=&#34;even&#34;&gt;
-&lt;td align=&#34;left&#34;&gt;Without Main Effect&lt;/td&gt;
-&lt;td align=&#34;left&#34;&gt;&lt;span class=&#34;math inline&#34;&gt;\(\sqrt{\frac{2}{n}}\)&lt;/span&gt;&lt;/td&gt;
-&lt;td align=&#34;left&#34;&gt;&lt;span class=&#34;math inline&#34;&gt;\(\sqrt{\frac{6}{n}}\)&lt;/span&gt;&lt;/td&gt;
-&lt;td align=&#34;left&#34;&gt;&lt;/td&gt;
-&lt;td align=&#34;left&#34;&gt;&lt;span class=&#34;math inline&#34;&gt;\(\sqrt{\frac{8}{n}}\)&lt;/span&gt;&lt;/td&gt;
-&lt;/tr&gt;
-&lt;/tbody&gt;
-&lt;/table&gt;
-&lt;p&gt;The patterns from the previous Sections break down in this case. Notably the conversion factor for the intercept term is no longer related to the number of parameters in the model. The standard errors for both the main effect and interaction term are also smaller in this model compared to the model with both main effects, assuming a fixed value of &lt;span class=&#34;math inline&#34;&gt;\(\sigma\)&lt;/span&gt;. This does require caution however, as we saw that the residual standard error may be larger for this model if there is a actually a main effect in the data.&lt;/p&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id=&#34;conclusion&#34; class=&#34;section level1&#34;&gt;
-&lt;h1&gt;Conclusion&lt;/h1&gt;
-&lt;p&gt;In conclusion, we recapitulate the &lt;span class=&#34;math inline&#34;&gt;\(\sigma\)&lt;/span&gt;-to-&lt;span class=&#34;math inline&#34;&gt;\(\sigma_\beta\)&lt;/span&gt; mappings for the different models that we considered:&lt;/p&gt;
-&lt;table&gt;
-&lt;thead&gt;
-&lt;tr class=&#34;header&#34;&gt;
-&lt;th align=&#34;left&#34;&gt;&lt;/th&gt;
-&lt;th align=&#34;left&#34;&gt;Intercept&lt;/th&gt;
-&lt;th align=&#34;left&#34;&gt;Genotype&lt;/th&gt;
-&lt;th align=&#34;left&#34;&gt;Anxiety&lt;/th&gt;
-&lt;th align=&#34;left&#34;&gt;Treatment&lt;/th&gt;
-&lt;th align=&#34;left&#34;&gt;GenotypeAnxiety&lt;/th&gt;
-&lt;th align=&#34;right&#34;&gt;NumGroups&lt;/th&gt;
-&lt;/tr&gt;
-&lt;/thead&gt;
-&lt;tbody&gt;
-&lt;tr class=&#34;odd&#34;&gt;
-&lt;td align=&#34;left&#34;&gt;Intercept Only&lt;/td&gt;
-&lt;td align=&#34;left&#34;&gt;&lt;span class=&#34;math inline&#34;&gt;\(\sqrt{\frac{1}{n}}\)&lt;/span&gt;&lt;/td&gt;
-&lt;td align=&#34;left&#34;&gt;NA&lt;/td&gt;
-&lt;td align=&#34;left&#34;&gt;NA&lt;/td&gt;
-&lt;td align=&#34;left&#34;&gt;NA&lt;/td&gt;
-&lt;td align=&#34;left&#34;&gt;NA&lt;/td&gt;
-&lt;td align=&#34;right&#34;&gt;1&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr class=&#34;even&#34;&gt;
-&lt;td align=&#34;left&#34;&gt;One Binary Variable&lt;/td&gt;
-&lt;td align=&#34;left&#34;&gt;&lt;span class=&#34;math inline&#34;&gt;\(\sqrt{\frac{2}{n}}\)&lt;/span&gt;&lt;/td&gt;
-&lt;td align=&#34;left&#34;&gt;&lt;span class=&#34;math inline&#34;&gt;\(\sqrt{\frac{4}{n}}\)&lt;/span&gt;&lt;/td&gt;
-&lt;td align=&#34;left&#34;&gt;NA&lt;/td&gt;
-&lt;td align=&#34;left&#34;&gt;NA&lt;/td&gt;
-&lt;td align=&#34;left&#34;&gt;NA&lt;/td&gt;
-&lt;td align=&#34;right&#34;&gt;2&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr class=&#34;odd&#34;&gt;
-&lt;td align=&#34;left&#34;&gt;Two Binary Variables&lt;/td&gt;
-&lt;td align=&#34;left&#34;&gt;&lt;span class=&#34;math inline&#34;&gt;\(\sqrt{\frac{3}{n}}\)&lt;/span&gt;&lt;/td&gt;
-&lt;td align=&#34;left&#34;&gt;&lt;span class=&#34;math inline&#34;&gt;\(\sqrt{\frac{4}{n}}\)&lt;/span&gt;&lt;/td&gt;
-&lt;td align=&#34;left&#34;&gt;&lt;span class=&#34;math inline&#34;&gt;\(\sqrt{\frac{4}{n}}\)&lt;/span&gt;&lt;/td&gt;
-&lt;td align=&#34;left&#34;&gt;NA&lt;/td&gt;
-&lt;td align=&#34;left&#34;&gt;NA&lt;/td&gt;
-&lt;td align=&#34;right&#34;&gt;4&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr class=&#34;even&#34;&gt;
-&lt;td align=&#34;left&#34;&gt;Three Binary Variables&lt;/td&gt;
-&lt;td align=&#34;left&#34;&gt;&lt;span class=&#34;math inline&#34;&gt;\(\sqrt{\frac{4}{n}}\)&lt;/span&gt;&lt;/td&gt;
-&lt;td align=&#34;left&#34;&gt;&lt;span class=&#34;math inline&#34;&gt;\(\sqrt{\frac{4}{n}}\)&lt;/span&gt;&lt;/td&gt;
-&lt;td align=&#34;left&#34;&gt;&lt;span class=&#34;math inline&#34;&gt;\(\sqrt{\frac{4}{n}}\)&lt;/span&gt;&lt;/td&gt;
-&lt;td align=&#34;left&#34;&gt;&lt;span class=&#34;math inline&#34;&gt;\(\sqrt{\frac{4}{n}}\)&lt;/span&gt;&lt;/td&gt;
-&lt;td align=&#34;left&#34;&gt;NA&lt;/td&gt;
-&lt;td align=&#34;right&#34;&gt;8&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr class=&#34;odd&#34;&gt;
-&lt;td align=&#34;left&#34;&gt;Interaction With Main Effect&lt;/td&gt;
-&lt;td align=&#34;left&#34;&gt;&lt;span class=&#34;math inline&#34;&gt;\(\sqrt{\frac{4}{n}}\)&lt;/span&gt;&lt;/td&gt;
-&lt;td align=&#34;left&#34;&gt;&lt;span class=&#34;math inline&#34;&gt;\(\sqrt{\frac{8}{n}}\)&lt;/span&gt;&lt;/td&gt;
-&lt;td align=&#34;left&#34;&gt;&lt;span class=&#34;math inline&#34;&gt;\(\sqrt{\frac{8}{n}}\)&lt;/span&gt;&lt;/td&gt;
-&lt;td align=&#34;left&#34;&gt;NA&lt;/td&gt;
-&lt;td align=&#34;left&#34;&gt;&lt;span class=&#34;math inline&#34;&gt;\(\sqrt{\frac{16}{n}}\)&lt;/span&gt;&lt;/td&gt;
-&lt;td align=&#34;right&#34;&gt;4&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr class=&#34;even&#34;&gt;
-&lt;td align=&#34;left&#34;&gt;Interaction Without Main Effect&lt;/td&gt;
-&lt;td align=&#34;left&#34;&gt;&lt;span class=&#34;math inline&#34;&gt;\(\sqrt{\frac{2}{n}}\)&lt;/span&gt;&lt;/td&gt;
-&lt;td align=&#34;left&#34;&gt;&lt;span class=&#34;math inline&#34;&gt;\(\sqrt{\frac{6}{n}}\)&lt;/span&gt;&lt;/td&gt;
-&lt;td align=&#34;left&#34;&gt;NA&lt;/td&gt;
-&lt;td align=&#34;left&#34;&gt;NA&lt;/td&gt;
-&lt;td align=&#34;left&#34;&gt;&lt;span class=&#34;math inline&#34;&gt;\(\sqrt{\frac{8}{n}}\)&lt;/span&gt;&lt;/td&gt;
-&lt;td align=&#34;right&#34;&gt;3&lt;/td&gt;
-&lt;/tr&gt;
-&lt;/tbody&gt;
-&lt;/table&gt;
-&lt;p&gt;There are a few things to keep in mind. First, &lt;strong&gt;the standard deviation of the different groups is captured in the residual standard error estimate&lt;/strong&gt;. Specifically if &lt;span class=&#34;math inline&#34;&gt;\(n \gg p\)&lt;/span&gt;, this estimate is approximately equal to the average of the group sample standard deviations.&lt;/p&gt;
-&lt;p&gt;There is no obvious direct relationship between the standard errors of the parameters and the group standard deviations. For instance, the parameter error for the intercept is not equal to the standard error of the reference group, nor is the parameter error for the slope equal to the standard error of the non-reference group. The parameter errors depend on the non-trivial mapping &lt;span class=&#34;math inline&#34;&gt;\((\mathbf{X&amp;#39;X})^{-1}\)&lt;/span&gt;.&lt;/p&gt;
-&lt;p&gt;There are however some patterns in the relationship for certain models. Specifically, for balanced binary variable models without interaction, the slope parameter standard errors are always related to the residual standard error by &lt;span class=&#34;math inline&#34;&gt;\(\sqrt{4/n}\)&lt;/span&gt;, regardless of the number of binary variables in the model. The parameter error for the intercept does change however, and &lt;strong&gt;scales with the square root of the number of parameters in the model&lt;/strong&gt;.&lt;/p&gt;
-&lt;p&gt;The patterns change when we add an interaction to the model. Comparing a two-variable model with an interaction to the corresponding model without an interaction, the parameters have larger errors in the interactive model. The interaction parameter is also the most uncertain parameter in the model. However the intercept parameter error still has a conversion factor related to the number of parameters in the model. If we remove one of the main effects from the model but maintain the interaction, all conversion factors shrink relative to the interactive model with the main effect. However this model should be used with caution as it will likely lead to grouping with uneven variances. On the other hand it can be a useful way to model data if one of the variables is not defined for one of the levels in the main effect, e.g. wildtypes without anxiety scores.&lt;/p&gt;
-&lt;p&gt;More complex interactive models were not explored in depth in this document, but for completion I will include the &lt;span class=&#34;math inline&#34;&gt;\(\sigma\)&lt;/span&gt;-to-&lt;span class=&#34;math inline&#34;&gt;\(\sigma_\beta\)&lt;/span&gt; mappings for two models. The two-variable interaction model described previously can be augmented to include a third variable. The complete interactive model at second order is as follows:&lt;/p&gt;
-&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[\text{Response} \sim \text{Genotype} + \text{Anxiety} + \text{Treatment} + \text{Genotype:Anxiety} + \text{Genotype:Treatment} + \text{Treatment:Anxiety}\]&lt;/span&gt;&lt;/p&gt;
-&lt;p&gt;The mapping for this model is:&lt;/p&gt;
-&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[\sigma_\beta = \frac{\sigma}{\sqrt{n}}\begin{bmatrix} \sqrt{7} &amp;amp; \sqrt{12} &amp;amp; \sqrt{12} &amp;amp; \sqrt{12}&amp;amp; \sqrt{16} &amp;amp; \sqrt{16} &amp;amp; \sqrt{16} \end{bmatrix}\]&lt;/span&gt;&lt;/p&gt;
-&lt;p&gt;The interactive model at the third order is:&lt;/p&gt;
-&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[\text{Response} \sim \text{Genotype} + \text{Anxiety} + \text{Treatment} + \text{Genotype:Anxiety} + \text{Genotype:Treatment} + \text{Treatment:Anxiety} + \text{Genotype:Anxiety:Treatment}\]&lt;/span&gt;&lt;/p&gt;
-&lt;p&gt;The mapping for this model is:&lt;/p&gt;
-&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[\sigma_\beta = \frac{\sigma}{\sqrt{n}}\begin{bmatrix} \sqrt{8} &amp;amp; \sqrt{16} &amp;amp; \sqrt{16} &amp;amp; \sqrt{16}&amp;amp; \sqrt{32} &amp;amp; \sqrt{32} &amp;amp; \sqrt{32} &amp;amp; \sqrt{64} \end{bmatrix}\]&lt;/span&gt;&lt;/p&gt;
-&lt;p&gt;The one thing I will mention about these mappings is that the conversion factors for the intercept standard errors continue to be related to the number of parameters in the model. There are likely other interesting patterns in these more complex interactive models, but these will not be explored here.&lt;/p&gt;
-&lt;p&gt;Ultimately these specific cases should serve to provide some intuition about how the parameter errors are estimated for a linear model. Keep in mind however that these mappings were computed for a balanced binary experimental design. Group imbalances will skew these values, though the size of these differences will depend on the degree of imbalance. Moreover the mappings will be different in the case of multi-level categorical variables and continuous numerical variables.&lt;/p&gt;
-&lt;/div&gt;
-</description>
+## Without Main Effect 0.05000000 0.08660254      NA       0.1000000</code></pre>
+<p>Using the number of observations <span class="math inline">\(n\)</span> we find:</p>
+<table>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="left">Intercept</th>
+<th align="left">Genotype</th>
+<th align="left">Anxiety</th>
+<th align="left">GenotypeAnxiety</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">With Main Effect</td>
+<td align="left"><span class="math inline">\(\sqrt{\frac{4}{n}}\)</span></td>
+<td align="left"><span class="math inline">\(\sqrt{\frac{8}{n}}\)</span></td>
+<td align="left"><span class="math inline">\(\sqrt{\frac{8}{n}}\)</span></td>
+<td align="left"><span class="math inline">\(\sqrt{\frac{16}{n}}\)</span></td>
+</tr>
+<tr class="even">
+<td align="left">Without Main Effect</td>
+<td align="left"><span class="math inline">\(\sqrt{\frac{2}{n}}\)</span></td>
+<td align="left"><span class="math inline">\(\sqrt{\frac{6}{n}}\)</span></td>
+<td align="left"></td>
+<td align="left"><span class="math inline">\(\sqrt{\frac{8}{n}}\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>The patterns from the previous Sections break down in this case. Notably the conversion factor for the intercept term is no longer related to the number of parameters in the model. The standard errors for both the main effect and interaction term are also smaller in this model compared to the model with both main effects, assuming a fixed value of <span class="math inline">\(\sigma\)</span>. This does require caution however, as we saw that the residual standard error may be larger for this model if there is a actually a main effect in the data.</p>
+</div>
+</div>
+<div id="conclusion" class="section level1">
+<h1>Conclusion</h1>
+<p>In conclusion, we recapitulate the <span class="math inline">\(\sigma\)</span>-to-<span class="math inline">\(\sigma_\beta\)</span> mappings for the different models that we considered:</p>
+<table>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="left">Intercept</th>
+<th align="left">Genotype</th>
+<th align="left">Anxiety</th>
+<th align="left">Treatment</th>
+<th align="left">GenotypeAnxiety</th>
+<th align="right">NumGroups</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Intercept Only</td>
+<td align="left"><span class="math inline">\(\sqrt{\frac{1}{n}}\)</span></td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="right">1</td>
+</tr>
+<tr class="even">
+<td align="left">One Binary Variable</td>
+<td align="left"><span class="math inline">\(\sqrt{\frac{2}{n}}\)</span></td>
+<td align="left"><span class="math inline">\(\sqrt{\frac{4}{n}}\)</span></td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="right">2</td>
+</tr>
+<tr class="odd">
+<td align="left">Two Binary Variables</td>
+<td align="left"><span class="math inline">\(\sqrt{\frac{3}{n}}\)</span></td>
+<td align="left"><span class="math inline">\(\sqrt{\frac{4}{n}}\)</span></td>
+<td align="left"><span class="math inline">\(\sqrt{\frac{4}{n}}\)</span></td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="right">4</td>
+</tr>
+<tr class="even">
+<td align="left">Three Binary Variables</td>
+<td align="left"><span class="math inline">\(\sqrt{\frac{4}{n}}\)</span></td>
+<td align="left"><span class="math inline">\(\sqrt{\frac{4}{n}}\)</span></td>
+<td align="left"><span class="math inline">\(\sqrt{\frac{4}{n}}\)</span></td>
+<td align="left"><span class="math inline">\(\sqrt{\frac{4}{n}}\)</span></td>
+<td align="left">NA</td>
+<td align="right">8</td>
+</tr>
+<tr class="odd">
+<td align="left">Interaction With Main Effect</td>
+<td align="left"><span class="math inline">\(\sqrt{\frac{4}{n}}\)</span></td>
+<td align="left"><span class="math inline">\(\sqrt{\frac{8}{n}}\)</span></td>
+<td align="left"><span class="math inline">\(\sqrt{\frac{8}{n}}\)</span></td>
+<td align="left">NA</td>
+<td align="left"><span class="math inline">\(\sqrt{\frac{16}{n}}\)</span></td>
+<td align="right">4</td>
+</tr>
+<tr class="even">
+<td align="left">Interaction Without Main Effect</td>
+<td align="left"><span class="math inline">\(\sqrt{\frac{2}{n}}\)</span></td>
+<td align="left"><span class="math inline">\(\sqrt{\frac{6}{n}}\)</span></td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="left"><span class="math inline">\(\sqrt{\frac{8}{n}}\)</span></td>
+<td align="right">3</td>
+</tr>
+</tbody>
+</table>
+<p>There are a few things to keep in mind. First, <strong>the standard deviation of the different groups is captured in the residual standard error estimate</strong>. Specifically if <span class="math inline">\(n \gg p\)</span>, this estimate is approximately equal to the average of the group sample standard deviations.</p>
+<p>There is no obvious direct relationship between the standard errors of the parameters and the group standard deviations. For instance, the parameter error for the intercept is not equal to the standard error of the reference group, nor is the parameter error for the slope equal to the standard error of the non-reference group. The parameter errors depend on the non-trivial mapping <span class="math inline">\((\mathbf{X&#39;X})^{-1}\)</span>.</p>
+<p>There are however some patterns in the relationship for certain models. Specifically, for balanced binary variable models without interaction, the slope parameter standard errors are always related to the residual standard error by <span class="math inline">\(\sqrt{4/n}\)</span>, regardless of the number of binary variables in the model. The parameter error for the intercept does change however, and <strong>scales with the square root of the number of parameters in the model</strong>.</p>
+<p>The patterns change when we add an interaction to the model. Comparing a two-variable model with an interaction to the corresponding model without an interaction, the parameters have larger errors in the interactive model. The interaction parameter is also the most uncertain parameter in the model. However the intercept parameter error still has a conversion factor related to the number of parameters in the model. If we remove one of the main effects from the model but maintain the interaction, all conversion factors shrink relative to the interactive model with the main effect. However this model should be used with caution as it will likely lead to grouping with uneven variances. On the other hand it can be a useful way to model data if one of the variables is not defined for one of the levels in the main effect, e.g. wildtypes without anxiety scores.</p>
+<p>More complex interactive models were not explored in depth in this document, but for completion I will include the <span class="math inline">\(\sigma\)</span>-to-<span class="math inline">\(\sigma_\beta\)</span> mappings for two models. The two-variable interaction model described previously can be augmented to include a third variable. The complete interactive model at second order is as follows:</p>
+<p><span class="math display">\[\text{Response} \sim \text{Genotype} + \text{Anxiety} + \text{Treatment} + \text{Genotype:Anxiety} + \text{Genotype:Treatment} + \text{Treatment:Anxiety}\]</span></p>
+<p>The mapping for this model is:</p>
+<p><span class="math display">\[\sigma_\beta = \frac{\sigma}{\sqrt{n}}\begin{bmatrix} \sqrt{7} &amp; \sqrt{12} &amp; \sqrt{12} &amp; \sqrt{12}&amp; \sqrt{16} &amp; \sqrt{16} &amp; \sqrt{16} \end{bmatrix}\]</span></p>
+<p>The interactive model at the third order is:</p>
+<p><span class="math display">\[\text{Response} \sim \text{Genotype} + \text{Anxiety} + \text{Treatment} + \text{Genotype:Anxiety} + \text{Genotype:Treatment} + \text{Treatment:Anxiety} + \text{Genotype:Anxiety:Treatment}\]</span></p>
+<p>The mapping for this model is:</p>
+<p><span class="math display">\[\sigma_\beta = \frac{\sigma}{\sqrt{n}}\begin{bmatrix} \sqrt{8} &amp; \sqrt{16} &amp; \sqrt{16} &amp; \sqrt{16}&amp; \sqrt{32} &amp; \sqrt{32} &amp; \sqrt{32} &amp; \sqrt{64} \end{bmatrix}\]</span></p>
+<p>The one thing I will mention about these mappings is that the conversion factors for the intercept standard errors continue to be related to the number of parameters in the model. There are likely other interesting patterns in these more complex interactive models, but these will not be explored here.</p>
+<p>Ultimately these specific cases should serve to provide some intuition about how the parameter errors are estimated for a linear model. Keep in mind however that these mappings were computed for a balanced binary experimental design. Group imbalances will skew these values, though the size of these differences will depend on the degree of imbalance. Moreover the mappings will be different in the case of multi-level categorical variables and continuous numerical variables.</p>
+</div>
+]]>
+      </description>
     </item>
     
     <item>
@@ -729,47 +731,49 @@ t(xMat) %*% xMat&lt;/code&gt;&lt;/pre&gt;
       <pubDate>Wed, 30 May 2018 00:00:00 +0000</pubDate>
       
       <guid>/blog/post/2018-05-30_iclr_redux/</guid>
-      <description>&lt;p&gt;I was recently extremely fortunate to attend ICLR 2018, albeit as something of an interloper. Accordingly, what follows is surely a rather atypical highlight reel. All pedantry and any inaccuracy is, of course, due to my own limited understanding of these elegant topics and the breadth of their application.&lt;/p&gt;
-&lt;div id=&#34;causal-reasoning-and-graphical-models&#34; class=&#34;section level2&#34;&gt;
-&lt;h2&gt;Causal reasoning and graphical models&lt;/h2&gt;
-&lt;p&gt;There is a well-developed modern theory of causal inference and reasoning based on graphical models developed by Judea Pearl and others. Oft misunderstood and mostly ignored by most statisticians and practitioners, it featured prominently in both contributed papers and invited talks this year.&lt;/p&gt;
-&lt;p&gt;Bernhard Schölkopf, the inventor of Support Vector Machines and largely of kernel methods in machine learning, &lt;a href=&#34;https://www.youtube.com/watch?v=4qc28RA7HLQ&#34;&gt;discussed&lt;/a&gt; advances in learning causal models, many of which he worked on, such as in the two-variable case via assumptions on the noise distributions, as well as applications of causal modelling to traditional predictive models, such as semi-supervised learning and covariate shift. I’ve since been reading &lt;a href=&#34;https://mitpress.mit.edu/books/elements-causal-inference&#34;&gt;his (open-access) book&lt;/a&gt;.&lt;/p&gt;
-&lt;p&gt;A &lt;a href=&#34;https://www.youtube.com/watch?v=-maBKmsORwQ&#34;&gt;talk by Suchi Saria&lt;/a&gt; focussed on large datasets in healthcare. She discussed a study involving predicting mortality given test data acquired from patients admitted to hospitals. In this setting, where the illness and subsequent treatment of the patient, as well as other variables regarding the patient and hospital, are occluded, even high-capacity predictive models based on associational data fall flat. At the same time, designing reasonable interventions in this scenario is not obviously even possible, so Saria and collaborators employed the Neyman-Rubin counterfactual framework, a more popular relative of Pearl’s, to predict outcomes in their absence.&lt;/p&gt;
-&lt;p&gt;Daphne Koller - of probabilistic graphical modelling fame - held a &lt;a href=&#34;https://www.youtube.com/watch?v=N4mdV1CIpvI&#34;&gt;‘fireside chat’&lt;/a&gt; with (also distinguished!) moderator Yoshua Bengio. In addition to discussing issues of discrimination and harrassment in the machine learning and tech business communities, she devoted much of her talk to a form of career advice: advocating that ML experts work on diverse socially important problems in addition to ‘mental gymnastics’ and ends-agnostic performance improvements. This may call to mind her education work as co-founder of Coursera, but more recently she’s been working in health care - mentioning a just-announced new startup during her talk - in areas like drug discovery, and urged more people to consider this area. Notably, she sees a need for researchers at the intersection of both disciplines rather than pure stats/ML experts expecting to blindly achieve state-of-the-art results on biology datasets or pure biologists with limited understanding of the strengths and limitations of ML. Like Saria, she considers pure DNNs merely one technique out of many and sees this area as needing diverse approaches such as (unsurprisingly…) PGM/causal techniques.&lt;/p&gt;
-&lt;p&gt;&lt;a href=&#34;https://iclr.cc/Conferences/2018/Schedule?showEvent=274&#34;&gt;Tran and Blei&lt;/a&gt;, the creators of the Edward probabilistic programming language (now part of Tensorflow!), had a paper on applying causal models to GWAS studies. On the causal side of the problem, the authors consider structural models where the causal relations are modelled via neural networks, and note that Cybenko’s universal approximation theorem extends to this situation. On the inference side, evaluating the posterior is intractable, so the authors applied their recently-developed &lt;em&gt;likelihood-free variational inference&lt;/em&gt;, which involves estimating the ratio between two intractable distributions (the posterior and the variational approximation) appearing in the ELBO. I don’t yet understand the details but it’s already available in Edward. Ground truth data, however, is not, so the authors conducted simulations and compared their methods to PCA plus regression, linear mixed models, and logistic factor analysis and showed their implicit causal model to have superior performance even when few causal relationships were present. Sadly, Tran’s opinion is that inferring the causal graph itself at such a scale is likely intractable, but even so it’s clear that such models - and the authors’ work in variational approximations - could be quite valuable in neuroinformatics as well as genomics.&lt;/p&gt;
-&lt;p&gt;I was impressed by the attention the subject received - which seems to have coincided with (and maybe caused) an explosion of tutorials and popularizations in the popular press - and hope that continuing interest will help to elucidate the strengths and weaknesses of causal models as well as lead to further research connecting these to other approaches (particularly, under what circumstances can purely statistical approaches recover the conclusions of such models?) as well as more classical areas like logic and reasoning.&lt;/p&gt;
-&lt;/div&gt;
-&lt;div id=&#34;bayesian-reasoning-and-computation&#34; class=&#34;section level2&#34;&gt;
-&lt;h2&gt;Bayesian reasoning and computation&lt;/h2&gt;
-&lt;p&gt;Connections between Bayesian reasoning and neural networks are wide-ranging and fruitful, and several new results were presented.&lt;/p&gt;
-&lt;p&gt;One might want to use the learning abilities of NNs to improve Bayesian computation. In this vein, enter &lt;a href=&#34;https://iclr.cc/Conferences/2018/Schedule?showEvent=284&#34;&gt;Levy et al.&lt;/a&gt; on “L2HMC”: using a neural net to learn a useful volume-nonpreserving but detailed-balance-preserving transformation on phase space. (If this sounds familiar, it’s probably because this paper appeared courtesy of Chris at a recent MICe journal club.) It’s an elegant idea which can greatly improve the performance of sampling from previously challenging distributions. I wonder what the transformations look like globally and whether they’re nice/useful across (relevant) phase space or if (hard-to-discover) insufficient model capacity or training schedule - the usual bugbears - might mean that some high-dimensional distributions see no improvement (or even degradation) in some regions.&lt;/p&gt;
-&lt;p&gt;&lt;a href=&#34;https://iclr.cc/Conferences/2018/Schedule?showEvent=161&#34;&gt;Matthews et al.&lt;/a&gt; prove the convergence in distribution of the output of Bayesian DNNs with rectified-linear neurons to a Gaussian process with a certain kernel, extending work by Neal on shallow networks. As an interesting application, they show how one might attempt to avoid Gaussian process behaviour (which, they note, suggest a lack of hierarchical representation) in situations where it might be undesirable.&lt;/p&gt;
-&lt;p&gt;There were many papers on GANs (Generative Adversarial Networks), which can be thought of as networks for approximating probability distributions - perhaps in situations where HMC might be computationally infeasible. It would be quite interesting if anyone has been able to relate the architecture/regularizers of any GANs to priors on the distribution to be learned. Ignorant question: are there any cases where we might be say enough about the ability of a GAN to learn a distribution that we would be able to use one for inference about parameters as one is often interested in science?&lt;/p&gt;
-&lt;p&gt;Combining some of the above ideas, &lt;a href=&#34;https://iclr.cc/Conferences/2018/Schedule?showEvent=159&#34;&gt;CausalGAN&lt;/a&gt;, given a causal model, allows sampling from both observational and interventional distributions.&lt;/p&gt;
-&lt;p&gt;The elegant and potentially useful &lt;a href=&#34;https://openreview.net/forum?id=Hy7fDog0b&#34;&gt;AmbientGAN&lt;/a&gt; paper considered this problem: you want to create a generative model but all your samples are corrupted by noise. Luckily, you understand the noise distribution. The authors’ solution: you create a generative model in which simulated noise is applied to the generated samples before they’re passed to the discriminator, which as usual attempts to distinguish the real from fake data. The authors prove it’s possible to recover the underlying data distribution in certain noise models; their empirical results suggest both that learning is feasible in the presence of other classes of noise and that their method is robust to a certain degree of noise misspecification.&lt;/p&gt;
-&lt;/div&gt;
-&lt;div id=&#34;neuro-ml&#34; class=&#34;section level2&#34;&gt;
-&lt;h2&gt;Neuro &amp;lt;=&amp;gt; ML&lt;/h2&gt;
-&lt;p&gt;Blake Richards (UTSC) gave a more biologically-centred &lt;a href=&#34;https://www.youtube.com/watch?v=C_2Q7uKtgNs&#34;&gt;invited talk&lt;/a&gt; on creating accurate neural models of learning in the brain reflecting the lack of anatomical and physiological evidence for backpropagation - the so-called ‘credit assignment’ problem. (Question: what are the implications, if any, of these models for understanding the brain via morphometry?) On the machine learning side, these - very heuristically - suggest using microarchitectures more sophisticated than layers of ‘bare’ neurons, e.g., Hinton’s capsule networks or variations thereof.&lt;/p&gt;
-&lt;/div&gt;
-&lt;div id=&#34;pipeline-compilation&#34; class=&#34;section level2&#34;&gt;
-&lt;h2&gt;Pipeline compilation&lt;/h2&gt;
-&lt;p&gt;In the modern era of NN frameworks providing GPU execution and automatic differentiation, the first popular frameworks - among them Theano and Tensorflow - allow one to construct the computation graph as a data structure which can then be optimized in some way by the framework. However, this means - roughly - that the architecture must be known independently of the data, which poses problems for interesting networks like RNNs and GNNs. Recent frameworks like Chainer and Pytorch avoid this limitation by constructing the pipeline graph on-the-fly or ‘dynamically’, but this limits possibilities for optimizing the network.&lt;/p&gt;
-&lt;p&gt;The &lt;a href=&#34;https://iclr.cc/Conferences/2018/Schedule?showEvent=520&#34;&gt;DLVM&lt;/a&gt; project (more on this in an upcoming blog post) introduces a DSL embedded in Apple’s Swift programming language and based on ideas present in the Lightweight Modular Staging (LMS) library for Scala, an intermediate representation with support for linear algebra and derivative information, and compilation steps to perform automatic differentiation as a source transformation, hosted on a (modified?) LLVM backend. DLVM is currently not actively developed, but happily that’s because one of the original authors is now working on the similar Swift for Tensorflow project at Google. At the DLVM poster, I learned from another delegate that Facebook has just released &lt;a href=&#34;https://facebook.ai/developers/tools/glow&#34;&gt;Glow&lt;/a&gt; at their own developer conference. Backing from these two ML giants supports the authors’ guess that such technologies will become ubiquitous in the next few years.&lt;/p&gt;
-&lt;p&gt;Fei Wang and Tiark Rompf also workshopped a &lt;a href=&#34;https://iclr.cc/Conferences/2018/Schedule?showEvent=429&#34;&gt;paper&lt;/a&gt; on using LMS in Scala to provide a more expressive DSL for constructing static graphs. Notably, they used &lt;em&gt;delimited continuations&lt;/em&gt;, a powerful mechanism for controlling control flow, to obviate the need for an explicit tape for reverse-mode autodiff, essentially using the underlying language’s stack instead. They claim that their DSL removes the need for compiler passes or other source-to-source transformations as in the DLVM model (although I assume DLVM implements a larger set of optimizations).&lt;/p&gt;
-&lt;p&gt;I intend to understand the relationships between these elegant techniques, and in particular their relation to staged metaprogramming and the rest of the compilation pipeline, in much more detail in the not-too-distant future.&lt;/p&gt;
-&lt;/div&gt;
-&lt;div id=&#34;other-topics&#34; class=&#34;section level2&#34;&gt;
-&lt;h2&gt;Other topics&lt;/h2&gt;
-&lt;p&gt;Numerous very large and active subject areas like reinforcement learning, applications to audio and language processing and synthesis, and resistance to adversarial examples are entirely slighted here. Of particular interest given the prevalence of graph- theoretic methods in neuroscience, recursive and graph NNs continue to see rapid advances. A large body of work applies such networks to programming problems such as program synthesis and debugging, which will certainly benefit many scientists.&lt;/p&gt;
-&lt;p&gt;Perhaps due to the relative youth of the field, even the ‘core’ methods continue to improve. For instance, &lt;a href=&#34;https://iclr.cc/Conferences/2018/Schedule?showEvent=372&#34;&gt;Kidambi et al.&lt;/a&gt; showed theoretically that several popular modifications to SGD have in general no asymptotic benefit, although they’ve developed one known method, Accelerated SGD, which provides superior convergence guarantees. I haven’t even discussed my main interest - deep CNNs - much, but there were obviously many, many papers on these, both on specific architectures/problem domains (mostly 2D images, sadly) and on more fundamental issues such as &lt;a href=&#34;https://openreview.net/forum?id=HkwBEMWCZ&#34;&gt;the topology of skip connections&lt;/a&gt; and &lt;a href=&#34;https://iclr.cc/Conferences/2018/Schedule?showEvent=510&#34;&gt;efficient architecture search&lt;/a&gt;.&lt;/p&gt;
-&lt;p&gt;Overall, as someone new to DNNs, I found this conference extremely useful both for discovering a number of novel technologies as well as understanding current thought in the field.&lt;/p&gt;
-&lt;/div&gt;
-&lt;div id=&#34;acknowlegments&#34; class=&#34;section level2&#34;&gt;
-&lt;h2&gt;Acknowlegments&lt;/h2&gt;
-&lt;p&gt;Chris Hammill read the draft of this text. Thanks especially to my supervisor, Jason Lerch, for letting me attend.&lt;/p&gt;
-&lt;/div&gt;
-</description>
+      <description><![CDATA[
+      <p>I was recently extremely fortunate to attend ICLR 2018, albeit as something of an interloper. Accordingly, what follows is surely a rather atypical highlight reel. All pedantry and any inaccuracy is, of course, due to my own limited understanding of these elegant topics and the breadth of their application.</p>
+<div id="causal-reasoning-and-graphical-models" class="section level2">
+<h2>Causal reasoning and graphical models</h2>
+<p>There is a well-developed modern theory of causal inference and reasoning based on graphical models developed by Judea Pearl and others. Oft misunderstood and mostly ignored by most statisticians and practitioners, it featured prominently in both contributed papers and invited talks this year.</p>
+<p>Bernhard Schölkopf, the inventor of Support Vector Machines and largely of kernel methods in machine learning, <a href="https://www.youtube.com/watch?v=4qc28RA7HLQ">discussed</a> advances in learning causal models, many of which he worked on, such as in the two-variable case via assumptions on the noise distributions, as well as applications of causal modelling to traditional predictive models, such as semi-supervised learning and covariate shift. I’ve since been reading <a href="https://mitpress.mit.edu/books/elements-causal-inference">his (open-access) book</a>.</p>
+<p>A <a href="https://www.youtube.com/watch?v=-maBKmsORwQ">talk by Suchi Saria</a> focussed on large datasets in healthcare. She discussed a study involving predicting mortality given test data acquired from patients admitted to hospitals. In this setting, where the illness and subsequent treatment of the patient, as well as other variables regarding the patient and hospital, are occluded, even high-capacity predictive models based on associational data fall flat. At the same time, designing reasonable interventions in this scenario is not obviously even possible, so Saria and collaborators employed the Neyman-Rubin counterfactual framework, a more popular relative of Pearl’s, to predict outcomes in their absence.</p>
+<p>Daphne Koller - of probabilistic graphical modelling fame - held a <a href="https://www.youtube.com/watch?v=N4mdV1CIpvI">‘fireside chat’</a> with (also distinguished!) moderator Yoshua Bengio. In addition to discussing issues of discrimination and harrassment in the machine learning and tech business communities, she devoted much of her talk to a form of career advice: advocating that ML experts work on diverse socially important problems in addition to ‘mental gymnastics’ and ends-agnostic performance improvements. This may call to mind her education work as co-founder of Coursera, but more recently she’s been working in health care - mentioning a just-announced new startup during her talk - in areas like drug discovery, and urged more people to consider this area. Notably, she sees a need for researchers at the intersection of both disciplines rather than pure stats/ML experts expecting to blindly achieve state-of-the-art results on biology datasets or pure biologists with limited understanding of the strengths and limitations of ML. Like Saria, she considers pure DNNs merely one technique out of many and sees this area as needing diverse approaches such as (unsurprisingly…) PGM/causal techniques.</p>
+<p><a href="https://iclr.cc/Conferences/2018/Schedule?showEvent=274">Tran and Blei</a>, the creators of the Edward probabilistic programming language (now part of Tensorflow!), had a paper on applying causal models to GWAS studies. On the causal side of the problem, the authors consider structural models where the causal relations are modelled via neural networks, and note that Cybenko’s universal approximation theorem extends to this situation. On the inference side, evaluating the posterior is intractable, so the authors applied their recently-developed <em>likelihood-free variational inference</em>, which involves estimating the ratio between two intractable distributions (the posterior and the variational approximation) appearing in the ELBO. I don’t yet understand the details but it’s already available in Edward. Ground truth data, however, is not, so the authors conducted simulations and compared their methods to PCA plus regression, linear mixed models, and logistic factor analysis and showed their implicit causal model to have superior performance even when few causal relationships were present. Sadly, Tran’s opinion is that inferring the causal graph itself at such a scale is likely intractable, but even so it’s clear that such models - and the authors’ work in variational approximations - could be quite valuable in neuroinformatics as well as genomics.</p>
+<p>I was impressed by the attention the subject received - which seems to have coincided with (and maybe caused) an explosion of tutorials and popularizations in the popular press - and hope that continuing interest will help to elucidate the strengths and weaknesses of causal models as well as lead to further research connecting these to other approaches (particularly, under what circumstances can purely statistical approaches recover the conclusions of such models?) as well as more classical areas like logic and reasoning.</p>
+</div>
+<div id="bayesian-reasoning-and-computation" class="section level2">
+<h2>Bayesian reasoning and computation</h2>
+<p>Connections between Bayesian reasoning and neural networks are wide-ranging and fruitful, and several new results were presented.</p>
+<p>One might want to use the learning abilities of NNs to improve Bayesian computation. In this vein, enter <a href="https://iclr.cc/Conferences/2018/Schedule?showEvent=284">Levy et al.</a> on “L2HMC”: using a neural net to learn a useful volume-nonpreserving but detailed-balance-preserving transformation on phase space. (If this sounds familiar, it’s probably because this paper appeared courtesy of Chris at a recent MICe journal club.) It’s an elegant idea which can greatly improve the performance of sampling from previously challenging distributions. I wonder what the transformations look like globally and whether they’re nice/useful across (relevant) phase space or if (hard-to-discover) insufficient model capacity or training schedule - the usual bugbears - might mean that some high-dimensional distributions see no improvement (or even degradation) in some regions.</p>
+<p><a href="https://iclr.cc/Conferences/2018/Schedule?showEvent=161">Matthews et al.</a> prove the convergence in distribution of the output of Bayesian DNNs with rectified-linear neurons to a Gaussian process with a certain kernel, extending work by Neal on shallow networks. As an interesting application, they show how one might attempt to avoid Gaussian process behaviour (which, they note, suggest a lack of hierarchical representation) in situations where it might be undesirable.</p>
+<p>There were many papers on GANs (Generative Adversarial Networks), which can be thought of as networks for approximating probability distributions - perhaps in situations where HMC might be computationally infeasible. It would be quite interesting if anyone has been able to relate the architecture/regularizers of any GANs to priors on the distribution to be learned. Ignorant question: are there any cases where we might be say enough about the ability of a GAN to learn a distribution that we would be able to use one for inference about parameters as one is often interested in science?</p>
+<p>Combining some of the above ideas, <a href="https://iclr.cc/Conferences/2018/Schedule?showEvent=159">CausalGAN</a>, given a causal model, allows sampling from both observational and interventional distributions.</p>
+<p>The elegant and potentially useful <a href="https://openreview.net/forum?id=Hy7fDog0b">AmbientGAN</a> paper considered this problem: you want to create a generative model but all your samples are corrupted by noise. Luckily, you understand the noise distribution. The authors’ solution: you create a generative model in which simulated noise is applied to the generated samples before they’re passed to the discriminator, which as usual attempts to distinguish the real from fake data. The authors prove it’s possible to recover the underlying data distribution in certain noise models; their empirical results suggest both that learning is feasible in the presence of other classes of noise and that their method is robust to a certain degree of noise misspecification.</p>
+</div>
+<div id="neuro-ml" class="section level2">
+<h2>Neuro &lt;=&gt; ML</h2>
+<p>Blake Richards (UTSC) gave a more biologically-centred <a href="https://www.youtube.com/watch?v=C_2Q7uKtgNs">invited talk</a> on creating accurate neural models of learning in the brain reflecting the lack of anatomical and physiological evidence for backpropagation - the so-called ‘credit assignment’ problem. (Question: what are the implications, if any, of these models for understanding the brain via morphometry?) On the machine learning side, these - very heuristically - suggest using microarchitectures more sophisticated than layers of ‘bare’ neurons, e.g., Hinton’s capsule networks or variations thereof.</p>
+</div>
+<div id="pipeline-compilation" class="section level2">
+<h2>Pipeline compilation</h2>
+<p>In the modern era of NN frameworks providing GPU execution and automatic differentiation, the first popular frameworks - among them Theano and Tensorflow - allow one to construct the computation graph as a data structure which can then be optimized in some way by the framework. However, this means - roughly - that the architecture must be known independently of the data, which poses problems for interesting networks like RNNs and GNNs. Recent frameworks like Chainer and Pytorch avoid this limitation by constructing the pipeline graph on-the-fly or ‘dynamically’, but this limits possibilities for optimizing the network.</p>
+<p>The <a href="https://iclr.cc/Conferences/2018/Schedule?showEvent=520">DLVM</a> project (more on this in an upcoming blog post) introduces a DSL embedded in Apple’s Swift programming language and based on ideas present in the Lightweight Modular Staging (LMS) library for Scala, an intermediate representation with support for linear algebra and derivative information, and compilation steps to perform automatic differentiation as a source transformation, hosted on a (modified?) LLVM backend. DLVM is currently not actively developed, but happily that’s because one of the original authors is now working on the similar Swift for Tensorflow project at Google. At the DLVM poster, I learned from another delegate that Facebook has just released <a href="https://facebook.ai/developers/tools/glow">Glow</a> at their own developer conference. Backing from these two ML giants supports the authors’ guess that such technologies will become ubiquitous in the next few years.</p>
+<p>Fei Wang and Tiark Rompf also workshopped a <a href="https://iclr.cc/Conferences/2018/Schedule?showEvent=429">paper</a> on using LMS in Scala to provide a more expressive DSL for constructing static graphs. Notably, they used <em>delimited continuations</em>, a powerful mechanism for controlling control flow, to obviate the need for an explicit tape for reverse-mode autodiff, essentially using the underlying language’s stack instead. They claim that their DSL removes the need for compiler passes or other source-to-source transformations as in the DLVM model (although I assume DLVM implements a larger set of optimizations).</p>
+<p>I intend to understand the relationships between these elegant techniques, and in particular their relation to staged metaprogramming and the rest of the compilation pipeline, in much more detail in the not-too-distant future.</p>
+</div>
+<div id="other-topics" class="section level2">
+<h2>Other topics</h2>
+<p>Numerous very large and active subject areas like reinforcement learning, applications to audio and language processing and synthesis, and resistance to adversarial examples are entirely slighted here. Of particular interest given the prevalence of graph- theoretic methods in neuroscience, recursive and graph NNs continue to see rapid advances. A large body of work applies such networks to programming problems such as program synthesis and debugging, which will certainly benefit many scientists.</p>
+<p>Perhaps due to the relative youth of the field, even the ‘core’ methods continue to improve. For instance, <a href="https://iclr.cc/Conferences/2018/Schedule?showEvent=372">Kidambi et al.</a> showed theoretically that several popular modifications to SGD have in general no asymptotic benefit, although they’ve developed one known method, Accelerated SGD, which provides superior convergence guarantees. I haven’t even discussed my main interest - deep CNNs - much, but there were obviously many, many papers on these, both on specific architectures/problem domains (mostly 2D images, sadly) and on more fundamental issues such as <a href="https://openreview.net/forum?id=HkwBEMWCZ">the topology of skip connections</a> and <a href="https://iclr.cc/Conferences/2018/Schedule?showEvent=510">efficient architecture search</a>.</p>
+<p>Overall, as someone new to DNNs, I found this conference extremely useful both for discovering a number of novel technologies as well as understanding current thought in the field.</p>
+</div>
+<div id="acknowlegments" class="section level2">
+<h2>Acknowlegments</h2>
+<p>Chris Hammill read the draft of this text. Thanks especially to my supervisor, Jason Lerch, for letting me attend.</p>
+</div>
+]]>
+      </description>
     </item>
     
     <item>
@@ -778,84 +782,86 @@ t(xMat) %*% xMat&lt;/code&gt;&lt;/pre&gt;
       <pubDate>Wed, 31 Jan 2018 00:00:00 +0000</pubDate>
       
       <guid>/blog/post/2018-01-31_loo-intro/</guid>
-      <description>&lt;div id=&#34;pitch&#34; class=&#34;section level2&#34;&gt;
-&lt;h2&gt;Pitch&lt;/h2&gt;
-&lt;p&gt;In this post I’d like to provide an overview of Pareto-Smoothed Importance Sampling (PSIS-LOO) and how it can be used for bayesian model selection. Everything I discuss regarding this technique can be found in more detail in &lt;a href=&#34;https://arxiv.org/pdf/1507.04544.pdf&#34;&gt;Vehtari, Gelman, and Gabry (2016)&lt;/a&gt;. To lead up to PSIS-LOO I will introduce Akaike’s Information Criterion (AIC) to lay the foundation for model selection in general, then cover the expected log predictive density, the corner stone of bayesian model selection.&lt;/p&gt;
-&lt;/div&gt;
-&lt;div id=&#34;intro&#34; class=&#34;section level2&#34;&gt;
-&lt;h2&gt;Intro&lt;/h2&gt;
-&lt;p&gt;Early in my masters I was introduced to the idea of model selection. The idea stuck, and has been formative in how I think about science. Running against the grain of hypothesis testing, model selection seemed a more natural way to think about what we do in science.&lt;/p&gt;
-&lt;p&gt;Model selection stands apart from standard null hypothesis testing, where we have a single operating (null) model and seek data such that we can judge our model sufficiently unlikely.&lt;/p&gt;
-&lt;p&gt;Model selection on the other hand assumes that we have many potential models that could be generating our data, and provides tools to help us choose which are more likely.&lt;/p&gt;
-&lt;p&gt;Once we have decided to entertain the idea that there are many plausible models for our data, we have to decide how to compare our models.&lt;/p&gt;
-&lt;p&gt;In most cases the first tool for comparison you encounter is Akaike’s An Information Criterion (AIC, also called, Akaike’s Information Criterion). AIC balances the likelihood of the data given the model and the complexity of the model.&lt;/p&gt;
-&lt;/div&gt;
-&lt;div id=&#34;aic&#34; class=&#34;section level2&#34;&gt;
-&lt;h2&gt;AIC&lt;/h2&gt;
-&lt;p&gt;The normal formulation for Akaike’s Information Criterion is&lt;/p&gt;
-&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[ -2\ln[{p(y | \theta)}] + 2k \]&lt;/span&gt;&lt;/p&gt;
-&lt;p&gt;but we can pull out the distracting -2 out and get&lt;/p&gt;
-&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[ \ln[{p(y | \theta)}] - k \]&lt;/span&gt;&lt;/p&gt;
-&lt;p&gt;Where &lt;span class=&#34;math inline&#34;&gt;\(y\)&lt;/span&gt; is the data we have observed, &lt;span class=&#34;math inline&#34;&gt;\(\theta\)&lt;/span&gt; are our estimated parameters, and k is the number of parameters.&lt;/p&gt;
-&lt;p&gt;We can read the second version as the log likelihood minus the number of parameters. When doing AIC based model comparison you can choose the model that maximizes this quantity.&lt;/p&gt;
-&lt;p&gt;AIC is the sum of two components&lt;/p&gt;
-&lt;ol style=&#34;list-style-type: decimal&#34;&gt;
-&lt;li&gt;The log-likelihood (goodness of fit)&lt;/li&gt;
-&lt;li&gt;A penalty for model size.&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;The log-likelihood is a natural choice for goodness of fit. if the model fits the data well, the data will be considered likely, and the log-likelihood will be high relatively high.&lt;/p&gt;
-&lt;p&gt;The penalty term k is equivalent to adding an independent observation that the model gives a probability of &lt;span class=&#34;math inline&#34;&gt;\(1/e\)&lt;/span&gt; (about 1/3), for each parameter you add. Alternatively you can imagine the penalty as dividing your likelihood by &lt;span class=&#34;math inline&#34;&gt;\(e\)&lt;/span&gt; for every parameter you add.&lt;/p&gt;
-&lt;p&gt;The whole reason we need to penalize is because the future is uncertain, and there is a risk of overfitting our data. Models with fewer parameters tend to generalize better, but more satisfying would be to estimate how well the model will perform in the future and use that directly. For this we need to consider how our score function (the likelihood) behaves under a potential model for the future. This leads to the specification of the expected log predictive density (ELPD).&lt;/p&gt;
-&lt;/div&gt;
-&lt;div id=&#34;elpd&#34; class=&#34;section level2&#34;&gt;
-&lt;h2&gt;ELPD&lt;/h2&gt;
-&lt;p&gt;The expected log predictive density is defined as:&lt;/p&gt;
-&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[ \sum_i \int p_{t}(\tilde{y}_i) \ln{p(\tilde{y}_i | y)} d\tilde{y}_i \]&lt;/span&gt;&lt;/p&gt;
-&lt;p&gt;where &lt;span class=&#34;math inline&#34;&gt;\(p_{t}\)&lt;/span&gt; is the true density of future observations, &lt;span class=&#34;math inline&#34;&gt;\(\tilde{y}_i\)&lt;/span&gt; is a future data point. Since &lt;span class=&#34;math inline&#34;&gt;\(p_{t}\)&lt;/span&gt; is unknown, we’re going to need to double dip in our data to get a guess as to what future data are going to look like. This strategy is called &lt;span class=&#34;math inline&#34;&gt;\(\mathit{M}_{closed}\)&lt;/span&gt;.&lt;/p&gt;
-&lt;p&gt;Fortunately we have a strategy for producing fake new data and computing the likelihood at the same time. For this we’re going to reach for the standard machine learning approach of cross validation.&lt;/p&gt;
-&lt;p&gt;We’ll treat some of our data as observed, and we’ll treat the rest like new data. Taking this to the extreme where we leave out one data point we get leave-one-out (loo) cross validation.&lt;/p&gt;
-&lt;/div&gt;
-&lt;div id=&#34;loo&#34; class=&#34;section level2&#34;&gt;
-&lt;h2&gt;LOO&lt;/h2&gt;
-&lt;p&gt;So now we have a strategy for imagining &lt;span class=&#34;math inline&#34;&gt;\(p_{t}\)&lt;/span&gt; which is to pick an observation at random from our data set. Then we need the likelihood our model would assign that datum if it hadn’t been observed. The naive approach would be to refit our model to the held out data, but this is way too expensive computationally. Ideally we wouldn’t need to refit the model at all - if only we knew how to reweight the likelihood as though the datum were unobserved. But such powerful magic surely can’t exist.&lt;/p&gt;
-&lt;p&gt;But of course now I tell you that in fact it does!&lt;/p&gt;
-&lt;p&gt;The trick has been known since the 1990’s and it is called importance sampling, and it is one the most striking results I know of.&lt;/p&gt;
-&lt;/div&gt;
-&lt;div id=&#34;importance-sampling-loo&#34; class=&#34;section level2&#34;&gt;
-&lt;h2&gt;Importance Sampling LOO&lt;/h2&gt;
-&lt;p&gt;Since we’re bayesian, we have samples from the posterior distribution of our model. Each of these samples implies a likelihood for each of our data points. Above I promised you a way to approximate the likelihood our model would given a datum if we hadn’t observed that datum. So let’s try to compute this for a single data point. Take point one for example.&lt;/p&gt;
-&lt;p&gt;&lt;span class=&#34;math inline&#34;&gt;\(\int p(y_1 | \theta) d\theta\)&lt;/span&gt;&lt;/p&gt;
-&lt;p&gt;Since we’re working with samples we’re going to move from an integral to an average over samples.&lt;/p&gt;
-&lt;p&gt;&lt;span class=&#34;math inline&#34;&gt;\(\frac{1}{S} \sum_s{ p(y_1 | \theta_s) }\)&lt;/span&gt;&lt;/p&gt;
-&lt;p&gt;And now we want to reweight these posterior samples as though &lt;span class=&#34;math inline&#34;&gt;\(y_1\)&lt;/span&gt; hadn’t been observed.&lt;/p&gt;
-&lt;p&gt;&lt;span class=&#34;math inline&#34;&gt;\(\frac{1}{\sum_s{w_s}} \sum_s{ w_s p(y_1 | \theta_s) }\)&lt;/span&gt;&lt;/p&gt;
-&lt;p&gt;So we want to give weights to each posterior draw such that the weighting adjusts the posterior to what it would have been if &lt;span class=&#34;math inline&#34;&gt;\(y_1\)&lt;/span&gt; hadn’t been observed.&lt;/p&gt;
-&lt;p&gt;So what should this weighting be? Take a moment and try to guess.&lt;/p&gt;
-&lt;p&gt;Here’s a hint, if &lt;span class=&#34;math inline&#34;&gt;\(y_1\)&lt;/span&gt; wasn’t observed do you think it would be assigned as high a probability?&lt;/p&gt;
-&lt;p&gt;Well, obviously not you say. So what should the weighting be?&lt;/p&gt;
-&lt;p&gt;It’s &lt;span class=&#34;math inline&#34;&gt;\(\frac{1}{p(y_1 | \theta_s)}\)&lt;/span&gt; !!!&lt;/p&gt;
-&lt;p&gt;The sample weight is just the inverse of the probability that &lt;em&gt;that&lt;/em&gt; posterior draw gave to the held out point.&lt;/p&gt;
-&lt;p&gt;When I first read this my brain made a little popping noise, probably audible to my coworkers, as it exploded.&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;/blog/img/brain-exploding-psis.png&#34; width=&#34;500px&#34; /&gt;&lt;/p&gt;
-&lt;/div&gt;
-&lt;div id=&#34;the-pareto-part&#34; class=&#34;section level2&#34;&gt;
-&lt;h2&gt;The Pareto Part&lt;/h2&gt;
-&lt;p&gt;So we’re not quite done: there’s the pareto smoothing part of this. Importance sampling has a well know draw back, in that it is very noisy. The sampling weights we get are very heavy tailed, and it isn’t uncommon to get a single posterior sample where the held out datum was assigned very low probability dominating the IS adjusted posterior. So we need to smooth out the tails.&lt;/p&gt;
-&lt;p&gt;It turns out that the upper tail of the the importance weights fit a generalized Pareto distribution nicely. This lends itself to smoothing.&lt;/p&gt;
-&lt;p&gt;So to Pareto smooth our weights, we can fit a generalized pareto distribution to, say, the upper 20% of our importance weights. Then we can use the quantile of each weight to predict a smoothed approximation for that weight from the fitted distribution. We can then replace the upper tail weights with their smoothed weight and we’re done.&lt;/p&gt;
-&lt;/div&gt;
-&lt;div id=&#34;all-together-now&#34; class=&#34;section level2&#34;&gt;
-&lt;h2&gt;All Together Now&lt;/h2&gt;
-&lt;p&gt;Now we have the likelihood of each datum in the counterfactual world where it wasn’t observe. We can now average over all the smoother re-weighted posterior draws to get the loo ELPD&lt;/p&gt;
-&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[ \sum_i \ln \left( \frac{1}{\sum_s w_s^i} \sum_s w_s^i p(y_i | \theta_s) \right)\]&lt;/span&gt;&lt;/p&gt;
-&lt;p&gt;With the loo ELPD in hand, we can compute the difference between models. The model with the highest ELPD is the best.&lt;/p&gt;
-&lt;p&gt;And there you have it, bayesian model selection using the leave-one-out expected log predictive density. But of course, the story doesn’t end there. With ELPDs computed we &lt;em&gt;could&lt;/em&gt; just pick the best model, but maybe we’d like to do inference over all the model weighted somehow by their score. But these are ideas for another post.&lt;/p&gt;
-&lt;p&gt;Well I hoped you enjoyed learning about Pareto-Smoothed Importance Sampling. Code for doing this is all implemented in the wonderful &lt;a href=&#34;https://cran.r-project.org/web/packages/loo/index.html&#34;&gt;loo package&lt;/a&gt; for R. Happy model selecting!&lt;/p&gt;
-&lt;hr /&gt;
-&lt;p&gt;I’d like to thank Dulcie Vousden and Ben Darwin for reading and commenting on an earlier version of this post.&lt;/p&gt;
-&lt;p&gt;I’d like to thank Aki Vehtari for correctimg error in an earlier version of this post. I had mistakenly claimed the generalized pareto distribution was fit to the data &lt;em&gt;not&lt;/em&gt; in the upper tail of weights.&lt;/p&gt;
-&lt;/div&gt;
-</description>
+      <description><![CDATA[
+      <div id="pitch" class="section level2">
+<h2>Pitch</h2>
+<p>In this post I’d like to provide an overview of Pareto-Smoothed Importance Sampling (PSIS-LOO) and how it can be used for bayesian model selection. Everything I discuss regarding this technique can be found in more detail in <a href="https://arxiv.org/pdf/1507.04544.pdf">Vehtari, Gelman, and Gabry (2016)</a>. To lead up to PSIS-LOO I will introduce Akaike’s Information Criterion (AIC) to lay the foundation for model selection in general, then cover the expected log predictive density, the corner stone of bayesian model selection.</p>
+</div>
+<div id="intro" class="section level2">
+<h2>Intro</h2>
+<p>Early in my masters I was introduced to the idea of model selection. The idea stuck, and has been formative in how I think about science. Running against the grain of hypothesis testing, model selection seemed a more natural way to think about what we do in science.</p>
+<p>Model selection stands apart from standard null hypothesis testing, where we have a single operating (null) model and seek data such that we can judge our model sufficiently unlikely.</p>
+<p>Model selection on the other hand assumes that we have many potential models that could be generating our data, and provides tools to help us choose which are more likely.</p>
+<p>Once we have decided to entertain the idea that there are many plausible models for our data, we have to decide how to compare our models.</p>
+<p>In most cases the first tool for comparison you encounter is Akaike’s An Information Criterion (AIC, also called, Akaike’s Information Criterion). AIC balances the likelihood of the data given the model and the complexity of the model.</p>
+</div>
+<div id="aic" class="section level2">
+<h2>AIC</h2>
+<p>The normal formulation for Akaike’s Information Criterion is</p>
+<p><span class="math display">\[ -2\ln[{p(y | \theta)}] + 2k \]</span></p>
+<p>but we can pull out the distracting -2 out and get</p>
+<p><span class="math display">\[ \ln[{p(y | \theta)}] - k \]</span></p>
+<p>Where <span class="math inline">\(y\)</span> is the data we have observed, <span class="math inline">\(\theta\)</span> are our estimated parameters, and k is the number of parameters.</p>
+<p>We can read the second version as the log likelihood minus the number of parameters. When doing AIC based model comparison you can choose the model that maximizes this quantity.</p>
+<p>AIC is the sum of two components</p>
+<ol style="list-style-type: decimal">
+<li>The log-likelihood (goodness of fit)</li>
+<li>A penalty for model size.</li>
+</ol>
+<p>The log-likelihood is a natural choice for goodness of fit. if the model fits the data well, the data will be considered likely, and the log-likelihood will be high relatively high.</p>
+<p>The penalty term k is equivalent to adding an independent observation that the model gives a probability of <span class="math inline">\(1/e\)</span> (about 1/3), for each parameter you add. Alternatively you can imagine the penalty as dividing your likelihood by <span class="math inline">\(e\)</span> for every parameter you add.</p>
+<p>The whole reason we need to penalize is because the future is uncertain, and there is a risk of overfitting our data. Models with fewer parameters tend to generalize better, but more satisfying would be to estimate how well the model will perform in the future and use that directly. For this we need to consider how our score function (the likelihood) behaves under a potential model for the future. This leads to the specification of the expected log predictive density (ELPD).</p>
+</div>
+<div id="elpd" class="section level2">
+<h2>ELPD</h2>
+<p>The expected log predictive density is defined as:</p>
+<p><span class="math display">\[ \sum_i \int p_{t}(\tilde{y}_i) \ln{p(\tilde{y}_i | y)} d\tilde{y}_i \]</span></p>
+<p>where <span class="math inline">\(p_{t}\)</span> is the true density of future observations, <span class="math inline">\(\tilde{y}_i\)</span> is a future data point. Since <span class="math inline">\(p_{t}\)</span> is unknown, we’re going to need to double dip in our data to get a guess as to what future data are going to look like. This strategy is called <span class="math inline">\(\mathit{M}_{closed}\)</span>.</p>
+<p>Fortunately we have a strategy for producing fake new data and computing the likelihood at the same time. For this we’re going to reach for the standard machine learning approach of cross validation.</p>
+<p>We’ll treat some of our data as observed, and we’ll treat the rest like new data. Taking this to the extreme where we leave out one data point we get leave-one-out (loo) cross validation.</p>
+</div>
+<div id="loo" class="section level2">
+<h2>LOO</h2>
+<p>So now we have a strategy for imagining <span class="math inline">\(p_{t}\)</span> which is to pick an observation at random from our data set. Then we need the likelihood our model would assign that datum if it hadn’t been observed. The naive approach would be to refit our model to the held out data, but this is way too expensive computationally. Ideally we wouldn’t need to refit the model at all - if only we knew how to reweight the likelihood as though the datum were unobserved. But such powerful magic surely can’t exist.</p>
+<p>But of course now I tell you that in fact it does!</p>
+<p>The trick has been known since the 1990’s and it is called importance sampling, and it is one the most striking results I know of.</p>
+</div>
+<div id="importance-sampling-loo" class="section level2">
+<h2>Importance Sampling LOO</h2>
+<p>Since we’re bayesian, we have samples from the posterior distribution of our model. Each of these samples implies a likelihood for each of our data points. Above I promised you a way to approximate the likelihood our model would given a datum if we hadn’t observed that datum. So let’s try to compute this for a single data point. Take point one for example.</p>
+<p><span class="math inline">\(\int p(y_1 | \theta) d\theta\)</span></p>
+<p>Since we’re working with samples we’re going to move from an integral to an average over samples.</p>
+<p><span class="math inline">\(\frac{1}{S} \sum_s{ p(y_1 | \theta_s) }\)</span></p>
+<p>And now we want to reweight these posterior samples as though <span class="math inline">\(y_1\)</span> hadn’t been observed.</p>
+<p><span class="math inline">\(\frac{1}{\sum_s{w_s}} \sum_s{ w_s p(y_1 | \theta_s) }\)</span></p>
+<p>So we want to give weights to each posterior draw such that the weighting adjusts the posterior to what it would have been if <span class="math inline">\(y_1\)</span> hadn’t been observed.</p>
+<p>So what should this weighting be? Take a moment and try to guess.</p>
+<p>Here’s a hint, if <span class="math inline">\(y_1\)</span> wasn’t observed do you think it would be assigned as high a probability?</p>
+<p>Well, obviously not you say. So what should the weighting be?</p>
+<p>It’s <span class="math inline">\(\frac{1}{p(y_1 | \theta_s)}\)</span> !!!</p>
+<p>The sample weight is just the inverse of the probability that <em>that</em> posterior draw gave to the held out point.</p>
+<p>When I first read this my brain made a little popping noise, probably audible to my coworkers, as it exploded.</p>
+<p><img src="/img/brain-exploding-psis.png" width="500px" /></p>
+</div>
+<div id="the-pareto-part" class="section level2">
+<h2>The Pareto Part</h2>
+<p>So we’re not quite done: there’s the pareto smoothing part of this. Importance sampling has a well know draw back, in that it is very noisy. The sampling weights we get are very heavy tailed, and it isn’t uncommon to get a single posterior sample where the held out datum was assigned very low probability dominating the IS adjusted posterior. So we need to smooth out the tails.</p>
+<p>It turns out that the upper tail of the the importance weights fit a generalized Pareto distribution nicely. This lends itself to smoothing.</p>
+<p>So to Pareto smooth our weights, we can fit a generalized pareto distribution to, say, the upper 20% of our importance weights. Then we can use the quantile of each weight to predict a smoothed approximation for that weight from the fitted distribution. We can then replace the upper tail weights with their smoothed weight and we’re done.</p>
+</div>
+<div id="all-together-now" class="section level2">
+<h2>All Together Now</h2>
+<p>Now we have the likelihood of each datum in the counterfactual world where it wasn’t observe. We can now average over all the smoother re-weighted posterior draws to get the loo ELPD</p>
+<p><span class="math display">\[ \sum_i \ln \left( \frac{1}{\sum_s w_s^i} \sum_s w_s^i p(y_i | \theta_s) \right)\]</span></p>
+<p>With the loo ELPD in hand, we can compute the difference between models. The model with the highest ELPD is the best.</p>
+<p>And there you have it, bayesian model selection using the leave-one-out expected log predictive density. But of course, the story doesn’t end there. With ELPDs computed we <em>could</em> just pick the best model, but maybe we’d like to do inference over all the model weighted somehow by their score. But these are ideas for another post.</p>
+<p>Well I hoped you enjoyed learning about Pareto-Smoothed Importance Sampling. Code for doing this is all implemented in the wonderful <a href="https://cran.r-project.org/web/packages/loo/index.html">loo package</a> for R. Happy model selecting!</p>
+<hr />
+<p>I’d like to thank Dulcie Vousden and Ben Darwin for reading and commenting on an earlier version of this post.</p>
+<p>I’d like to thank Aki Vehtari for correctimg error in an earlier version of this post. I had mistakenly claimed the generalized pareto distribution was fit to the data <em>not</em> in the upper tail of weights.</p>
+</div>
+]]>
+      </description>
     </item>
     
   </channel>

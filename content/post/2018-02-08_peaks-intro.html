@@ -43,7 +43,7 @@ anatVol &lt;- mincArray(mincGetVolume(anatFile))</code></pre>
 <p><img src="/blog/post/2018-02-08_peaks-intro_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
 <p>At this point we’ve run a linear model and visually assessed the results. Now we can locate the peak findings, using the <code>mincFindPeaks</code> command.</p>
 <pre class="r"><code>peaks &lt;- mincFindPeaks(vs, &quot;tvalue-SexM&quot;, minDistance = 1, threshold = 4)</code></pre>
-<pre><code>## Writing column tvalue-SexM to file /tmp/Rtmpm8tCfQ/file65323a5d369f.mnc 
+<pre><code>## Writing column tvalue-SexM to file /tmp/Rtmpuzd1xE/file1b495f159c51.mnc 
 ## Range: 10.627142 -5.694668</code></pre>
 <p><code>mincFindPeaks</code> uses the <code>find_peaks</code> command from the MINC toolkit under the hood. You pass in the output of one of the RMINC modelling commands (mincLm in this case, but can be anything), along with the column from that model you want to get peaks from. You can then set the minimum distance between peaks (in mm) - i.e. how far apart do two statistical peaks have to be to be included? - as well as the threshold to be considered a peak. Optionally thresholds can be different for positive and negative peaks; as always, see <code>?mincFindPeaks</code> for more detail.</p>
 <p>This is what we have at this point:</p>

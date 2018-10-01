@@ -31,11 +31,11 @@ library(RMINC)&lt;/code&gt;&lt;/pre&gt;
 &lt;pre class=&#34;r&#34;&gt;&lt;code&gt;fge=find.gene.experiment(&amp;#39;Bdnf&amp;#39;)
 fge&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;##   gene   slices ExperimentID
-## 1 Bdnf  coronal     79587720
-## 2 Bdnf sagittal     75695642
+## 1 Bdnf sagittal     75695642
+## 2 Bdnf  coronal     79587720
 ##                                                                  URLs
-## 1 http://api.brain-map.org/grid_data/download/79587720?include=energy
-## 2 http://api.brain-map.org/grid_data/download/75695642?include=energy&lt;/code&gt;&lt;/pre&gt;
+## 1 http://api.brain-map.org/grid_data/download/75695642?include=energy
+## 2 http://api.brain-map.org/grid_data/download/79587720?include=energy&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;We are in luck! There are two experiments the Allen Brain Institute ran with Bdnf, identified by ExperimentIDs 79587720 and 75695642. The former was conducted on coronal slices in the brain, and the latter on sagittal slices. We will see why this is important later on. The URLs where you can download expression data is given in the final column. You can enter them in your internet browser and file should begin to download. If you don’t want to leave the wonderful world of R just to download (I don’t blame you), we can actually download and read the data within R itself.&lt;/p&gt;
 &lt;pre class=&#34;r&#34;&gt;&lt;code&gt;genedata1 = read.raw.gene(as.character(fge$URLs[1]),url = TRUE)&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;## Loading required package: bitops&lt;/code&gt;&lt;/pre&gt;

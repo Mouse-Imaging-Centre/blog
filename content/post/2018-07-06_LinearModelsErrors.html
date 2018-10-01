@@ -111,24 +111,24 @@ summary(linMod1)</code></pre>
 ## 
 ## Residuals:
 ##     Min      1Q  Median      3Q     Max 
-## -5.1667 -1.4140  0.0039  1.3655  5.5253 
+## -4.9321 -1.4254  0.0717  1.3874  5.6359 
 ## 
 ## Coefficients:
 ##             Estimate Std. Error t value Pr(&gt;|t|)    
-## (Intercept)  2.99865    0.07092   42.28   &lt;2e-16 ***
+## (Intercept)  3.04683    0.07026   43.36   &lt;2e-16 ***
 ## ---
 ## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 ## 
-## Residual standard error: 2.006 on 799 degrees of freedom</code></pre>
+## Residual standard error: 1.987 on 799 degrees of freedom</code></pre>
 <p>In this simple case, the residual standard error is simply the standard deviation of the full data:</p>
 <pre class="r"><code>dfSimple %&gt;% 
   summarise(sd(Response))</code></pre>
 <pre><code>##   sd(Response)
-## 1     2.006061</code></pre>
+## 1     1.987383</code></pre>
 <p>What about the standard error of the intercept?</p>
 <p>Since there is only one parameter for the intercept, the design matrix will just be a vector of ones. The transformation <span class="math inline">\(\mathbf{X}&#39;\mathbf{X}\)</span> is then just the squared norm of the vector and will be equal to the number of observations in the data set, i.e. <span class="math inline">\(\sum_{i=1}^n 1 = n\)</span>. The inverse operation is just that for a scalar value and we get <span class="math inline">\(\sigma_\beta = \frac{\sigma}{\sqrt{n}}\)</span>. Multiplying the standard error estimate by <span class="math inline">\(\sqrt{n}\)</span> should return the value of the residual standard error:</p>
 <pre class="r"><code>summary(linMod1)$coefficients[[&quot;(Intercept)&quot;,&quot;Std. Error&quot;]]*sqrt(nObs)</code></pre>
-<pre><code>## [1] 2.006061</code></pre>
+<pre><code>## [1] 1.987383</code></pre>
 </div>
 <div id="model-2-one-binary-predictor" class="section level2">
 <h2>Model 2: One Binary Predictor</h2>
@@ -145,19 +145,19 @@ summary(linMod2)</code></pre>
 ## lm(formula = Response ~ Genotype, data = dfSimple)
 ## 
 ## Residuals:
-##     Min      1Q  Median      3Q     Max 
-## -4.7239 -1.1826  0.0098  1.2532  4.5008 
+##    Min     1Q Median     3Q    Max 
+## -4.933 -1.212 -0.024  1.215  5.291 
 ## 
 ## Coefficients:
 ##             Estimate Std. Error t value Pr(&gt;|t|)    
-## (Intercept)  1.97414    0.08627   22.88   &lt;2e-16 ***
-## GenotypeMUT  2.04902    0.12201   16.79   &lt;2e-16 ***
+## (Intercept)  2.04567    0.08588   23.82   &lt;2e-16 ***
+## GenotypeMUT  2.00231    0.12145   16.49   &lt;2e-16 ***
 ## ---
 ## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 ## 
-## Residual standard error: 1.725 on 798 degrees of freedom
-## Multiple R-squared:  0.2611, Adjusted R-squared:  0.2602 
-## F-statistic: 282.1 on 1 and 798 DF,  p-value: &lt; 2.2e-16</code></pre>
+## Residual standard error: 1.718 on 798 degrees of freedom
+## Multiple R-squared:  0.2541, Adjusted R-squared:  0.2532 
+## F-statistic: 271.8 on 1 and 798 DF,  p-value: &lt; 2.2e-16</code></pre>
 <p>What do the variance estimates represent? Remember that the residual standard error is an estimate of the variability across all of the data. As mentioned in the introduction, the residual standard error will be the square root of the average of the sample variances of the two groups. The group variances and the resulting standard error estimate are:</p>
 <pre class="r"><code>dfSimple %&gt;% 
   group_by(Genotype) %&gt;% 
@@ -167,8 +167,8 @@ summary(linMod2)</code></pre>
 <pre><code>## # A tibble: 2 x 3
 ##   Genotype varPerGroup sigma
 ##   &lt;fct&gt;          &lt;dbl&gt; &lt;dbl&gt;
-## 1 WT              2.78  1.73
-## 2 MUT             3.17  1.73</code></pre>
+## 1 WT              3.01  1.72
+## 2 MUT             2.89  1.72</code></pre>
 <p>Which is equal to the estimate for the residuals standard error.</p>
 <p>How do the standard errors of the parameters relate to the residual standard error for this model? Let’s compute the transformation explicitly using the design matrix. First we compute <span class="math inline">\(\mathbf{X&#39;X}\)</span>:</p>
 <pre class="r"><code>xMat &lt;- model.matrix(linMod2)
@@ -186,7 +186,7 @@ t(xMat)%*%xMat</code></pre>
 <pre class="r"><code>vec &lt;- c(sqrt(nObs/2), sqrt(nObs/4))
 summary(linMod2)$coefficients[,&quot;Std. Error&quot;]*vec</code></pre>
 <pre><code>## (Intercept) GenotypeMUT 
-##     1.72542     1.72542</code></pre>
+##    1.717502    1.717502</code></pre>
 </div>
 <div id="model-3-two-binary-predictors" class="section level2">
 <h2>Model 3: Two Binary Predictors</h2>
@@ -203,20 +203,20 @@ summary(linMod3)</code></pre>
 ## lm(formula = Response ~ Genotype + Anxiety, data = dfSimple)
 ## 
 ## Residuals:
-##     Min      1Q  Median      3Q     Max 
-## -3.7018 -1.0455 -0.0082  1.0402  4.1122 
+##    Min     1Q Median     3Q    Max 
+## -3.940 -1.058  0.046  1.026  4.298 
 ## 
 ## Coefficients:
 ##             Estimate Std. Error t value Pr(&gt;|t|)    
-## (Intercept)  0.95205    0.08512   11.19   &lt;2e-16 ***
-## GenotypeMUT  2.04902    0.09829   20.85   &lt;2e-16 ***
-## AnxietyYes   2.04417    0.09829   20.80   &lt;2e-16 ***
+## (Intercept)  1.05280    0.08582   12.27   &lt;2e-16 ***
+## GenotypeMUT  2.00231    0.09910   20.21   &lt;2e-16 ***
+## AnxietyYes   1.98574    0.09910   20.04   &lt;2e-16 ***
 ## ---
 ## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 ## 
-## Residual standard error: 1.39 on 797 degrees of freedom
-## Multiple R-squared:  0.5211, Adjusted R-squared:  0.5199 
-## F-statistic: 433.5 on 2 and 797 DF,  p-value: &lt; 2.2e-16</code></pre>
+## Residual standard error: 1.401 on 797 degrees of freedom
+## Multiple R-squared:  0.504,  Adjusted R-squared:  0.5027 
+## F-statistic: 404.9 on 2 and 797 DF,  p-value: &lt; 2.2e-16</code></pre>
 <p>We expect that the residual standard error should be approximately equal to the average of the group standard deviations. Note that with the addition of new predictors, we will move slowly out of the regime where <span class="math inline">\(n \gg p\)</span> holds.</p>
 <pre class="r"><code>dfSimple %&gt;% 
   group_by(Genotype, Anxiety) %&gt;%
@@ -226,10 +226,10 @@ summary(linMod3)</code></pre>
 <pre><code>## # A tibble: 4 x 4
 ##   Genotype Anxiety varPerGroup sigma
 ##   &lt;fct&gt;    &lt;fct&gt;         &lt;dbl&gt; &lt;dbl&gt;
-## 1 WT       No             1.95  1.39
-## 2 WT       Yes            1.44  1.39
-## 3 MUT      No             2.23  1.39
-## 4 MUT      Yes            2.12  1.39</code></pre>
+## 1 WT       No             1.70  1.40
+## 2 WT       Yes            2.05  1.40
+## 3 MUT      No             2.05  1.40
+## 4 MUT      Yes            2.04  1.40</code></pre>
 <p>How do the errors of the parameter estimates relate back to this?</p>
 <pre class="r"><code>xMat &lt;- model.matrix(linMod3)
 t(xMat) %*% xMat</code></pre>
@@ -247,7 +247,7 @@ t(xMat) %*% xMat</code></pre>
 <pre class="r"><code>vec &lt;- c(sqrt(nObs/3), sqrt(nObs/4), sqrt(nObs/4))
 summary(linMod3)$coefficients[,&quot;Std. Error&quot;]*vec</code></pre>
 <pre><code>## (Intercept) GenotypeMUT  AnxietyYes 
-##    1.390042    1.390042    1.390042</code></pre>
+##    1.401431    1.401431    1.401431</code></pre>
 </div>
 <div id="model-4-three-binary-predictors" class="section level2">
 <h2>Model 4: Three Binary Predictors</h2>
@@ -265,21 +265,21 @@ summary(linMod4)</code></pre>
 ## lm(formula = Response ~ Genotype + Anxiety + Treatment, data = dfSimple)
 ## 
 ## Residuals:
-##      Min       1Q   Median       3Q      Max 
-## -3.05274 -0.64003 -0.00343  0.63785  3.12745 
+##     Min      1Q  Median      3Q     Max 
+## -2.9908 -0.6887 -0.0230  0.6759  3.3164 
 ## 
 ## Coefficients:
 ##               Estimate Std. Error t value Pr(&gt;|t|)    
-## (Intercept)   -0.03268    0.06928  -0.472    0.637    
-## GenotypeMUT    2.04902    0.06928  29.574   &lt;2e-16 ***
-## AnxietyYes     2.04417    0.06928  29.504   &lt;2e-16 ***
-## TreatmentDrug  1.96946    0.06928  28.425   &lt;2e-16 ***
+## (Intercept)    0.07123    0.07065   1.008    0.314    
+## GenotypeMUT    2.00231    0.07065  28.343   &lt;2e-16 ***
+## AnxietyYes     1.98574    0.07065  28.109   &lt;2e-16 ***
+## TreatmentDrug  1.96314    0.07065  27.789   &lt;2e-16 ***
 ## ---
 ## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 ## 
-## Residual standard error: 0.9798 on 796 degrees of freedom
-## Multiple R-squared:  0.7623, Adjusted R-squared:  0.7614 
-## F-statistic:   851 on 3 and 796 DF,  p-value: &lt; 2.2e-16</code></pre>
+## Residual standard error: 0.9991 on 796 degrees of freedom
+## Multiple R-squared:  0.7482, Adjusted R-squared:  0.7473 
+## F-statistic: 788.5 on 3 and 796 DF,  p-value: &lt; 2.2e-16</code></pre>
 <p>Note that this is the proper model to describe the data based on how we’ve simulated it. In this case the intercept should describe the mean of the reference group, i.e. untreated wildtypes with no anxiety, while the slope parameters should estimate the inputs that we put into the model. The residuals standard error should describe the standard deviation of the response within the 8 different groups, which in this case amounts to the value of <span class="math inline">\(\sigma\)</span> that we specified when simulating the data. The group standard deviations and their average are:</p>
 <pre class="r"><code>dfSimple %&gt;% 
   group_by(Genotype, Anxiety, Treatment) %&gt;% 
@@ -289,14 +289,14 @@ summary(linMod4)</code></pre>
 <pre><code>## # A tibble: 8 x 5
 ##   Genotype Anxiety Treatment varPerGroup sigma
 ##   &lt;fct&gt;    &lt;fct&gt;   &lt;fct&gt;           &lt;dbl&gt; &lt;dbl&gt;
-## 1 WT       No      Placebo         0.870 0.978
-## 2 WT       No      Drug            1.14  0.978
-## 3 WT       Yes     Placebo         0.673 0.978
-## 4 WT       Yes     Drug            0.742 0.978
-## 5 MUT      No      Placebo         1.12  0.978
-## 6 MUT      No      Drug            1.02  0.978
-## 7 MUT      Yes     Placebo         1.02  0.978
-## 8 MUT      Yes     Drug            1.08  0.978</code></pre>
+## 1 WT       No      Placebo         1.01  0.996
+## 2 WT       No      Drug            0.857 0.996
+## 3 WT       Yes     Placebo         1.04  0.996
+## 4 WT       Yes     Drug            1.11  0.996
+## 5 MUT      No      Placebo         0.995 0.996
+## 6 MUT      No      Drug            0.748 0.996
+## 7 MUT      Yes     Placebo         1.14  0.996
+## 8 MUT      Yes     Drug            1.04  0.996</code></pre>
 <p>As expected the residual standard error is approximately the average of the group standard deviations.</p>
 <p>What about the parameter errors?</p>
 <pre class="r"><code>xMat &lt;- model.matrix(linMod4)
@@ -316,7 +316,7 @@ t(xMat) %*% xMat</code></pre>
 <pre class="r"><code>vec &lt;- c(sqrt(nObs/4), sqrt(nObs/4), sqrt(nObs/4), sqrt(nObs/4))
 summary(linMod4)$coefficients[,&quot;Std. Error&quot;]*vec</code></pre>
 <pre><code>##   (Intercept)   GenotypeMUT    AnxietyYes TreatmentDrug 
-##     0.9798371     0.9798371     0.9798371     0.9798371</code></pre>
+##     0.9990751     0.9990751     0.9990751     0.9990751</code></pre>
 </div>
 <div id="recap" class="section level2">
 <h2>Recap</h2>
@@ -427,21 +427,21 @@ summary(linModInt)</code></pre>
 ## lm(formula = Response ~ Genotype * Anxiety, data = dfSimple)
 ## 
 ## Residuals:
-##    Min     1Q Median     3Q    Max 
-## -3.723 -1.048 -0.014  1.044  4.091 
+##     Min      1Q  Median      3Q     Max 
+## -4.0109 -1.0434  0.0248  1.0528  4.2269 
 ## 
 ## Coefficients:
 ##                        Estimate Std. Error t value Pr(&gt;|t|)    
-## (Intercept)             0.93091    0.09834   9.466   &lt;2e-16 ***
-## GenotypeMUT             2.09130    0.13908  15.037   &lt;2e-16 ***
-## AnxietyYes              2.08645    0.13908  15.002   &lt;2e-16 ***
-## GenotypeMUT:AnxietyYes -0.08456    0.19668  -0.430    0.667    
+## (Intercept)             0.98172    0.09903   9.913   &lt;2e-16 ***
+## GenotypeMUT             2.14447    0.14005  15.312   &lt;2e-16 ***
+## AnxietyYes              2.12790    0.14005  15.194   &lt;2e-16 ***
+## GenotypeMUT:AnxietyYes -0.28431    0.19806  -1.435    0.152    
 ## ---
 ## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 ## 
-## Residual standard error: 1.391 on 796 degrees of freedom
-## Multiple R-squared:  0.5212, Adjusted R-squared:  0.5194 
-## F-statistic: 288.8 on 3 and 796 DF,  p-value: &lt; 2.2e-16</code></pre>
+## Residual standard error: 1.4 on 796 degrees of freedom
+## Multiple R-squared:  0.5053, Adjusted R-squared:  0.5034 
+## F-statistic:   271 on 3 and 796 DF,  p-value: &lt; 2.2e-16</code></pre>
 <p>Note that though we have added a new predictor, there are still only 4 groups, as in Model 3. The difference is that the mean values of these groups may be more accurately estimated. In the present case we don’t expect this model to out-perform the model without an interaction, since there is no real interaction in the data, making the interaction parameter superfluous. This means that the estimate for the residual standard error should be similar to that from the non-interactive model. If the situation were reversed however and the data truly contained an interaction, then this model would more appropriately recapitulate the group means and lead to a more accurate estimation of <span class="math inline">\(\sigma\)</span>.</p>
 <p>The design matrix will be different either way however due to the additional interaction predictor.</p>
 <pre class="r"><code>xMat &lt;- model.matrix(linModInt)
@@ -467,9 +467,9 @@ t(xMat) %*% xMat</code></pre>
 <pre class="r"><code>vec &lt;- c(sqrt(nObs/4), sqrt(nObs/8), sqrt(nObs/8), sqrt(nObs/16))
 summary(linModInt)$coefficients[,&quot;Std. Error&quot;]*vec</code></pre>
 <pre><code>##            (Intercept)            GenotypeMUT             AnxietyYes 
-##               1.390754               1.390754               1.390754 
+##               1.400499               1.400499               1.400499 
 ## GenotypeMUT:AnxietyYes 
-##               1.390754</code></pre>
+##               1.400499</code></pre>
 </div>
 <div id="interaction-without-main-effect" class="section level2">
 <h2>Interaction without Main Effect</h2>
@@ -485,20 +485,20 @@ summary(linModInt2)</code></pre>
 ##     data = dfSimple)
 ## 
 ## Residuals:
-##    Min     1Q Median     3Q    Max 
-## -4.142 -1.130  0.026  1.166  4.091 
+##     Min      1Q  Median      3Q     Max 
+## -4.0109 -1.1560  0.0171  1.1692  5.2909 
 ## 
 ## Coefficients:
 ##                          Estimate Std. Error t value Pr(&gt;|t|)    
-## (Intercept)               1.97414    0.07871  25.082  &lt; 2e-16 ***
-## GenotypeDummy             1.04807    0.13633   7.688  4.4e-14 ***
-## GenotypeDummy:AnxietyYes  2.00189    0.15742  12.717  &lt; 2e-16 ***
+## (Intercept)               2.04567    0.07948  25.737  &lt; 2e-16 ***
+## GenotypeDummy             1.08052    0.13767   7.849 1.35e-14 ***
+## GenotypeDummy:AnxietyYes  1.84359    0.15897  11.597  &lt; 2e-16 ***
 ## ---
 ## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 ## 
-## Residual standard error: 1.574 on 797 degrees of freedom
-## Multiple R-squared:  0.3858, Adjusted R-squared:  0.3842 
-## F-statistic: 250.3 on 2 and 797 DF,  p-value: &lt; 2.2e-16</code></pre>
+## Residual standard error: 1.59 on 797 degrees of freedom
+## Multiple R-squared:  0.3618, Adjusted R-squared:  0.3602 
+## F-statistic: 225.9 on 2 and 797 DF,  p-value: &lt; 2.2e-16</code></pre>
 <p>Note that, in comparison to the fully interactive model presented in the previous Section, the residual standard error estimate is different. This is because the model has pooled the anxiety “yes” and “no” groups for the wildtypes. Since the data we generated included a main effect of anxiety, the variance of this wildtype group will be larger than that of the other two groups (mutant-no-anxiety and mutant-yes-anxiety). Additionally, the residual standard error is no longer just the average of the group standard deviations. This is due mainly to the fact that the wildtype group in this model is twice as large as the other two groups. To demonstrate this, let’s compute the naive average of group standard deviations:</p>
 <pre class="r"><code>(dfTemp &lt;- dfSimple %&gt;% 
   mutate(NewGroups = case_when(Genotype == &quot;WT&quot; ~ &quot;WT&quot;,
@@ -511,12 +511,12 @@ summary(linModInt2)</code></pre>
 <pre><code>## # A tibble: 3 x 3
 ##   NewGroups varPerGroup sigma
 ##   &lt;chr&gt;           &lt;dbl&gt; &lt;dbl&gt;
-## 1 NoMUT            2.23  1.54
-## 2 WT               2.78  1.54
-## 3 YesMUT           2.12  1.54</code></pre>
+## 1 NoMUT            2.05  1.54
+## 2 WT               3.01  1.54
+## 3 YesMUT           2.04  1.54</code></pre>
 <p>Observe that the wildtype standard deviation is larger than that for the other groups. The average is not equal to the residual standard error. It can be shown mathematically that in this case the residual standard error can be estimated approximately as</p>
 <pre class="r"><code>sqrt((1/4)*(dfTemp$varPerGroup[1] + dfTemp$varPerGroup[3] + 2*dfTemp$varPerGroup[2]))</code></pre>
-<pre><code>## [1] 1.574038</code></pre>
+<pre><code>## [1] 1.589483</code></pre>
 <p>An important point is that for the present data, this model is not homoscedastic, which is one of the assumptions underlying inferential statistics using linear models. To move forward we will generate a new data set in which there is no main anxiety effect, only an interaction. This makes it so that the group standard deviations will be approximately the same and put us back in the regime of homoscedasticity. Thus even though the wildtype group will have double the number of observations, the residual standard error will be approximately the average of the group standard deviations. We will ignore the presence of <code>Treatment</code>.</p>
 <pre class="r"><code>meanRef &lt;- 0
 sigma &lt;- 1
@@ -544,20 +544,20 @@ summary(linModInt2)</code></pre>
 ##     data = dfSimple)
 ## 
 ## Residuals:
-##     Min      1Q  Median      3Q     Max 
-## -3.5477 -0.7041  0.0052  0.6270  3.2098 
+##      Min       1Q   Median       3Q      Max 
+## -2.96592 -0.65534  0.00185  0.65837  3.05810 
 ## 
 ## Coefficients:
 ##                          Estimate Std. Error t value Pr(&gt;|t|)    
-## (Intercept)               0.04718    0.04902   0.962    0.336    
-## GenotypeDummy             1.97039    0.08491  23.206   &lt;2e-16 ***
-## GenotypeDummy:AnxietyYes  1.99567    0.09804  20.355   &lt;2e-16 ***
+## (Intercept)              -0.02255    0.04830  -0.467    0.641    
+## GenotypeDummy             2.00184    0.08366  23.927   &lt;2e-16 ***
+## GenotypeDummy:AnxietyYes  1.98251    0.09661  20.522   &lt;2e-16 ***
 ## ---
 ## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 ## 
-## Residual standard error: 0.9804 on 797 degrees of freedom
-## Multiple R-squared:  0.7382, Adjusted R-squared:  0.7376 
-## F-statistic:  1124 on 2 and 797 DF,  p-value: &lt; 2.2e-16</code></pre>
+## Residual standard error: 0.9661 on 797 degrees of freedom
+## Multiple R-squared:  0.746,  Adjusted R-squared:  0.7454 
+## F-statistic:  1170 on 2 and 797 DF,  p-value: &lt; 2.2e-16</code></pre>
 <p>Note that the parameter estimates recapitulate what we put into the model. Moreover the residual standard error is now approximately equal to the input value of <span class="math inline">\(\sigma\)</span>. We can compute the group standard deviations to see how this relates to the residual standard error:</p>
 <pre class="r"><code>dfSimple %&gt;% 
   mutate(NewGroups = case_when(Genotype == &quot;WT&quot; ~ &quot;WT&quot;,
@@ -570,9 +570,9 @@ summary(linModInt2)</code></pre>
 <pre><code>## # A tibble: 3 x 3
 ##   NewGroups varPerGroup sigma
 ##   &lt;chr&gt;           &lt;dbl&gt; &lt;dbl&gt;
-## 1 NoMUT           0.982 0.995
-## 2 WT              0.878 0.995
-## 3 YesMUT          1.11  0.995</code></pre>
+## 1 NoMUT           0.846 0.963
+## 2 WT              0.953 0.963
+## 3 YesMUT          0.980 0.963</code></pre>
 <p>In this case the average is closer to the residual standard error estimate.</p>
 <p>Next we examine the mapping from <span class="math inline">\(\sigma\)</span> to <span class="math inline">\(\sigma_\beta\)</span> to see how it compares to the model with a main anxiety effect.</p>
 <pre class="r"><code>xMat &lt;- model.matrix(linModInt2)

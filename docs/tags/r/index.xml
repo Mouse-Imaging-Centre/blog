@@ -31,11 +31,11 @@ library(RMINC)&lt;/code&gt;&lt;/pre&gt;
 &lt;pre class=&#34;r&#34;&gt;&lt;code&gt;fge=find.gene.experiment(&amp;#39;Bdnf&amp;#39;)
 fge&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;##   gene   slices ExperimentID
-## 1 Bdnf  coronal     79587720
-## 2 Bdnf sagittal     75695642
+## 1 Bdnf sagittal     75695642
+## 2 Bdnf  coronal     79587720
 ##                                                                  URLs
-## 1 http://api.brain-map.org/grid_data/download/79587720?include=energy
-## 2 http://api.brain-map.org/grid_data/download/75695642?include=energy&lt;/code&gt;&lt;/pre&gt;
+## 1 http://api.brain-map.org/grid_data/download/75695642?include=energy
+## 2 http://api.brain-map.org/grid_data/download/79587720?include=energy&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;We are in luck! There are two experiments the Allen Brain Institute ran with Bdnf, identified by ExperimentIDs 79587720 and 75695642. The former was conducted on coronal slices in the brain, and the latter on sagittal slices. We will see why this is important later on. The URLs where you can download expression data is given in the final column. You can enter them in your internet browser and file should begin to download. If you don’t want to leave the wonderful world of R just to download (I don’t blame you), we can actually download and read the data within R itself.&lt;/p&gt;
 &lt;pre class=&#34;r&#34;&gt;&lt;code&gt;genedata1 = read.raw.gene(as.character(fge$URLs[1]),url = TRUE)&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;## Loading required package: bitops&lt;/code&gt;&lt;/pre&gt;
@@ -187,7 +187,7 @@ anatVol &amp;lt;- mincArray(mincGetVolume(anatFile))&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;&lt;img src=&#34;/blog/post/2018-02-08_peaks-intro_files/figure-html/unnamed-chunk-4-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
 &lt;p&gt;At this point we’ve run a linear model and visually assessed the results. Now we can locate the peak findings, using the &lt;code&gt;mincFindPeaks&lt;/code&gt; command.&lt;/p&gt;
 &lt;pre class=&#34;r&#34;&gt;&lt;code&gt;peaks &amp;lt;- mincFindPeaks(vs, &amp;quot;tvalue-SexM&amp;quot;, minDistance = 1, threshold = 4)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;## Writing column tvalue-SexM to file /tmp/Rtmpm8tCfQ/file65323a5d369f.mnc 
+&lt;pre&gt;&lt;code&gt;## Writing column tvalue-SexM to file /tmp/Rtmpuzd1xE/file1b495f159c51.mnc 
 ## Range: 10.627142 -5.694668&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;&lt;code&gt;mincFindPeaks&lt;/code&gt; uses the &lt;code&gt;find_peaks&lt;/code&gt; command from the MINC toolkit under the hood. You pass in the output of one of the RMINC modelling commands (mincLm in this case, but can be anything), along with the column from that model you want to get peaks from. You can then set the minimum distance between peaks (in mm) - i.e. how far apart do two statistical peaks have to be to be included? - as well as the threshold to be considered a peak. Optionally thresholds can be different for positive and negative peaks; as always, see &lt;code&gt;?mincFindPeaks&lt;/code&gt; for more detail.&lt;/p&gt;
 &lt;p&gt;This is what we have at this point:&lt;/p&gt;
